@@ -13,6 +13,7 @@ Robot::Robot()
     m_chooser.SetDefaultOption(k_auto_name_default, k_auto_name_default);
     m_chooser.AddOption(k_auto_name_custom, k_auto_name_custom);
     frc::SmartDashboard::PutData("Auto Modes", &m_chooser);
+    test_motor = std::make_unique<ctre::phoenix6::hardware::TalonFX>(2);
 
 }
 
@@ -74,10 +75,12 @@ void Robot::TeleopInit()
 
 void Robot::TeleopPeriodic()
 {
+    test_motor->SetVoltage(units::voltage::volt_t{2});
 }
 
 void Robot::DisabledInit()
 {
+    test_motor->SetVoltage(units::voltage::volt_t{0});
 }
 
 void Robot::DisabledPeriodic()

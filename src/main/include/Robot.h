@@ -10,6 +10,8 @@
 #include <frc/smartdashboard/SendableChooser.h>
 #include "SmartPID.h"
 #include "NetworkTableValue.h"
+#include <ctre/phoenix6/TalonFX.hpp>
+#include <memory>
 
 class Robot : public frc::TimedRobot
 {
@@ -32,6 +34,8 @@ private:
     const std::string k_auto_name_default = "Default";
     const std::string k_auto_name_custom = "My Auto";
     std::string m_auto_selected;
+
+    std::unique_ptr<ctre::phoenix6::hardware::TalonFX> test_motor;
 
     double test_value = 0.0;
 };
