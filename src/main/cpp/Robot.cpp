@@ -5,7 +5,7 @@
 #include "Robot.h"
 
 #include <frc/smartdashboard/SmartDashboard.h>
-#include <wpi/print.h>
+#include <iostream>
 
 
 Robot::Robot()
@@ -13,19 +13,7 @@ Robot::Robot()
     m_chooser.SetDefaultOption(k_auto_name_default, k_auto_name_default);
     m_chooser.AddOption(k_auto_name_custom, k_auto_name_custom);
     frc::SmartDashboard::PutData("Auto Modes", &m_chooser);
-    nt_test_2.setOnUpdate([this](const double& new_value)
-    {
-        wpi::print("nt_test_2 updated: {}\n", new_value);
-    });
 
-    nt_test.setOnUpdate([this](const double& new_value)
-    {
-        if(new_value != test_value)
-        {
-            test_value = new_value;
-            wpi::print("nt_test updated: {}\n", new_value);
-        }
-    });
 }
 
 /**
@@ -56,7 +44,7 @@ void Robot::AutonomousInit()
     m_auto_selected = m_chooser.GetSelected();
     // m_auto_selected = SmartDashboard::GetString("Auto Selector",
     //     k_auto_name_default);
-    wpi::print("Auto selected: {}\n", m_auto_selected);
+    std::cout << "Auto selected: " << m_auto_selected << std::endl;
 
     if (m_auto_selected == k_auto_name_custom)
     {
@@ -86,8 +74,6 @@ void Robot::TeleopInit()
 
 void Robot::TeleopPeriodic()
 {
-    test_value += 0.01;
-    nt_test.setValue(test_value);
 }
 
 void Robot::DisabledInit()

@@ -34,8 +34,4 @@ private:
     std::string m_auto_selected;
 
     double test_value = 0.0;
-
-    HighVoltage::SmartPID pid{ "ExamplePID", 0.1, 0.01, 0.001 };
-    NetworkTableValue<double> nt_test{ "test/TestValue", 0.0 };
-    NetworkTableValue<double> nt_test_2{ "test/TestValue2", 0.0 };
 };
