@@ -27,6 +27,7 @@ Robot::Robot()
  */
 void Robot::RobotPeriodic()
 {
+    nt::NetworkTableInstance::GetDefault().Flush();
 }
 
 /**
@@ -77,6 +78,7 @@ void Robot::TeleopPeriodic()
 {
     test_motor->SetVoltage(units::voltage::volt_t{2});
 }
+    
 
 void Robot::DisabledInit()
 {
