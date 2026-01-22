@@ -12,7 +12,6 @@
 #include "NetworkTableValue.h"
 #include <ctre/phoenix6/TalonFX.hpp>
 #include <memory>
-
 class Robot : public frc::TimedRobot
 {
 public:
@@ -38,4 +37,6 @@ private:
     std::unique_ptr<ctre::phoenix6::hardware::TalonFX> test_motor;
 
     double test_value = 0.0;
+    NetworkTableValue<double> nt_velocity{"velocity", 0.0};
+    NetworkTableValue<std::vector<double>> nt_voltage_vs_velocity{"voltage_vs_velocity", [0.0, 0.0]}
 };
