@@ -12,7 +12,7 @@
 #include "NetworkTableValue.h"
 #include <ctre/phoenix6/TalonFX.hpp>
 #include <memory>
-
+#include <ctre/phoenix6/CANcoder.hpp>
 class Robot : public frc::TimedRobot
 {
 public:
@@ -36,6 +36,10 @@ private:
     std::string m_auto_selected;
 
     std::unique_ptr<ctre::phoenix6::hardware::TalonFX> test_motor;
+    std::unique_ptr<ctre::phoenix6::hardware::CANcoder> test_encoder;
+
+    HighVoltage::SmartPID test_pid{"test_pid", 0.08, 0.32, 0.0};
 
     double test_value = 0.0;
+    NetworkTableValue<double> nt_velocity{"velocity", 0.0};
 };

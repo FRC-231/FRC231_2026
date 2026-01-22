@@ -14,6 +14,7 @@ Robot::Robot()
     m_chooser.AddOption(k_auto_name_custom, k_auto_name_custom);
     frc::SmartDashboard::PutData("Auto Modes", &m_chooser);
     test_motor = std::make_unique<ctre::phoenix6::hardware::TalonFX>(2);
+    test_encoder = std::make_unique<ctre::phoenix6::hardware::CANcoder>(23);
 
 }
 
@@ -71,11 +72,17 @@ void Robot::AutonomousPeriodic()
 
 void Robot::TeleopInit()
 {
+    test_pid.SetSetpoint(90);
 }
 
 void Robot::TeleopPeriodic()
-{
+{   
+    auto velocity_in_turns = test_encoder->GetVelocity().GetValue();
+    double velocity = velocity_in_turns.value() * 360.0;
+    nt_velocity.setValue(velocity);
     test_motor->SetVoltage(units::voltage::volt_t{2});
+
+
 }
 
 void Robot::DisabledInit()
