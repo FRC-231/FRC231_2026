@@ -13,7 +13,6 @@ Robot::Robot()
     m_chooser.SetDefaultOption(k_auto_name_default, k_auto_name_default);
     m_chooser.AddOption(k_auto_name_custom, k_auto_name_custom);
     frc::SmartDashboard::PutData("Auto Modes", &m_chooser);
-
 }
 
 /**
@@ -26,6 +25,7 @@ Robot::Robot()
  */
 void Robot::RobotPeriodic()
 {
+    nt::NetworkTableInstance::GetDefault().Flush();
 }
 
 /**
@@ -75,6 +75,7 @@ void Robot::TeleopInit()
 void Robot::TeleopPeriodic()
 {
 }
+    
 
 void Robot::DisabledInit()
 {

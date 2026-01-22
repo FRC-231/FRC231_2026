@@ -10,6 +10,8 @@
 #include <optional>
 #include <type_traits>
 #include <string>
+#include <vector>
+#include <functional>
 
 template <typename T>
 class NetworkTableValue
@@ -25,31 +27,37 @@ public:
 
 private:
     using TopicType =
+    std::conditional_t<std::is_same_v<T, bool>,
+        nt::BooleanTopic,
     std::conditional_t<std::is_arithmetic_v<T>,
         nt::DoubleTopic,
     std::conditional_t<std::is_same_v<T, std::string>,
         nt::StringTopic,
-    std::conditional_t<std::is_same_v<T, bool>,
-        nt::BooleanTopic,
-    void>>>;
+    std::conditional_t<std::is_same_v<T, std::vector<double>>,
+        nt::DoubleArrayTopic,
+    void>>>>;
 
     using PublisherType =
+    std::conditional_t<std::is_same_v<T, bool>,
+        nt::BooleanPublisher,
     std::conditional_t<std::is_arithmetic_v<T>,
         nt::DoublePublisher,
     std::conditional_t<std::is_same_v<T, std::string>,
         nt::StringPublisher,
-    std::conditional_t<std::is_same_v<T, bool>,
-        nt::BooleanPublisher,
-    void>>>;
+    std::conditional_t<std::is_same_v<T, std::vector<double>>,
+        nt::DoubleArrayPublisher,
+    void>>>>;
 
     using SubscriberType =
+    std::conditional_t<std::is_same_v<T, bool>,
+        nt::BooleanSubscriber,
     std::conditional_t<std::is_arithmetic_v<T>,
         nt::DoubleSubscriber,
     std::conditional_t<std::is_same_v<T, std::string>,
         nt::StringSubscriber,
-    std::conditional_t<std::is_same_v<T, bool>,
-        nt::BooleanSubscriber,
-    void>>>;
+    std::conditional_t<std::is_same_v<T, std::vector<double>>,
+        nt::DoubleArraySubscriber,
+    void>>>>;
 
     TopicType topic;
     PublisherType publisher;
@@ -70,6 +78,10 @@ namespace detail {
             return table->GetStringTopic(key);
         } else if constexpr (std::is_same_v<T, bool>) {
             return table->GetBooleanTopic(key);
+        } else if constexpr (std::is_same_v<T, std::vector<double>>) {
+            return table->GetDoubleArrayTopic(key);
+        } else {
+            static_assert(sizeof(T) == 0, "Unsupported type for NetworkTableValue");
         }
     }
 }
@@ -126,6 +138,18 @@ NetworkTableValue<T>::NetworkTableValue(std::string key, T initial_value)
                 if(event.GetValueEventData()->value.IsBoolean())
                 {
                     T new_value = event.GetValueEventData()->value.GetBoolean();
+                    if(onUpdate)
+                    {
+                        onUpdate(new_value);
+                    }
+                }
+            }
+            else if constexpr (std::is_same_v<T, std::vector<double>>)
+            {
+                if(event.GetValueEventData()->value.IsDoubleArray())
+                {
+                    auto array = event.GetValueEventData()->value.GetDoubleArray();
+                    T new_value(array.begin(), array.end());
                     if(onUpdate)
                     {
                         onUpdate(new_value);
