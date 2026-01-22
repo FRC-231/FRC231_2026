@@ -28,6 +28,7 @@ Robot::Robot()
  */
 void Robot::RobotPeriodic()
 {
+    nt::NetworkTableInstance::GetDefault().Flush();
 }
 
 /**
@@ -84,6 +85,7 @@ void Robot::TeleopPeriodic()
 
 
 }
+    
 
 void Robot::DisabledInit()
 {
