@@ -73,17 +73,16 @@ void Robot::AutonomousPeriodic()
 
 void Robot::TeleopInit()
 {
-    test_pid.SetSetpoint(90);
+    applied_voltage = 7.0;
 }
 
 void Robot::TeleopPeriodic()
 {   
     auto velocity_in_turns = test_encoder->GetVelocity().GetValue();
-    double velocity = velocity_in_turns.value() * 360.0;
-    nt_velocity.setValue(velocity);
-    test_motor->SetVoltage(units::voltage::volt_t{2});
-
-
+    std::vector<double> result = {applied_voltage, velocity_in_turns.value() * 360};
+    nt_voltage_vs_velocity.setValue(result);
+    //applied_voltage += 0.01;
+    test_motor->SetVoltage(units::voltage::volt_t{applied_voltage});
 }
     
 

@@ -41,5 +41,7 @@ private:
     HighVoltage::SmartPID test_pid{"test_pid", 0.08, 0.32, 0.0};
 
     double test_value = 0.0;
+    double applied_voltage = 0.0;
     NetworkTableValue<double> nt_velocity{"velocity", 0.0};
+    NetworkTableValue<std::vector<double>> nt_voltage_vs_velocity{"voltage_vs_velocity", {0.0, 0.0}};
 };
