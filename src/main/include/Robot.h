@@ -13,6 +13,9 @@
 #include <ctre/phoenix6/TalonFX.hpp>
 #include <memory>
 #include <ctre/phoenix6/CANcoder.hpp>
+#include "RobotContext.h"
+#include "DriveSystem.h"
+#include "Paths.h"
 class Robot : public frc::TimedRobot
 {
 public:
@@ -30,6 +33,8 @@ public:
     void SimulationPeriodic() override;
 
 private:
+    std::shared_ptr<RobotContext> context;
+    std::shared_ptr<DriveSystem> drive_system;
     frc::SendableChooser<std::string> m_chooser;
     const std::string k_auto_name_default = "Default";
     const std::string k_auto_name_custom = "My Auto";

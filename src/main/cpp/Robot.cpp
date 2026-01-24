@@ -10,6 +10,16 @@
 
 Robot::Robot()
 {
+    context = std::make_shared<RobotContext>();
+    bool config_loaded = context->loadConfig(Paths::BASE_ROBOT_CONFIG);
+    if (!config_loaded)
+    {
+        std::cerr << "Failed to load config file" << std::endl;
+        throw std::runtime_error("Failed to load config file");
+    } 
+
+    drive_system = std::make_shared<DriveSystem>(context);
+
     m_chooser.SetDefaultOption(k_auto_name_default, k_auto_name_default);
     m_chooser.AddOption(k_auto_name_custom, k_auto_name_custom);
     frc::SmartDashboard::PutData("Auto Modes", &m_chooser);
