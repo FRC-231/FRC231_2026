@@ -59,6 +59,14 @@ private:
 
     Mk5NConfig config;
 
+    std::unique_ptr<ctre::phoenix6::hardware::TalonFX> drive_motor;
+    std::unique_ptr<ctre::phoenix6::hardware::TalonFX> rotate_motor;
+    std::unique_ptr<ctre::phoenix6::hardware::CANcoder> encoder;
+    std::unique_ptr<frc::SimpleMotorFeedforward<units::angle::degree_t>> rotate_feedforward;
+    std::unique_ptr<frc::PIDController> rotate_velocity_pid;
+    std::unique_ptr<frc::PIDController> rotate_angle_pid;
+
+
 
 };
 } // namespace HighVoltage
