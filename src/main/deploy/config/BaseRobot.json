@@ -18,39 +18,89 @@
                 "y":-0.3048
             }
         },
-        "rotate_feed_forward":{
-            "k_s":0.22,
-            "k_v":0.00694647141201765,
-            "k_a":0.0
-        },
-        "drive_feed_forward":{
-            "k_s":0.0,
-            "k_v":0.0,
-            "k_a":0.0
-        },
         "front_left_module":{
-            "rotate":6,
-            "drive":5,
-            "encoder":21,
-            "encoder_offset":0.0
+            "drive_id":5,
+            "rotate_id":6,
+            "encoder_id":7,
+            "encoder_offset":0.0,
+            "rotate_feed_forward":{
+                "k_s":0.22,
+                "k_v":0.00694647141201765,
+                "k_a":0.0
+            },
+            "rotate_velocity_pid":{
+                "k_p":0.0,
+                "k_i":0.0,
+                "k_d":0.0
+            },
+            "rotate_angle_pid":{
+                "k_p":0.0,
+                "k_i":0.0,
+                "k_d":0.0
+            }
         },
         "front_right_module":{
-            "rotate":7,
-            "drive":8,
-            "encoder":20,
-            "encoder_offset":0.0
+            "drive_id":8,
+            "rotate_id":7,
+            "encoder_id":20,
+            "encoder_offset":0.0,
+            "rotate_feed_forward":{
+                "k_s":0.22,
+                "k_v":0.00694647141201765,
+                "k_a":0.0
+            },
+            "rotate_velocity_pid":{
+                "k_p":0.0,
+                "k_i":0.0,
+                "k_d":0.0
+            },
+            "rotate_angle_pid":{
+                "k_p":0.0,
+                "k_i":0.0,
+                "k_d":0.0
+            }
         },
         "back_left_module":{
-            "rotate":4,
-            "drive":3,
-            "encoder":22,
-            "encoder_offset":0.0
+            "drive_id":3,
+            "rotate_id":4,
+            "encoder_id":22,
+            "encoder_offset":0.0,
+            "rotate_feed_forward":{
+                "k_s":0.22,
+                "k_v":0.00694647141201765,
+                "k_a":0.0
+            },
+            "rotate_velocity_pid":{
+                "k_p":0.0,
+                "k_i":0.0,
+                "k_d":0.0
+            },
+            "rotate_angle_pid":{
+                "k_p":0.0,
+                "k_i":0.0,
+                "k_d":0.0
+            }
         },
         "back_right_module":{
-            "rotate":2,
-            "drive":1,
-            "encoder":23,
-            "encoder_offset":0.0
+            "drive_id":1,
+            "rotate_id":2,
+            "encoder_id":23,
+            "encoder_offset":0.0,
+            "rotate_feed_forward":{
+                "k_s":0.22,
+                "k_v":0.00694647141201765,
+                "k_a":0.0
+            },
+            "rotate_velocity_pid":{
+                "k_p":0.0,
+                "k_i":0.0,
+                "k_d":0.0
+            },
+            "rotate_angle_pid":{
+                "k_p":0.0,
+                "k_i":0.0,
+                "k_d":0.0
+            }
         }
     }
 }

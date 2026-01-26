@@ -15,6 +15,13 @@ public:
     DriveSystem(std::shared_ptr<RobotContext> context);
     DriveSystem() = delete;
     void Periodic() override;
+
+    static inline const std::string MODULE_NT_PREFIX = "DriveSystem/SwerveModules/";
 private:
     std::shared_ptr<RobotContext> context;
+
+    std::shared_ptr<HighVoltage::MK5NSwerveModule> front_left_module;
+    std::shared_ptr<HighVoltage::MK5NSwerveModule> front_right_module;
+    std::shared_ptr<HighVoltage::MK5NSwerveModule> back_left_module;
+    std::shared_ptr<HighVoltage::MK5NSwerveModule> back_right_module;
 };

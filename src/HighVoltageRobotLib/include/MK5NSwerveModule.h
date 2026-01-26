@@ -18,6 +18,7 @@
 #include "SwerveModule.h"
 #include "CommonConfig.h"
 #include "Utility.h"
+#include "NetworkTableValue.h"
 
 
 namespace HighVoltage
@@ -29,6 +30,15 @@ public:
 
     struct Mk5NConfig
     {
+        static inline const std::string DRIVE_ID = "drive_id";
+        static inline const std::string ROTATE_ID = "rotate_id";
+        static inline const std::string ENCODER_ID = "encoder_id";
+        static inline const std::string ENCODER_OFFSET_DEGREES = "encoder_offset";
+        static inline const std::string ROTATE_FF = "rotate_feed_forward";
+        static inline const std::string ROTATE_VELOCITY_PID = "rotate_velocity_pid";
+        static inline const std::string ROTATE_ANGLE_PID = "rotate_angle_pid";
+
+
         uint8_t drive_id; //CAN ID for the drive motor
         uint8_t rotate_id; //CAN ID for the rotation motor
         uint8_t encoder_id; //CAN ID for the encoder
@@ -39,32 +49,60 @@ public:
         PIDConfig rotate_angle_pid; //Calculates the velocity setpoint for the feedforward + velocity pid to reach the desired angle
 
         friend void from_json(const nlohmann::json& j, Mk5NConfig& config); //Friend function to convert from json
+        /* example json:
+        {
+            "drive_id":5,
+            "rotate_id":6,
+            "encoder_id":7,
+            "encoder_offset_degrees":45.0,
+            "rotate_feed_forward":{
+                "k_s":0.22,
+                "k_v":0.00694647141201765,
+                "k_a":0.0
+            },
+            "rotate_velocity_pid":{
+                "k_p":0.1,
+                "k_i":0.0,
+                "k_d":0.0
+            },
+            "rotate_angle_pid":{
+                "k_p":1.0,
+                "k_i":0.0,
+                "k_d":0.0
+            }
+        }
+        */
     };
 
     MK5NSwerveModule() = delete;
     MK5NSwerveModule(std::string name,
         Mk5NConfig config);
 
-    void update(std::chrono::duration<double> seconds_passed) override;
-    frc::SwerveModulePosition getModulePosition() override;
-    units::angle::degree_t getRawAngle() override;
-    units::angle::degree_t getAngle() override;
-    units::length::meter_t getEncoderPosition() override;
+    void update(std::chrono::duration<double> seconds_passed) override; //Update the module control loop
+    frc::SwerveModulePosition getModulePosition() override; //Get the position of the module
+    units::angle::degree_t getRawAngle() override; //Angle without offset correction
+    units::angle::degree_t getAngle() override; //Angle with offset correction
+    units::length::meter_t getEncoderPosition() override; //Get the distance the drive motor has traveled
 
 private:
-
     units::angle::degree_t target_angle{0};
     units::velocity::meters_per_second_t target_speed{0}; //TODO: Make degrees per second
     std::string module_name;
+    units::angle::degree_t offset{0};
 
     Mk5NConfig config;
 
-    std::unique_ptr<ctre::phoenix6::hardware::TalonFX> drive_motor;
-    std::unique_ptr<ctre::phoenix6::hardware::TalonFX> rotate_motor;
-    std::unique_ptr<ctre::phoenix6::hardware::CANcoder> encoder;
-    std::unique_ptr<frc::SimpleMotorFeedforward<units::angle::degree_t>> rotate_feedforward;
-    std::unique_ptr<frc::PIDController> rotate_velocity_pid;
-    std::unique_ptr<frc::PIDController> rotate_angle_pid;
+    std::unique_ptr<ctre::phoenix6::hardware::TalonFX> drive_motor;  // The motor that moves the robot
+    std::unique_ptr<ctre::phoenix6::hardware::TalonFX> rotate_motor; // The motor that rotates the wheel module
+    std::unique_ptr<ctre::phoenix6::hardware::CANcoder> encoder; //The encoder that measures the angle of the wheel module
+    //TODO: Fix this hacky typecasting by making a custom feedforward class
+    std::unique_ptr<frc::SimpleMotorFeedforward<units::meters>> rotate_feedforward; //Using meters for angle because the SMFF class requires a length. We will still be using degree but typecasted.
+    std::unique_ptr<frc::PIDController> rotate_velocity_pid; //PID to help the feedforward control velocity
+    std::unique_ptr<frc::PIDController> rotate_angle_pid; //PID to calculate the velocity setpoint for the feedforward + velocity pid to reach the desired angle
+
+    std::unique_ptr<HighVoltage::NetworkTableValue<double>> nt_target_angle;
+    std::unique_ptr<HighVoltage::NetworkTableValue<double>> nt_raw_angle;
+    std::unique_ptr<HighVoltage::NetworkTableValue<double>> nt_angle;
 
 
 

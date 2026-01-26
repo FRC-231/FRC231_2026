@@ -39,14 +39,4 @@ private:
     const std::string k_auto_name_default = "Default";
     const std::string k_auto_name_custom = "My Auto";
     std::string m_auto_selected;
-
-    std::unique_ptr<ctre::phoenix6::hardware::TalonFX> test_motor;
-    std::unique_ptr<ctre::phoenix6::hardware::CANcoder> test_encoder;
-
-    HighVoltage::SmartPID test_pid{"test_pid", 0.08, 0.32, 0.0};
-
-    double test_value = 0.0;
-    double applied_voltage = 0.0;
-    NetworkTableValue<double> nt_velocity{"velocity", 0.0};
-    NetworkTableValue<std::vector<double>> nt_voltage_vs_velocity{"voltage_vs_velocity", {0.0, 0.0}};
 };

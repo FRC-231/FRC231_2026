@@ -4,9 +4,16 @@
 #include <optional>
 #include <frc/DriverStation.h>
 #include <units/angle.h>
+#include <units/voltage.h>
+#include <units/velocity.h>
+#include <units/acceleration.h>
 
 namespace HighVoltage
 {
+
+// Type aliases for feedforward unit types
+using VoltsPerMeterPerSecond = units::unit_t<units::compound_unit<units::volts, units::inverse<units::meters_per_second>>>;
+using VoltsPerMeterPerSecondSquared = units::unit_t<units::compound_unit<units::volts, units::inverse<units::meters_per_second_squared>>>;
 
 static const inline double PI = 3.141592653589793238463;
 

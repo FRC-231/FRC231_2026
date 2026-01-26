@@ -13,6 +13,9 @@
 #include <vector>
 #include <functional>
 
+namespace HighVoltage
+{
+
 template <typename T>
 class NetworkTableValue
 {
@@ -188,5 +191,7 @@ void NetworkTableValue<T>::setOnUpdate(std::function<void(const T&)> callback)
 {
     onUpdate = callback;
 }
+
+} // namespace HighVoltage
 
 
