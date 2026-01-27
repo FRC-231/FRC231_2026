@@ -1,5 +1,7 @@
 #include "MK5NSwerveModule.h"
 
+#include <iostream>
+
 namespace HighVoltage
 {
 
@@ -28,6 +30,7 @@ MK5NSwerveModule::MK5NSwerveModule(std::string name,
     );
 
     //Init network table values
+    std::cout << "Creating \"" << module_name + "/Target_Angle_Degrees\" network table value" << std::endl;
     nt_target_angle = std::make_unique<HighVoltage::NetworkTableValue<double>>(module_name + "/Target_Angle_Degrees", 0.0);
     nt_angle = std::make_unique<HighVoltage::NetworkTableValue<double>>(module_name + "/Angle_Degrees", 0.0);
     nt_raw_angle = std::make_unique<HighVoltage::NetworkTableValue<double>>(module_name + "/Raw_Angle_Degrees", 0.0);
@@ -36,8 +39,8 @@ MK5NSwerveModule::MK5NSwerveModule(std::string name,
 
 void MK5NSwerveModule::update(std::chrono::duration<double> seconds_passed)
 {
-    nt_angle->setValue(getAngle().value());
-    nt_raw_angle->setValue(getRawAngle().value());
+    
+    updateNetworkTables();
 }
 
 frc::SwerveModulePosition MK5NSwerveModule::getModulePosition()
@@ -60,6 +63,13 @@ units::length::meter_t MK5NSwerveModule::getEncoderPosition()
 {
     // TODO: Implement getEncoderPosition
     return units::length::meter_t{0.0};
+}
+
+void MK5NSwerveModule::updateNetworkTables()
+{
+    nt_target_angle->setValue(target_angle.value());
+    nt_angle->setValue(getAngle().value());
+    nt_raw_angle->setValue(getRawAngle().value());
 }
 
 void from_json(const nlohmann::json& j, MK5NSwerveModule::Mk5NConfig& config)
