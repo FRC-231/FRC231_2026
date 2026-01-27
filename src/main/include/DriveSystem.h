@@ -9,6 +9,10 @@
 #include "RobotConfig.h"
 #include "RobotContext.h"
 
+#include "MK5NSwerveModule.h"
+#include "SwerveDriveCordinator.h"
+
+
 class DriveSystem: public frc2::SubsystemBase
 {
 public:
@@ -24,4 +28,6 @@ private:
     std::shared_ptr<HighVoltage::MK5NSwerveModule> front_right_module;
     std::shared_ptr<HighVoltage::MK5NSwerveModule> back_left_module;
     std::shared_ptr<HighVoltage::MK5NSwerveModule> back_right_module;
+
+    std::unique_ptr<HighVoltage::SwerveModuleCordinator> swerve_cordinator;
 };

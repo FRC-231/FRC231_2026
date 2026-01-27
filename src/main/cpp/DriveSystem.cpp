@@ -22,10 +22,19 @@ DriveSystem::DriveSystem(std::shared_ptr<RobotContext> context):
         MODULE_NT_PREFIX + "back_right",
         drive_config.back_right_module
     );
+
+    swerve_cordinator = std::make_unique<HighVoltage::SwerveModuleCordinator>(
+        front_left_module,
+        front_right_module,
+        back_left_module,
+        back_right_module,
+        0.6096, //TODO: Use config values
+        0.6096 //TODO: Use config values
+    );
 }
 void DriveSystem::Periodic()
 {
-
+    swerve_cordinator->update();
 }
 
 
