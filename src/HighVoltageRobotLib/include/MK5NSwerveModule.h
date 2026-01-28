@@ -105,8 +105,9 @@ private:
     std::unique_ptr<HighVoltage::NetworkTableValue<double>> nt_target_angle;
     std::unique_ptr<HighVoltage::NetworkTableValue<double>> nt_raw_angle;
     std::unique_ptr<HighVoltage::NetworkTableValue<double>> nt_angle;
-
-
+    std::unique_ptr<HighVoltage::NetworkTableValue<double>> nt_rotate_velocity;
+    std::unique_ptr<HighVoltage::NetworkTableValue<double>> nt_rotate_pid_voltage;
+    std::unique_ptr<HighVoltage::NetworkTableValue<double>> nt_rotate_ff_voltage;
 
 };
 } // namespace HighVoltage

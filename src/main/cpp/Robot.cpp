@@ -36,7 +36,9 @@ Robot::Robot()
  */
 void Robot::RobotPeriodic()
 {
+    frc2::CommandScheduler::GetInstance().Run();// Runs all subsystem's periodic functions
     nt::NetworkTableInstance::GetDefault().Flush();
+
 }
 
 /**
@@ -85,6 +87,10 @@ void Robot::TeleopInit()
 
 void Robot::TeleopPeriodic()
 {
+    double x = context->getPilotController().GetLeftX();
+    double y = context->getPilotController().GetLeftY();
+    double rotate = context->getPilotController().GetRightX();
+    drive_system->setDrive(x, y, rotate);
 }
     
 

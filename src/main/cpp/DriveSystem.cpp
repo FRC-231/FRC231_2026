@@ -38,3 +38,14 @@ void DriveSystem::Periodic()
 }
 
 
+void DriveSystem::setDrive(double x, double y, double rotate)
+{
+    double stick_angle = HighVoltage::get180Range(HighVoltage::toDegrees(std::atan2(-y, x)) - 90.0);
+    double stick_magnitude = std::sqrt(x*x + y*y);//std::pow is slow relative to multiplication, just multiply by itself to square
+    stick_magnitude = std::min(1.0, stick_magnitude);
+
+    if(stick_magnitude > DriveSystem::MANUAL_TRANSLATE_DEADZONE)
+    {
+        swerve_cordinator->setDrive(units::degree_t{stick_angle}, stick_magnitude, rotate);
+    }
+}

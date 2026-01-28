@@ -34,12 +34,56 @@ MK5NSwerveModule::MK5NSwerveModule(std::string name,
     nt_target_angle = std::make_unique<HighVoltage::NetworkTableValue<double>>(module_name + "/Target_Angle_Degrees", 0.0);
     nt_angle = std::make_unique<HighVoltage::NetworkTableValue<double>>(module_name + "/Angle_Degrees", 0.0);
     nt_raw_angle = std::make_unique<HighVoltage::NetworkTableValue<double>>(module_name + "/Raw_Angle_Degrees", 0.0);
+    nt_rotate_velocity = std::make_unique<HighVoltage::NetworkTableValue<double>>(module_name + "/Rotate_Velocity", 0.0);
+
+    nt_rotate_ff_voltage = std::make_unique<HighVoltage::NetworkTableValue<double>>(module_name + "/Rotate_FF_Voltage", 0.0);
+    nt_rotate_pid_voltage = std::make_unique<HighVoltage::NetworkTableValue<double>>(module_name + "/Rotate_PID_Voltage", 0.0);
 
 }
 
 void MK5NSwerveModule::update(std::chrono::duration<double> seconds_passed)
 {
-    
+    units::angle::degree_t current_angle = getAngle();
+    units::angle::degree_t set_angle = closestAngle(current_angle, target_angle);
+    units::angle::degree_t set_angle_flipped = closestAngle(current_angle, target_angle + 180.0_deg);
+    units::angle::degree_t new_target = 0_deg;
+    bool is_forward = false;
+    if(std::abs(set_angle.value()) <= std::abs(set_angle_flipped.value()))
+    {
+        new_target = current_angle + set_angle;
+        is_forward = true;
+    }
+    else
+    {
+        new_target = current_angle + set_angle_flipped;
+        is_forward = false;
+    }
+    //turn motor
+    units::angle::degree_t degrees_off = get180Range(current_angle - new_target);
+    if(abs(degrees_off.value()) > 1)
+    {
+        rotate_velocity_pid->SetSetpoint(0);
+        double velocity = rotate_velocity_pid->Calculate(degrees_off.value());
+        rotate_angle_pid->SetSetpoint(0);
+        units::voltage::volt_t turn_pid_voltage = units::voltage::volt_t{rotate_angle_pid->Calculate(degrees_off.value())};
+        auto turn_feed = rotate_feedforward->Calculate(units::unit_t<units::compound_unit<units::meters, units::inverse<units::seconds>>>(velocity));
+        rotate_motor->SetVoltage(turn_pid_voltage + turn_feed);
+        nt_rotate_ff_voltage->setValue(turn_feed.value());
+        nt_rotate_pid_voltage->setValue(turn_pid_voltage.value());
+    }
+    else
+    {
+        rotate_motor->SetVoltage(0_V);
+        nt_rotate_ff_voltage->setValue(0);
+        nt_rotate_pid_voltage->setValue(0);
+    }
+    //drive motor
+    units::voltage::volt_t drive_voltage = 2_V;
+    if(!is_forward)
+    {
+        drive_voltage *= -1;
+    }
+    //drive_motor->SetVoltage(drive_voltage);
     updateNetworkTables();
 }
 
@@ -51,12 +95,12 @@ frc::SwerveModulePosition MK5NSwerveModule::getModulePosition()
 
 units::angle::degree_t MK5NSwerveModule::getRawAngle()
 {
-    return encoder->GetPosition().GetValue().value() * 360.0_deg;
+    return get180Range(encoder->GetPosition().GetValue().value() * 360.0_deg);
 }
 
 units::angle::degree_t MK5NSwerveModule::getAngle()
 {
-    return getRawAngle() - offset;
+    return get180Range(getRawAngle() - offset);
 }
 
 units::length::meter_t MK5NSwerveModule::getEncoderPosition()
@@ -70,6 +114,7 @@ void MK5NSwerveModule::updateNetworkTables()
     nt_target_angle->setValue(target_angle.value());
     nt_angle->setValue(getAngle().value());
     nt_raw_angle->setValue(getRawAngle().value());
+    nt_rotate_velocity->setValue(encoder->GetVelocity().GetValueAsDouble() * 360);
 }
 
 void from_json(const nlohmann::json& j, MK5NSwerveModule::Mk5NConfig& config)

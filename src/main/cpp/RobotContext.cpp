@@ -38,3 +38,8 @@ const std::optional<RobotConfig::RobotConfig>& RobotContext::getConfig() const
 {
     return config;
 }
+
+frc::PS5Controller& RobotContext::getPilotController()
+{
+    return pilot_controller;
+}

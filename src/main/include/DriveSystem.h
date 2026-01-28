@@ -19,8 +19,11 @@ public:
     DriveSystem(std::shared_ptr<RobotContext> context);
     DriveSystem() = delete;
     void Periodic() override;
+    void setDrive(double x, double y, double rotate);
 
     static inline const std::string MODULE_NT_PREFIX = "DriveSystem/SwerveModules/";
+    static inline constexpr double MANUAL_TRANSLATE_DEADZONE = 0.05;
+    static inline constexpr double MANUAL_ROTATE_DEADZONE = 0.05;
 private:
     std::shared_ptr<RobotContext> context;
 
