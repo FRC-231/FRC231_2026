@@ -30,7 +30,6 @@ max_speed{max_speed}
 
 void SwerveModuleCordinator::setDrive(units::degree_t angle, double magnitude, double turn)
 {
-
     if(field_oriented)
     {
         angle = get180Range(angle - field_angle);

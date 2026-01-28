@@ -88,8 +88,6 @@ private:
 
     void updateNetworkTables();
 
-    units::angle::degree_t target_angle{0};
-    units::velocity::meters_per_second_t target_speed{0}; //TODO: Make degrees per second
     units::angle::degree_t offset{0};
 
     Mk5NConfig config;
