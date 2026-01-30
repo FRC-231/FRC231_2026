@@ -23,7 +23,7 @@ public:
     void setDrive(double x, double y, double rotate);
     void stopDrive();
     void setDriveFF(units::volt_t voltage);
-    void setTurnFF(units::volt_t voltage);
+    void setTurnFF(units::volt_t voltage, std::string module_name);
     units::degree_t getRobotAngleInDegrees();
     static inline const std::string MODULE_NT_PREFIX = "DriveSystem/SwerveModules/";
     static inline constexpr double MANUAL_TRANSLATE_DEADZONE = 0.05;
@@ -59,6 +59,7 @@ private:
     double manual_rotate{0.0};
 
     units::volt_t ff_voltage{0.0_V};
+    std::string turn_ff_module_name{""};
 
     HighVoltage::NetworkTableValue<std::string> nt_drive_mode{"DriveSystem/DriveMode", "STOP"};
     HighVoltage::NetworkTableValue<std::vector<double>> nt_ff_data{"DriveSystem/FFData", {0.0, 0.0}};

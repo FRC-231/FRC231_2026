@@ -78,10 +78,11 @@ void DriveSystem::setDriveFF(units::volt_t voltage)
     ff_voltage = voltage;
 }
 
-void DriveSystem::setTurnFF(units::volt_t voltage)
+void DriveSystem::setTurnFF(units::volt_t voltage, std::string module_name)
 {
     drive_mode = DriveMode::TURN_FF;
     ff_voltage = voltage;
+    turn_ff_module_name = module_name;
 }
 
 void DriveSystem::doDriveFF()
@@ -107,17 +108,33 @@ void DriveSystem::doDriveFF()
 
 void DriveSystem::doTurnFF()
 {
-    front_left_module->getRotateMotor()->SetVoltage(ff_voltage);
-    front_right_module->getRotateMotor()->SetVoltage(ff_voltage);
-    back_left_module->getRotateMotor()->SetVoltage(ff_voltage);
-    back_right_module->getRotateMotor()->SetVoltage(ff_voltage);
+    std::shared_ptr<HighVoltage::MK5NSwerveModule> target_module = nullptr;
+    if(turn_ff_module_name == "FRONT_LEFT")
+    {
+        target_module = front_left_module;
+    }
+    else if(turn_ff_module_name == "FRONT_RIGHT")
+    {
+        target_module = front_right_module;
+    }
+    else if(turn_ff_module_name == "BACK_LEFT")
+    {
+        target_module = back_left_module;
+    }
+    else if(turn_ff_module_name == "BACK_RIGHT")
+    {
+        target_module = back_right_module;
+    }
+    else
+    {
+        std::cerr << "DriveSystem::doTurnFF: Invalid module name '" << turn_ff_module_name << "' for turn feedforward\n";
+        return;
+    }
+    target_module->getRotateMotor()->SetVoltage(ff_voltage);
     std::vector<double> ff_data =
     {
         ff_voltage.value(), 
-        front_left_module->getEncoder()->GetVelocity().GetValueAsDouble()*360.0,
-        front_right_module->getEncoder()->GetVelocity().GetValueAsDouble()*360.0,
-        back_left_module->getEncoder()->GetVelocity().GetValueAsDouble()*360.0,
-        back_right_module->getEncoder()->GetVelocity().GetValueAsDouble()*360.0
+        target_module->getEncoder()->GetVelocity().GetValueAsDouble()*360.0
     };
     nt_ff_data.setValue(ff_data);
 }
