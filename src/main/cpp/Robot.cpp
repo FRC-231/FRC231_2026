@@ -106,6 +106,7 @@ void Robot::TeleopPeriodic()
 
 void Robot::DisabledInit()
 {
+    test_motor->SetVoltage(units::voltage::volt_t{0});
 }
 
 void Robot::DisabledPeriodic()
