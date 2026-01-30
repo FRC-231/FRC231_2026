@@ -71,6 +71,16 @@ void DriveSystem::Periodic()
             doManualDrive();
         }break;
 
+        case DRIVE_FF:
+        {
+            doDriveFF();
+        }break;
+
+        case TURN_FF:
+        {
+            doTurnFF();
+        }break;
+
         default:
         {
             swerve_cordinator->stopDrive();
