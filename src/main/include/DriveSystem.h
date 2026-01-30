@@ -56,6 +56,7 @@ public:
 private:
     void updateNetworkTables();
     void doManualDrive();
+    void doStop();
     void doDriveFF();
     void doTurnFF();
     std::shared_ptr<RobotContext> context;

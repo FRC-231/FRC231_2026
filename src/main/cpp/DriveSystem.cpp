@@ -63,7 +63,7 @@ void DriveSystem::Periodic()
     {
         case STOP:
         {
-            swerve_cordinator->stopDrive();
+            doStop();
         }break;
 
         case MANUAL:
@@ -83,7 +83,7 @@ void DriveSystem::Periodic()
 
         default:
         {
-            swerve_cordinator->stopDrive();
+            doStop();
         }break;
     }
     updateNetworkTables();
@@ -109,6 +109,12 @@ void DriveSystem::setTurnFF(units::volt_t voltage, ModuleName module_name)
     drive_mode = DriveMode::TURN_FF;
     ff_voltage = voltage;
     turn_ff_module_name = module_name;
+}
+
+void DriveSystem::doStop()
+{
+    swerve_cordinator->stopDrive();
+    swerve_cordinator->update();
 }
 
 void DriveSystem::doDriveFF()
