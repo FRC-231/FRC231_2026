@@ -84,20 +84,29 @@ public:
     units::angle::degree_t getAngle() override; //Angle with offset correction
     units::length::meter_t getEncoderPosition() override; //Get the distance the drive motor has traveled
 
-private:
-
-    void updateNetworkTables();
+    void resetError() override;
     void updateTurnMotor(units::angle::degree_t degrees_off);
     void updateDriveMotor(bool is_forward);
     void updateDriveMotorVoltage(bool is_forward, units::volt_t voltage);
+    void updateDriveMotorVoltage(units::volt_t voltage);
+    void pointTurnMotor(units::angle::degree_t target_angle);
+
+    std::shared_ptr<ctre::phoenix6::hardware::TalonFX> getDriveMotor() { return drive_motor; }
+    std::shared_ptr<ctre::phoenix6::hardware::TalonFX> getRotateMotor() { return rotate_motor; }
+    std::shared_ptr<ctre::phoenix6::hardware::CANcoder> getEncoder() { return encoder; }
+
+private:
+
+    void updateNetworkTables();
+    
 
     units::angle::degree_t offset{0};
 
     Mk5NConfig config;
 
-    std::unique_ptr<ctre::phoenix6::hardware::TalonFX> drive_motor;  // The motor that moves the robot
-    std::unique_ptr<ctre::phoenix6::hardware::TalonFX> rotate_motor; // The motor that rotates the wheel module
-    std::unique_ptr<ctre::phoenix6::hardware::CANcoder> encoder; //The encoder that measures the angle of the wheel module
+    std::shared_ptr<ctre::phoenix6::hardware::TalonFX> drive_motor;  // The motor that moves the robot
+    std::shared_ptr<ctre::phoenix6::hardware::TalonFX> rotate_motor; // The motor that rotates the wheel module
+    std::shared_ptr<ctre::phoenix6::hardware::CANcoder> encoder; //The encoder that measures the angle of the wheel module
     //TODO: Fix this hacky typecasting by making a custom feedforward class
     std::unique_ptr<frc::SimpleMotorFeedforward<units::meters>> rotate_feedforward; //Using meters for angle because the SMFF class requires a length. We will still be using degree but typecasted.
     std::unique_ptr<frc::PIDController> rotate_velocity_pid; //PID to help the feedforward control velocity

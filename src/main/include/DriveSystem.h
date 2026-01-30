@@ -11,6 +11,7 @@
 
 #include "MK5NSwerveModule.h"
 #include "SwerveDriveCordinator.h"
+#include "NetworkTableValue.h"
 
 
 class DriveSystem: public frc2::SubsystemBase
@@ -21,6 +22,8 @@ public:
     void Periodic() override;
     void setDrive(double x, double y, double rotate);
     void stopDrive();
+    void setDriveFF(units::volt_t voltage);
+    void setTurnFF(units::volt_t voltage);
     units::degree_t getRobotAngleInDegrees();
     static inline const std::string MODULE_NT_PREFIX = "DriveSystem/SwerveModules/";
     static inline constexpr double MANUAL_TRANSLATE_DEADZONE = 0.05;
@@ -28,14 +31,19 @@ public:
     enum DriveMode
     {
         MANUAL, 
-        DRIVE_FF, 
-        TURN_FF, 
+        DRIVE_FF,
+        TURN_FF,
         STOP
     };
     std::string driveModeToString(DriveMode mode);
+    DriveMode getDriveMode() { return drive_mode; }
+    DriveMode stringToDriveMode(const std::string& mode_str);
 
 private:
+    void updateNetworkTables();
     void doManualDrive();
+    void doDriveFF();
+    void doTurnFF();
     std::shared_ptr<RobotContext> context;
     DriveMode drive_mode{DriveMode::STOP};
 
@@ -45,7 +53,14 @@ private:
     std::shared_ptr<HighVoltage::MK5NSwerveModule> back_right_module;
 
     std::unique_ptr<HighVoltage::SwerveModuleCordinator> swerve_cordinator;
+    
     double manual_drive_x{0.0};
     double manual_drive_y{0.0};
     double manual_rotate{0.0};
+
+    units::volt_t ff_voltage{0.0_V};
+
+    HighVoltage::NetworkTableValue<std::string> nt_drive_mode{"DriveSystem/DriveMode", "STOP"};
+    HighVoltage::NetworkTableValue<std::vector<double>> nt_ff_data{"DriveSystem/FFData", {0.0, 0.0}};
+
 };
