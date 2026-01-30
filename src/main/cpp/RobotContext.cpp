@@ -43,3 +43,17 @@ frc::PS5Controller& RobotContext::getPilotController()
 {
     return pilot_controller;
 }
+void RobotContext::setStartAngle(units::angle::degree_t angle)
+{
+    start_angle = angle;
+}
+
+units::angle::degree_t RobotContext::getStartAngle()
+{
+    return start_angle;
+}
+
+ctre::phoenix6::hardware::Pigeon2& RobotContext::getPigeon()
+{
+    return pigeon;
+}

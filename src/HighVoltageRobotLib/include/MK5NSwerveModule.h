@@ -87,6 +87,9 @@ public:
 private:
 
     void updateNetworkTables();
+    void updateTurnMotor(units::angle::degree_t degrees_off);
+    void updateDriveMotor(bool is_forward);
+    void updateDriveMotorVoltage(bool is_forward, units::volt_t voltage);
 
     units::angle::degree_t offset{0};
 

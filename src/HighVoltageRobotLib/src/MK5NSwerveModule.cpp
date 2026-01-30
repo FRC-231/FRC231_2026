@@ -29,6 +29,16 @@ MK5NSwerveModule::MK5NSwerveModule(std::string name,
         config.rotate_angle_pid.k_d
     );
 
+    ctre::phoenix6::configs::TalonFXConfiguration rotate_config{};
+    rotate_config.MotorOutput.Inverted = ctre::phoenix6::signals::InvertedValue::CounterClockwise_Positive;
+    rotate_config.MotorOutput.NeutralMode = ctre::phoenix6::signals::NeutralModeValue::Brake;
+    rotate_motor->GetConfigurator().Apply(rotate_config);
+
+    ctre::phoenix6::configs::TalonFXConfiguration drive_config{};
+    drive_config.MotorOutput.Inverted = ctre::phoenix6::signals::InvertedValue::Clockwise_Positive;
+    drive_config.MotorOutput.NeutralMode = ctre::phoenix6::signals::NeutralModeValue::Brake;
+    drive_motor->GetConfigurator().Apply(drive_config);
+
     //Init network table values
     std::cout << "Creating \"" << module_name + "/Target_Angle_Degrees\" network table value" << std::endl;
     nt_target_angle = std::make_unique<HighVoltage::NetworkTableValue<double>>(module_name + "/Target_Angle_Degrees", 0.0);
@@ -40,6 +50,48 @@ MK5NSwerveModule::MK5NSwerveModule(std::string name,
     nt_rotate_pid_voltage = std::make_unique<HighVoltage::NetworkTableValue<double>>(module_name + "/Rotate_PID_Voltage", 0.0);
 
 }
+
+void MK5NSwerveModule::updateTurnMotor(units::angle::degree_t degrees_off)
+{
+    if(abs(degrees_off.value()) > 1)
+    {
+        rotate_velocity_pid->SetSetpoint(0);
+        double velocity = rotate_velocity_pid->Calculate(degrees_off.value());
+        rotate_angle_pid->SetSetpoint(0);
+        units::voltage::volt_t turn_pid_voltage = units::voltage::volt_t{rotate_angle_pid->Calculate(degrees_off.value())};
+        auto turn_feed = rotate_feedforward->Calculate(units::unit_t<units::compound_unit<units::meters, units::inverse<units::seconds>>>(velocity));
+        rotate_motor->SetVoltage(turn_pid_voltage + turn_feed);
+        nt_rotate_ff_voltage->setValue(turn_feed.value());
+        nt_rotate_pid_voltage->setValue(turn_pid_voltage.value());
+    }
+    else
+    {
+        rotate_motor->SetVoltage(0_V);
+        nt_rotate_ff_voltage->setValue(0);
+        nt_rotate_pid_voltage->setValue(0);
+    }
+}
+void MK5NSwerveModule::updateDriveMotor(bool is_forward)
+{
+    units::volt_t drive_voltage = units::volt_t{target_speed.value()};
+    if(!is_forward)
+    {
+        drive_voltage *= -1;
+    }
+    drive_motor->SetVoltage(drive_voltage);
+}
+
+void MK5NSwerveModule::updateDriveMotorVoltage(bool is_forward, units::volt_t voltage)
+{
+    auto drive_voltage = voltage;
+    if(!is_forward)
+    {
+        drive_voltage *= -1;
+    }
+    drive_motor->SetVoltage(drive_voltage);
+}
+
+
 
 void MK5NSwerveModule::update(std::chrono::duration<double> seconds_passed)
 {
@@ -60,30 +112,9 @@ void MK5NSwerveModule::update(std::chrono::duration<double> seconds_passed)
     }
     //turn motor
     units::angle::degree_t degrees_off = get180Range(current_angle - new_target);
-    if(abs(degrees_off.value()) > 1)
-    {
-        rotate_velocity_pid->SetSetpoint(0);
-        double velocity = rotate_velocity_pid->Calculate(degrees_off.value());
-        rotate_angle_pid->SetSetpoint(0);
-        units::voltage::volt_t turn_pid_voltage = units::voltage::volt_t{rotate_angle_pid->Calculate(degrees_off.value())};
-        auto turn_feed = rotate_feedforward->Calculate(units::unit_t<units::compound_unit<units::meters, units::inverse<units::seconds>>>(velocity));
-        rotate_motor->SetVoltage(turn_pid_voltage + turn_feed);
-        nt_rotate_ff_voltage->setValue(turn_feed.value());
-        nt_rotate_pid_voltage->setValue(turn_pid_voltage.value());
-    }
-    else
-    {
-        rotate_motor->SetVoltage(0_V);
-        nt_rotate_ff_voltage->setValue(0);
-        nt_rotate_pid_voltage->setValue(0);
-    }
+    updateTurnMotor(degrees_off);
     //drive motor
-    units::voltage::volt_t drive_voltage = 2_V;
-    if(!is_forward)
-    {
-        drive_voltage *= -1;
-    }
-    //drive_motor->SetVoltage(drive_voltage);
+    updateDriveMotor(is_forward);
     updateNetworkTables();
 }
 

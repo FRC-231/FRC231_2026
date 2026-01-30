@@ -24,6 +24,8 @@ Robot::Robot()
     m_chooser.AddOption(k_auto_name_custom, k_auto_name_custom);
     frc::SmartDashboard::PutData("Auto Modes", &m_chooser);
 
+    context->setStartAngle(context->getPigeon().GetYaw().GetValue());
+
 }
 
 /**
@@ -90,6 +92,14 @@ void Robot::TeleopPeriodic()
     double x = context->getPilotController().GetLeftX();
     double y = context->getPilotController().GetLeftY();
     double rotate = context->getPilotController().GetRightX();
+    bool reset_field_orientation = context->getPilotController().GetR3Button();
+    
+    if(reset_field_orientation)
+    {
+        context->setStartAngle(HighVoltage::get180Range(context->getPigeon().GetYaw().GetValue()));
+        //drive_system->resetTargetAngle();
+    }
+
     drive_system->setDrive(x, y, rotate);
 }
     
@@ -100,6 +110,7 @@ void Robot::DisabledInit()
 
 void Robot::DisabledPeriodic()
 {
+    drive_system->stopDrive();
 }
 
 void Robot::TestInit()

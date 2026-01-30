@@ -1,4 +1,5 @@
 #include "DriveSystem.h"
+#include <iostream>
 
 DriveSystem::DriveSystem(std::shared_ptr<RobotContext> context):
     context(context)
@@ -31,20 +32,85 @@ DriveSystem::DriveSystem(std::shared_ptr<RobotContext> context):
         0.6096, //TODO: Use config values
         0.6096 //TODO: Use config values
     );
+    swerve_cordinator->setMaxSpeed(4_mps);
+    swerve_cordinator->setFieldOriented(true);
 }
 void DriveSystem::Periodic()
 {
+    switch(drive_mode)
+    {
+        case STOP:
+        {
+            swerve_cordinator->stopDrive();
+        }break;
+
+        case MANUAL:
+        {
+            doManualDrive();
+        }break;
+
+        default:
+        {
+            swerve_cordinator->stopDrive();
+        }break;
+    }
+    swerve_cordinator->setFieldAngle(getRobotAngleInDegrees());
     swerve_cordinator->update();
 }
 
 
 void DriveSystem::setDrive(double x, double y, double rotate)
 {
-    double stick_angle = HighVoltage::get180Range(HighVoltage::toDegrees(std::atan2(-y, x)) - 90.0);
-    double stick_magnitude = std::sqrt(x*x + y*y);//std::pow is slow relative to multiplication, just multiply by itself to square
+    drive_mode = DriveMode::MANUAL;
+    manual_drive_x = x;
+    manual_drive_y = y;
+    manual_rotate = rotate;
+}
+units::degree_t DriveSystem::getRobotAngleInDegrees()
+{
+    return HighVoltage::get180Range(context->getPigeon().GetYaw().GetValue() - context->getStartAngle()+180_deg);
+}
+
+void DriveSystem::doManualDrive()
+{
+    double stick_angle = HighVoltage::get180Range(HighVoltage::toDegrees(std::atan2(-manual_drive_y, manual_drive_x)) - 90.0);
+    double stick_magnitude = std::sqrt(manual_drive_x*manual_drive_x + manual_drive_y*manual_drive_y);//std::pow is slow relative to multiplication, just multiply by itself to square
     stick_magnitude = std::min(1.0, stick_magnitude);
     if(stick_magnitude > DriveSystem::MANUAL_TRANSLATE_DEADZONE)
     {
-        swerve_cordinator->setDrive(units::degree_t{stick_angle}, stick_magnitude, rotate);
+        swerve_cordinator->setDrive(units::degree_t{stick_angle}, stick_magnitude, manual_rotate);
+    }
+    else if(std::abs(manual_rotate) > MANUAL_ROTATE_DEADZONE)
+    {
+        swerve_cordinator->setRotate(manual_rotate);
+    }
+    else
+    {
+        swerve_cordinator->stopDrive();
     }
 }
+
+std::string DriveSystem::driveModeToString(DriveMode mode)
+{
+    switch(mode)
+    {
+        case STOP:
+            return "STOP";
+
+        case MANUAL:
+            return "MANUAL";
+        
+        case DRIVE_FF:
+            return "DRIVE_FF";
+
+        case TURN_FF:
+            return "TURN_FF";
+    }
+    return "UNKNOWN";
+}
+
+void DriveSystem::stopDrive()
+{
+    drive_mode = STOP;
+}
+
