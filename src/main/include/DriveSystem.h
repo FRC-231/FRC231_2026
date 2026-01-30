@@ -17,17 +17,6 @@
 class DriveSystem: public frc2::SubsystemBase
 {
 public:
-    DriveSystem(std::shared_ptr<RobotContext> context);
-    DriveSystem() = delete;
-    void Periodic() override;
-    void setDrive(double x, double y, double rotate);
-    void stopDrive();
-    void setDriveFF(units::volt_t voltage);
-    void setTurnFF(units::volt_t voltage, std::string module_name);
-    units::degree_t getRobotAngleInDegrees();
-    static inline const std::string MODULE_NT_PREFIX = "DriveSystem/SwerveModules/";
-    static inline constexpr double MANUAL_TRANSLATE_DEADZONE = 0.05;
-    static inline constexpr double MANUAL_ROTATE_DEADZONE = 0.05;
     enum DriveMode
     {
         MANUAL, 
@@ -38,6 +27,31 @@ public:
     std::string driveModeToString(DriveMode mode);
     DriveMode getDriveMode() { return drive_mode; }
     DriveMode stringToDriveMode(const std::string& mode_str);
+
+    enum ModuleName
+    {
+        FRONT_LEFT,
+        FRONT_RIGHT,
+        BACK_LEFT,
+        BACK_RIGHT
+    };
+    std::string moduleNameToString(ModuleName name);
+    ModuleName stringToModuleName(const std::string& name_str);
+    ModuleName getTurnFFModuleName() { return turn_ff_module_name; }
+    
+
+    DriveSystem(std::shared_ptr<RobotContext> context);
+    DriveSystem() = delete;
+    void Periodic() override;
+    void setDrive(double x, double y, double rotate);
+    void stopDrive();
+    void setDriveFF(units::volt_t voltage);
+    void setTurnFF(units::volt_t voltage, ModuleName module_name);
+    units::degree_t getRobotAngleInDegrees();
+    static inline const std::string MODULE_NT_PREFIX = "DriveSystem/SwerveModules/";
+    static inline constexpr double MANUAL_TRANSLATE_DEADZONE = 0.05;
+    static inline constexpr double MANUAL_ROTATE_DEADZONE = 0.05;
+    
 
 private:
     void updateNetworkTables();
@@ -59,9 +73,10 @@ private:
     double manual_rotate{0.0};
 
     units::volt_t ff_voltage{0.0_V};
-    std::string turn_ff_module_name{""};
+    ModuleName turn_ff_module_name{FRONT_LEFT};
 
-    HighVoltage::NetworkTableValue<std::string> nt_drive_mode{"DriveSystem/DriveMode", "STOP"};
+    HighVoltage::NetworkTableValue<std::string> nt_drive_mode{"DriveSystem/DriveMode", driveModeToString(DriveMode::STOP)};
     HighVoltage::NetworkTableValue<std::vector<double>> nt_ff_data{"DriveSystem/FFData", {0.0, 0.0}};
+    HighVoltage::NetworkTableValue<std::string> nt_turn_ff_module{"DriveSystem/TurnFFModule", moduleNameToString(FRONT_LEFT)};
 
 };

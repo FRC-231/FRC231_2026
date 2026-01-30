@@ -37,7 +37,23 @@ DriveSystem::DriveSystem(std::shared_ptr<RobotContext> context):
 
     nt_drive_mode.setOnUpdate([this](const std::string& mode_str)
     {
+        std::cout << "Drive mode update received: " << mode_str << std::endl;
+        if(mode_str == driveModeToString(this->drive_mode))
+        {
+            return;
+        }
         this->drive_mode = stringToDriveMode(mode_str);
+        std::cout << "Drive mode set to " << driveModeToString(this->drive_mode) << std::endl;
+    });
+    nt_turn_ff_module.setOnUpdate([this](const std::string& module_str)
+    {
+        std::cout << "Turn FF module update received: " << module_str << std::endl;
+        if(module_str == moduleNameToString(this->turn_ff_module_name))
+        {
+            return;
+        }
+        this->turn_ff_module_name = stringToModuleName(module_str);
+        std::cout << "Turn FF module set to " << moduleNameToString(this->turn_ff_module_name) << std::endl;
     });
 
 }
@@ -78,7 +94,7 @@ void DriveSystem::setDriveFF(units::volt_t voltage)
     ff_voltage = voltage;
 }
 
-void DriveSystem::setTurnFF(units::volt_t voltage, std::string module_name)
+void DriveSystem::setTurnFF(units::volt_t voltage, ModuleName module_name)
 {
     drive_mode = DriveMode::TURN_FF;
     ff_voltage = voltage;
@@ -109,26 +125,27 @@ void DriveSystem::doDriveFF()
 void DriveSystem::doTurnFF()
 {
     std::shared_ptr<HighVoltage::MK5NSwerveModule> target_module = nullptr;
-    if(turn_ff_module_name == "FRONT_LEFT")
+    switch(turn_ff_module_name)
     {
-        target_module = front_left_module;
-    }
-    else if(turn_ff_module_name == "FRONT_RIGHT")
-    {
-        target_module = front_right_module;
-    }
-    else if(turn_ff_module_name == "BACK_LEFT")
-    {
-        target_module = back_left_module;
-    }
-    else if(turn_ff_module_name == "BACK_RIGHT")
-    {
-        target_module = back_right_module;
-    }
-    else
-    {
-        std::cerr << "DriveSystem::doTurnFF: Invalid module name '" << turn_ff_module_name << "' for turn feedforward\n";
-        return;
+        case FRONT_LEFT:
+            target_module = front_left_module;
+            break;
+
+        case FRONT_RIGHT:
+            target_module = front_right_module;
+            break;
+
+        case BACK_LEFT:
+            target_module = back_left_module;
+            break;
+
+        case BACK_RIGHT:
+            target_module = back_right_module;
+            break;
+        
+        default:
+            target_module = front_left_module;
+            break;
     }
     target_module->getRotateMotor()->SetVoltage(ff_voltage);
     std::vector<double> ff_data =
@@ -203,6 +220,46 @@ DriveSystem::DriveMode DriveSystem::stringToDriveMode(const std::string& mode_st
         return TURN_FF;
     }
     return STOP;
+}
+
+std::string DriveSystem::moduleNameToString(ModuleName name)
+{
+    switch(name)
+    {
+        case FRONT_LEFT:
+            return "FRONT_LEFT";
+
+        case FRONT_RIGHT:
+            return "FRONT_RIGHT";
+
+        case BACK_LEFT:
+            return "BACK_LEFT";
+
+        case BACK_RIGHT:
+            return "BACK_RIGHT";
+    }
+    return "UNKNOWN";
+}
+
+DriveSystem::ModuleName DriveSystem::stringToModuleName(const std::string& name_str)
+{
+    if(name_str == "FRONT_LEFT")
+    {
+        return FRONT_LEFT;
+    }
+    else if(name_str == "FRONT_RIGHT")
+    {
+        return FRONT_RIGHT;
+    }
+    else if(name_str == "BACK_LEFT")
+    {
+        return BACK_LEFT;
+    }
+    else if(name_str == "BACK_RIGHT")
+    {
+        return BACK_RIGHT;
+    }
+    return FRONT_LEFT;
 }
 
 void DriveSystem::stopDrive()
