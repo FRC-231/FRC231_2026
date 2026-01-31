@@ -58,3 +58,8 @@ ctre::phoenix6::hardware::Pigeon2& RobotContext::getPigeon()
 {
     return pigeon;
 }
+
+Vision& RobotContext::getVision()
+{
+    return vision;
+}

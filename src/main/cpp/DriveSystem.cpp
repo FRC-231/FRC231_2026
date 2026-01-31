@@ -307,3 +307,7 @@ void DriveSystem::updateNetworkTables()
     nt_drive_mode.setValue(driveModeToString(drive_mode));
 }
 
+frc::Pose2d DriveSystem::updateOdometry()
+{
+    return frc::Pose2d{};
+}
