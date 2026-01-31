@@ -8,9 +8,9 @@ namespace HighVoltage
 MK5NSwerveModule::MK5NSwerveModule(std::string name,
     MK5NSwerveModule::Mk5NConfig config) : SwerveModule{name}, config{config}
 {
-    drive_motor = std::make_unique<ctre::phoenix6::hardware::TalonFX>(config.drive_id);
-    rotate_motor =  std::make_unique<ctre::phoenix6::hardware::TalonFX>(config.rotate_id);
-    encoder = std::make_unique<ctre::phoenix6::hardware::CANcoder>(config.encoder_id);
+    drive_motor = std::make_shared<ctre::phoenix6::hardware::TalonFX>(config.drive_id);
+    rotate_motor =  std::make_shared<ctre::phoenix6::hardware::TalonFX>(config.rotate_id);
+    encoder = std::make_shared<ctre::phoenix6::hardware::CANcoder>(config.encoder_id);
     offset = config.encoder_offset;
 
     rotate_feedforward = std::make_unique<frc::SimpleMotorFeedforward<units::meters>>(
@@ -53,6 +53,7 @@ MK5NSwerveModule::MK5NSwerveModule(std::string name,
 
 }
 
+//updates the turn motor based on the degrees off from the target
 void MK5NSwerveModule::updateTurnMotor(units::angle::degree_t degrees_off)
 {
     if(abs(degrees_off.value()) > 1)
@@ -73,6 +74,8 @@ void MK5NSwerveModule::updateTurnMotor(units::angle::degree_t degrees_off)
         nt_rotate_pid_voltage->setValue(0);
     }
 }
+
+//updates the drive motor based on if the wheel is going forward or backward
 void MK5NSwerveModule::updateDriveMotor(bool is_forward)
 {
     units::volt_t drive_voltage = units::volt_t{target_speed.value()};
@@ -83,6 +86,7 @@ void MK5NSwerveModule::updateDriveMotor(bool is_forward)
     drive_motor->SetVoltage(drive_voltage);
 }
 
+//updates the drive motor voltage directly
 void MK5NSwerveModule::updateDriveMotorVoltage(bool is_forward, units::volt_t voltage)
 {
     auto drive_voltage = voltage;
@@ -93,8 +97,14 @@ void MK5NSwerveModule::updateDriveMotorVoltage(bool is_forward, units::volt_t vo
     drive_motor->SetVoltage(drive_voltage);
 }
 
+//updates the drive motor voltage directly
+void MK5NSwerveModule::updateDriveMotorVoltage(units::volt_t voltage)
+{
+    drive_motor->SetVoltage(voltage);
+}
 
 
+//Called by swerve cordinator to update the module
 void MK5NSwerveModule::update(std::chrono::duration<double> seconds_passed)
 {
     units::angle::degree_t current_angle = getAngle();
@@ -120,28 +130,48 @@ void MK5NSwerveModule::update(std::chrono::duration<double> seconds_passed)
     updateNetworkTables();
 }
 
+//Points the turn motor to a specific angle
+void MK5NSwerveModule::pointTurnMotor(units::angle::degree_t target_angle)
+{
+    units::angle::degree_t current_angle = getAngle();
+    units::angle::degree_t degrees_off = get180Range(current_angle - target_angle);
+    updateTurnMotor(degrees_off);
+}
+
+//Resets the PID controllers' errors
+void MK5NSwerveModule::resetError()
+{
+    rotate_velocity_pid->Reset();
+    rotate_angle_pid->Reset();
+}
+
+//Gets the position of the module
 frc::SwerveModulePosition MK5NSwerveModule::getModulePosition()
 {
     // TODO: Implement getModulePosition
     return frc::SwerveModulePosition{};
 }
 
+//Gets the raw angle from the encoder without offset correction
 units::angle::degree_t MK5NSwerveModule::getRawAngle()
 {
     return get180Range(encoder->GetPosition().GetValue().value() * 360.0_deg);
 }
 
+//Gets the angle from the encoder with offset correction
 units::angle::degree_t MK5NSwerveModule::getAngle()
 {
     return get180Range(getRawAngle() - offset);
 }
 
+//Gets the distance the drive motor has traveled
 units::length::meter_t MK5NSwerveModule::getEncoderPosition()
 {
     // TODO: Implement getEncoderPosition
     return units::length::meter_t{0.0};
 }
 
+//Updates the network table values
 void MK5NSwerveModule::updateNetworkTables()
 {
     nt_target_angle->setValue(target_angle.value());
@@ -150,6 +180,7 @@ void MK5NSwerveModule::updateNetworkTables()
     nt_rotate_velocity->setValue(encoder->GetVelocity().GetValueAsDouble() * 360);
 }
 
+//Function to convert from json to Mk5NConfig
 void from_json(const nlohmann::json& j, MK5NSwerveModule::Mk5NConfig& config)
 {
     j.at(MK5NSwerveModule::Mk5NConfig::DRIVE_ID).get_to(config.drive_id);

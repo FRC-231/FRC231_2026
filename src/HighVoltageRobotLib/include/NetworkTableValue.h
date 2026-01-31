@@ -129,7 +129,7 @@ NetworkTableValue<T>::NetworkTableValue(std::string key, T initial_value)
             {
                 if(event.GetValueEventData()->value.IsString())
                 {
-                    T new_value = event.GetValueEventData()->value.GetString();
+                    T new_value = std::string(event.GetValueEventData()->value.GetString());
                     if(onUpdate)
                     {
                         onUpdate(new_value);
