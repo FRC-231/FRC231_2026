@@ -37,6 +37,7 @@ public:
         static inline const std::string ROTATE_FF = "rotate_feed_forward";
         static inline const std::string ROTATE_VELOCITY_PID = "rotate_velocity_pid";
         static inline const std::string ROTATE_ANGLE_PID = "rotate_angle_pid";
+        static inline const std::string DRIVE_TURNS_PER_METER = "drive_turns_per_meter";
 
 
         uint8_t drive_id; //CAN ID for the drive motor
@@ -47,6 +48,8 @@ public:
         FeedForwardConfig rotate_ff; //The feedforward for velocity of the rotation motor
         PIDConfig rotate_velocity_pid; //Helps the feed forward control velocity of the rotation motor
         PIDConfig rotate_angle_pid; //Calculates the velocity setpoint for the feedforward + velocity pid to reach the desired angle
+        double drive_turns_per_meter = 0.0;
+
 
         friend void from_json(const nlohmann::json& j, Mk5NConfig& config); //Friend function to convert from json
         /* example json:
@@ -102,6 +105,7 @@ private:
     std::unique_ptr<frc::SimpleMotorFeedforward<units::meters>> rotate_feedforward; //Using meters for angle because the SMFF class requires a length. We will still be using degree but typecasted.
     std::unique_ptr<frc::PIDController> rotate_velocity_pid; //PID to help the feedforward control velocity
     std::unique_ptr<frc::PIDController> rotate_angle_pid; //PID to calculate the velocity setpoint for the feedforward + velocity pid to reach the desired angle
+    double drive_turns_per_meter = 0.0;
 
     std::unique_ptr<HighVoltage::NetworkTableValue<double>> nt_target_angle;
     std::unique_ptr<HighVoltage::NetworkTableValue<double>> nt_raw_angle;

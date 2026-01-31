@@ -23,6 +23,7 @@
             "rotate_id":6,
             "encoder_id":21,
             "encoder_offset":38.4,
+            "drive_turns_per_meter":0.06056,
             "rotate_feed_forward":{
                 "k_s":0.22,
                 "k_v":0.00694647141201765,
@@ -44,6 +45,7 @@
             "rotate_id":7,
             "encoder_id":20,
             "encoder_offset":141.0,
+            "drive_turns_per_meter":0.06056,
             "rotate_feed_forward":{
                 "k_s":0.28,
                 "k_v":0.00694647141201765,
@@ -65,6 +67,7 @@
             "rotate_id":4,
             "encoder_id":22,
             "encoder_offset":34.8,
+            "drive_turns_per_meter":0.06056,
             "rotate_feed_forward":{
                 "k_s":0.22,
                 "k_v":0.00694647141201765,
@@ -86,6 +89,7 @@
             "rotate_id":2,
             "encoder_id":23,
             "encoder_offset":-5.4,
+            "drive_turns_per_meter":0.06056,
             "rotate_feed_forward":{
                 "k_s":0.22,
                 "k_v":0.00694647141201765,

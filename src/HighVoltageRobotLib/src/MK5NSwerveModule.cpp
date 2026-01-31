@@ -36,8 +36,10 @@ MK5NSwerveModule::MK5NSwerveModule(std::string name,
 
     ctre::phoenix6::configs::TalonFXConfiguration drive_config{};
     drive_config.MotorOutput.Inverted = ctre::phoenix6::signals::InvertedValue::Clockwise_Positive;
-    drive_config.MotorOutput.NeutralMode = ctre::phoenix6::signals::NeutralModeValue::Brake;
+    drive_config.MotorOutput.NeutralMode = ctre::phoenix6::signals::NeutralModeValue::Coast;
     drive_motor->GetConfigurator().Apply(drive_config);
+
+    drive_turns_per_meter = config.drive_turns_per_meter;
 
     //Init network table values
     std::cout << "Creating \"" << module_name + "/Target_Angle_Degrees\" network table value" << std::endl;
@@ -158,6 +160,7 @@ void from_json(const nlohmann::json& j, MK5NSwerveModule::Mk5NConfig& config)
     j.at(MK5NSwerveModule::Mk5NConfig::ROTATE_FF).get_to(config.rotate_ff);
     j.at(MK5NSwerveModule::Mk5NConfig::ROTATE_VELOCITY_PID).get_to(config.rotate_velocity_pid);
     j.at(MK5NSwerveModule::Mk5NConfig::ROTATE_ANGLE_PID).get_to(config.rotate_angle_pid);
+    j.at(MK5NSwerveModule::Mk5NConfig::DRIVE_TURNS_PER_METER).get_to(config.drive_turns_per_meter);
 }
 
 } // namespace HighVoltage
