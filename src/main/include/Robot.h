@@ -39,4 +39,5 @@ private:
     const std::string k_auto_name_default = "Default";
     const std::string k_auto_name_custom = "My Auto";
     std::string m_auto_selected;
+    units::volt_t ff_voltage = 0_V;
 };

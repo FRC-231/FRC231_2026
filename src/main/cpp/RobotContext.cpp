@@ -30,6 +30,7 @@ bool RobotContext::loadConfig(const std::filesystem::path& path)
         std::cerr << e.what() << '\n';
         return false;
     }
+    std::cout << "config loaded" << std::endl;
     return true;
     
 }

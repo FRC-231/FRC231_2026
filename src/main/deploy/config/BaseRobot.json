@@ -1,5 +1,10 @@
 {
     "drive":{
+        "angle_correction_pid":{
+            "k_p":0.025,
+            "k_i":0.0,
+            "k_d":0.0
+        },
         "swerve_kinematics":{
             "front_right":{
                 "x":0.3048,
@@ -23,7 +28,7 @@
             "rotate_id":6,
             "encoder_id":21,
             "encoder_offset":38.4,
-            "drive_turns_per_meter":0.06056,
+            "drive_turns_per_meter":0.06087,
             "rotate_feed_forward":{
                 "k_s":0.22,
                 "k_v":0.00694647141201765,
@@ -38,6 +43,11 @@
                 "k_p":0.066,
                 "k_i":0.0,
                 "k_d":0.0
+            },
+            "drive_feed_forward":{
+                "k_s":0.19,
+                "k_v":1.90986765035,
+                "k_a":0.0
             }
         },
         "front_right_module":{
@@ -45,7 +55,7 @@
             "rotate_id":7,
             "encoder_id":20,
             "encoder_offset":141.0,
-            "drive_turns_per_meter":0.06056,
+            "drive_turns_per_meter":0.06087,
             "rotate_feed_forward":{
                 "k_s":0.28,
                 "k_v":0.00694647141201765,
@@ -60,6 +70,11 @@
                 "k_p":0.066,
                 "k_i":0.0,
                 "k_d":0.0
+            },
+            "drive_feed_forward":{
+                "k_s":0.19,
+                "k_v":1.90986765035,
+                "k_a":0.0
             }
         },
         "back_left_module":{
@@ -67,7 +82,7 @@
             "rotate_id":4,
             "encoder_id":22,
             "encoder_offset":34.8,
-            "drive_turns_per_meter":0.06056,
+            "drive_turns_per_meter":0.06087,
             "rotate_feed_forward":{
                 "k_s":0.22,
                 "k_v":0.00694647141201765,
@@ -82,6 +97,11 @@
                 "k_p":0.066,
                 "k_i":0.0,
                 "k_d":0.0
+            },
+            "drive_feed_forward":{
+                "k_s":0.19,
+                "k_v":1.90986765035,
+                "k_a":0.0
             }
         },
         "back_right_module":{
@@ -89,7 +109,7 @@
             "rotate_id":2,
             "encoder_id":23,
             "encoder_offset":-5.4,
-            "drive_turns_per_meter":0.06056,
+            "drive_turns_per_meter":0.06087,
             "rotate_feed_forward":{
                 "k_s":0.22,
                 "k_v":0.00694647141201765,
@@ -104,6 +124,11 @@
                 "k_p":0.066,
                 "k_i":0.0,
                 "k_d":0.0
+            },
+            "drive_feed_forward":{
+                "k_s":0.19,
+                "k_v":1.90986765035,
+                "k_a":0.0
             }
         }
     }

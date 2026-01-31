@@ -115,10 +115,13 @@ void Robot::DisabledPeriodic()
 
 void Robot::TestInit()
 {
+    ff_voltage = 0_V;
 }
 
 void Robot::TestPeriodic()
 {
+    drive_system->setDriveFF(ff_voltage);
+    ff_voltage -= 0.005_V;
 }
 
 void Robot::SimulationInit()

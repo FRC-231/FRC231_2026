@@ -28,6 +28,11 @@ MK5NSwerveModule::MK5NSwerveModule(std::string name,
         config.rotate_angle_pid.k_i,
         config.rotate_angle_pid.k_d
     );
+    drive_feedforward = std::make_unique<frc::SimpleMotorFeedforward<units::meters>>(
+        units::volt_t{config.drive_ff.k_s},
+        VoltsPerMeterPerSecond{config.drive_ff.k_v},
+        VoltsPerMeterPerSecondSquared{config.drive_ff.k_a}
+    );
 
     ctre::phoenix6::configs::TalonFXConfiguration rotate_config{};
     rotate_config.MotorOutput.Inverted = ctre::phoenix6::signals::InvertedValue::CounterClockwise_Positive;
@@ -36,7 +41,7 @@ MK5NSwerveModule::MK5NSwerveModule(std::string name,
 
     ctre::phoenix6::configs::TalonFXConfiguration drive_config{};
     drive_config.MotorOutput.Inverted = ctre::phoenix6::signals::InvertedValue::Clockwise_Positive;
-    drive_config.MotorOutput.NeutralMode = ctre::phoenix6::signals::NeutralModeValue::Coast;
+    drive_config.MotorOutput.NeutralMode = ctre::phoenix6::signals::NeutralModeValue::Brake;
     drive_motor->GetConfigurator().Apply(drive_config);
 
     drive_turns_per_meter = config.drive_turns_per_meter;
@@ -50,6 +55,8 @@ MK5NSwerveModule::MK5NSwerveModule(std::string name,
 
     nt_rotate_ff_voltage = std::make_unique<HighVoltage::NetworkTableValue<double>>(module_name + "/Rotate_FF_Voltage", 0.0);
     nt_rotate_pid_voltage = std::make_unique<HighVoltage::NetworkTableValue<double>>(module_name + "/Rotate_PID_Voltage", 0.0);
+    nt_encoder_position = std::make_unique<HighVoltage::NetworkTableValue<double>>(module_name + "/Encoder_Postion", 0.0);
+    nt_encoder_raw_position = std::make_unique<HighVoltage::NetworkTableValue<double>>(module_name + "/Encoder_Raw_Postion", 0.0);
 
 }
 
@@ -73,16 +80,20 @@ void MK5NSwerveModule::updateTurnMotor(units::angle::degree_t degrees_off)
         nt_rotate_ff_voltage->setValue(0);
         nt_rotate_pid_voltage->setValue(0);
     }
+    updateNetworkTables();
 }
 
 //updates the drive motor based on if the wheel is going forward or backward
-void MK5NSwerveModule::updateDriveMotor(bool is_forward)
+void MK5NSwerveModule::updateDriveMotor(bool is_forward, units::degree_t degrees_off)
 {
-    units::volt_t drive_voltage = units::volt_t{target_speed.value()};
+    units::velocity::meters_per_second_t drive_speed = target_speed;
     if(!is_forward)
     {
-        drive_voltage *= -1;
+        drive_speed *= -1;
     }
+    auto drive_ff_value = drive_feedforward->Calculate(drive_speed);
+    //TODO: add pid
+    auto drive_voltage = drive_ff_value * std::cos(units::radian_t{degrees_off}.to<double>());
     drive_motor->SetVoltage(drive_voltage);
 }
 
@@ -148,8 +159,10 @@ void MK5NSwerveModule::resetError()
 //Gets the position of the module
 frc::SwerveModulePosition MK5NSwerveModule::getModulePosition()
 {
-    // TODO: Implement getModulePosition
-    return frc::SwerveModulePosition{};
+    frc::SwerveModulePosition result;
+    result.angle = units::degree_t{getAngle().value()};
+    result.distance = units::meter_t{drive_motor->GetPosition().GetValue().value() * drive_turns_per_meter};
+    return result;
 }
 
 //Gets the raw angle from the encoder without offset correction
@@ -167,9 +180,14 @@ units::angle::degree_t MK5NSwerveModule::getAngle()
 //Gets the distance the drive motor has traveled
 units::length::meter_t MK5NSwerveModule::getEncoderPosition()
 {
-    // TODO: Implement getEncoderPosition
-    return units::length::meter_t{0.0};
+    return units::meter_t{drive_motor->GetPosition().GetValue().value() * drive_turns_per_meter};
 }
+
+double MK5NSwerveModule::getEncoderRawPosition()
+{
+    return drive_motor->GetPosition().GetValueAsDouble();
+}
+
 
 //Updates the network table values
 void MK5NSwerveModule::updateNetworkTables()
@@ -178,6 +196,8 @@ void MK5NSwerveModule::updateNetworkTables()
     nt_angle->setValue(getAngle().value());
     nt_raw_angle->setValue(getRawAngle().value());
     nt_rotate_velocity->setValue(encoder->GetVelocity().GetValueAsDouble() * 360);
+    nt_encoder_position->setValue(getEncoderPosition().value());
+    nt_encoder_raw_position->setValue(getEncoderRawPosition());
 }
 
 //Function to convert from json to Mk5NConfig
@@ -192,6 +212,7 @@ void from_json(const nlohmann::json& j, MK5NSwerveModule::Mk5NConfig& config)
     j.at(MK5NSwerveModule::Mk5NConfig::ROTATE_VELOCITY_PID).get_to(config.rotate_velocity_pid);
     j.at(MK5NSwerveModule::Mk5NConfig::ROTATE_ANGLE_PID).get_to(config.rotate_angle_pid);
     j.at(MK5NSwerveModule::Mk5NConfig::DRIVE_TURNS_PER_METER).get_to(config.drive_turns_per_meter);
+    j.at(MK5NSwerveModule::Mk5NConfig::DRIVE_FF).get_to(config.drive_ff);
 }
 
 } // namespace HighVoltage

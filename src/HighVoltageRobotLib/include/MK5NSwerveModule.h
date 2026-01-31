@@ -38,6 +38,7 @@ public:
         static inline const std::string ROTATE_VELOCITY_PID = "rotate_velocity_pid";
         static inline const std::string ROTATE_ANGLE_PID = "rotate_angle_pid";
         static inline const std::string DRIVE_TURNS_PER_METER = "drive_turns_per_meter";
+        static inline const std::string DRIVE_FF = "drive_feed_forward";
 
 
         uint8_t drive_id; //CAN ID for the drive motor
@@ -49,6 +50,7 @@ public:
         PIDConfig rotate_velocity_pid; //Helps the feed forward control velocity of the rotation motor
         PIDConfig rotate_angle_pid; //Calculates the velocity setpoint for the feedforward + velocity pid to reach the desired angle
         double drive_turns_per_meter = 0.0;
+        FeedForwardConfig drive_ff;
 
 
         friend void from_json(const nlohmann::json& j, Mk5NConfig& config); //Friend function to convert from json
@@ -86,10 +88,12 @@ public:
     units::angle::degree_t getRawAngle() override; //Angle without offset correction
     units::angle::degree_t getAngle() override; //Angle with offset correction
     units::length::meter_t getEncoderPosition() override; //Get the distance the drive motor has traveled
+    double getEncoderRawPosition();
+    double getDriveTurnsPerMeter() {return drive_turns_per_meter;}
 
     void resetError() override;
     void updateTurnMotor(units::angle::degree_t degrees_off);
-    void updateDriveMotor(bool is_forward);
+    void updateDriveMotor(bool is_forward, units::degree_t degrees_off = 0_deg);
     void updateDriveMotorVoltage(bool is_forward, units::volt_t voltage);
     void updateDriveMotorVoltage(units::volt_t voltage);
     void pointTurnMotor(units::angle::degree_t target_angle);
@@ -114,6 +118,8 @@ private:
     std::unique_ptr<frc::SimpleMotorFeedforward<units::meters>> rotate_feedforward; //Using meters for angle because the SMFF class requires a length. We will still be using degree but typecasted.
     std::unique_ptr<frc::PIDController> rotate_velocity_pid; //PID to help the feedforward control velocity
     std::unique_ptr<frc::PIDController> rotate_angle_pid; //PID to calculate the velocity setpoint for the feedforward + velocity pid to reach the desired angle
+    std::unique_ptr<frc::SimpleMotorFeedforward<units::meters>> drive_feedforward; //Using meters for angle because the SMFF class requires a length. We will still be using degree but typecasted.
+
     double drive_turns_per_meter = 0.0;
 
     std::unique_ptr<HighVoltage::NetworkTableValue<double>> nt_target_angle;
@@ -122,6 +128,7 @@ private:
     std::unique_ptr<HighVoltage::NetworkTableValue<double>> nt_rotate_velocity;
     std::unique_ptr<HighVoltage::NetworkTableValue<double>> nt_rotate_pid_voltage;
     std::unique_ptr<HighVoltage::NetworkTableValue<double>> nt_rotate_ff_voltage;
-
+    std::unique_ptr<HighVoltage::NetworkTableValue<double>> nt_encoder_position;
+    std::unique_ptr<HighVoltage::NetworkTableValue<double>> nt_encoder_raw_position;
 };
 } // namespace HighVoltage

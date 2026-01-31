@@ -12,6 +12,7 @@
 #include "MK5NSwerveModule.h"
 #include "SwerveDriveCordinator.h"
 #include "NetworkTableValue.h"
+#include "SmartPID.h"
 
 
 class DriveSystem: public frc2::SubsystemBase
@@ -72,6 +73,8 @@ private:
     double manual_drive_x{0.0};
     double manual_drive_y{0.0};
     double manual_rotate{0.0};
+    units::degree_t target_angle = 0_deg;
+    std::shared_ptr<HighVoltage::SmartPID> angle_correction_pid;
 
     units::volt_t ff_voltage{0.0_V};
     ModuleName turn_ff_module_name{FRONT_LEFT};
