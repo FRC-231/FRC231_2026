@@ -39,6 +39,31 @@ DriveSystem::DriveSystem(std::shared_ptr<RobotContext> context):
     swerve_cordinator->setMaxSpeed(4_mps);
     swerve_cordinator->setFieldOriented(true);
 
+    kinematics = std::make_shared<frc::SwerveDriveKinematics<4>>(
+        frc::Translation2d{units::meter_t{context->getConfig()->drive_config.swerve_kinematics.front_left_position.x}, units::meter_t{context->getConfig()->drive_config.swerve_kinematics.front_left_position.y}},
+        frc::Translation2d{units::meter_t{context->getConfig()->drive_config.swerve_kinematics.front_right_position.x}, units::meter_t{context->getConfig()->drive_config.swerve_kinematics.front_right_position.y}},
+        frc::Translation2d{units::meter_t{context->getConfig()->drive_config.swerve_kinematics.back_left_position.x}, units::meter_t{context->getConfig()->drive_config.swerve_kinematics.back_left_position.y}},
+        frc::Translation2d{units::meter_t{context->getConfig()->drive_config.swerve_kinematics.back_right_position.x}, units::meter_t{context->getConfig()->drive_config.swerve_kinematics.back_right_position.y}}
+    );
+
+    odometry = std::make_shared<frc::SwerveDrivePoseEstimator<4>>(
+        *(kinematics.get()),
+        frc::Rotation2d{units::degree_t(0.0)},
+        std::array<frc::SwerveModulePosition,4>{
+            front_left_module->getModulePosition(),
+            front_right_module->getModulePosition(),
+            back_left_module->getModulePosition(),
+            back_right_module->getModulePosition(),
+        },
+        frc::Pose2d
+        {
+            units::meter_t{0.0},
+            units::meter_t{0.0},
+            units::degree_t{0.0}
+        }
+    );
+
+
     nt_drive_mode.setOnUpdate([this](const std::string& mode_str)
     {
         std::cout << "Drive mode update received: " << mode_str << std::endl;
@@ -63,6 +88,8 @@ DriveSystem::DriveSystem(std::shared_ptr<RobotContext> context):
 }
 void DriveSystem::Periodic()
 {
+    current_pose = updateOdometry();
+    swerve_cordinator->setFieldAngle(getRobotAngleInDegrees());
     switch(drive_mode)
     {
         case STOP:
@@ -309,5 +336,43 @@ void DriveSystem::updateNetworkTables()
 
 frc::Pose2d DriveSystem::updateOdometry()
 {
-    return frc::Pose2d{};
+    double yaw = context->getPigeon().GetYaw().GetValue().to<double>();
+    double yaw_rate = context->getPigeon().GetAngularVelocityXDevice().GetValue().to<double>();
+    double pitch = context->getPigeon().GetPitch().GetValue().to<double>();
+    double pitch_rate = context->getPigeon().GetAngularVelocityYDevice().GetValue().to<double>();
+    double roll = context->getPigeon().GetRoll().GetValue().to<double>();
+    double roll_rate = context->getPigeon().GetAngularVelocityZDevice().GetValue().to<double>();
+    //If we are on the red alliance we need to flip the yaw
+    yaw -= context->getStartAngle().value();
+    //If we are on the red alliance we need to flip the yaw
+    auto current_alliance = frc::DriverStation::GetAlliance();
+    if(!current_alliance.has_value())
+    {
+        std::cerr << "No alliance color set!" << std::endl;
+        return frc::Pose2d{};
+    }
+    if(current_alliance.value() == frc::DriverStation::kRed)
+    {
+        yaw = HighVoltage::get180Range(yaw + 180.0);
+    }
+    context->getVision().setRobotOrientation(
+        yaw,
+        yaw_rate,
+        pitch,
+        pitch_rate,
+        roll,
+        roll_rate
+    );
+
+    //Apply vision data to odometry
+    context->getVision().applyVisionData(*odometry);
+    return odometry->Update(
+        getRobotAngleInDegrees(),
+        std::array<frc::SwerveModulePosition,4>{
+            front_left_module->getModulePosition(),
+            front_right_module->getModulePosition(),
+            back_left_module->getModulePosition(),
+            back_right_module->getModulePosition(),
+        }
+    );
 }

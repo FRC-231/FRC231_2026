@@ -48,7 +48,6 @@ public:
     void stopDrive();
     void setDriveFF(units::volt_t voltage);
     void setTurnFF(units::volt_t voltage, ModuleName module_name);
-    frc::Pose2d updateOdometry();
     units::degree_t getRobotAngleInDegrees();
     static inline const std::string MODULE_NT_PREFIX = "DriveSystem/SwerveModules/";
     static inline constexpr double MANUAL_TRANSLATE_DEADZONE = 0.05;
@@ -68,7 +67,6 @@ private:
     std::shared_ptr<HighVoltage::MK5NSwerveModule> front_right_module;
     std::shared_ptr<HighVoltage::MK5NSwerveModule> back_left_module;
     std::shared_ptr<HighVoltage::MK5NSwerveModule> back_right_module;
-
     std::unique_ptr<HighVoltage::SwerveModuleCordinator> swerve_cordinator;
     
     double manual_drive_x{0.0};
@@ -76,6 +74,11 @@ private:
     double manual_rotate{0.0};
     units::degree_t target_angle = 0_deg;
     std::shared_ptr<HighVoltage::SmartPID> angle_correction_pid;
+
+    std::shared_ptr<frc::SwerveDriveKinematics<4>> kinematics;
+    std::shared_ptr<frc::SwerveDrivePoseEstimator<4>> odometry;
+    frc::Pose2d current_pose;
+    frc::Pose2d updateOdometry();
 
     units::volt_t ff_voltage{0.0_V};
     ModuleName turn_ff_module_name{FRONT_LEFT};
