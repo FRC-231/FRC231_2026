@@ -52,7 +52,11 @@ public:
     static inline const std::string MODULE_NT_PREFIX = "DriveSystem/SwerveModules/";
     static inline constexpr double MANUAL_TRANSLATE_DEADZONE = 0.05;
     static inline constexpr double MANUAL_ROTATE_DEADZONE = 0.05;
-    
+    static inline const std::string ORIENTATION_TABLE_NAME = "Robot_Orientation";
+    static inline const std::string X_KEY = "X";
+    static inline const std::string Y_KEY = "Y";
+    static inline const std::string ANGLE_KEY = "Angle";
+
 
 private:
     void updateNetworkTables();
@@ -86,5 +90,9 @@ private:
     HighVoltage::NetworkTableValue<std::string> nt_drive_mode{"DriveSystem/DriveMode", driveModeToString(DriveMode::STOP)};
     HighVoltage::NetworkTableValue<std::vector<double>> nt_ff_data{"DriveSystem/FFData", {0.0, 0.0}};
     HighVoltage::NetworkTableValue<std::string> nt_turn_ff_module{"DriveSystem/TurnFFModule", moduleNameToString(FRONT_LEFT)};
+    HighVoltage::NetworkTableValue<double> nt_drive_x{ORIENTATION_TABLE_NAME + "/" + X_KEY, 0.0};
+    HighVoltage::NetworkTableValue<double> nt_drive_y{ORIENTATION_TABLE_NAME + "/" + Y_KEY, 0.0};
+    HighVoltage::NetworkTableValue<double> nt_drive_angle{ORIENTATION_TABLE_NAME + "/" + ANGLE_KEY, 0.0};
+
 
 };

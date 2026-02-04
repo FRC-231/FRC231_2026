@@ -36,7 +36,7 @@ DriveSystem::DriveSystem(std::shared_ptr<RobotContext> context):
         0.6096, //TODO: Use config values
         0.6096 //TODO: Use config values
     );
-    swerve_cordinator->setMaxSpeed(4_mps);
+    swerve_cordinator->setMaxSpeed(1.5_mps);
     swerve_cordinator->setFieldOriented(true);
 
     kinematics = std::make_shared<frc::SwerveDriveKinematics<4>>(
@@ -332,6 +332,10 @@ void DriveSystem::stopDrive()
 void DriveSystem::updateNetworkTables()
 {
     nt_drive_mode.setValue(driveModeToString(drive_mode));
+    nt_drive_x.setValue(current_pose.X().value());
+    nt_drive_y.setValue(current_pose.Y().value());
+    nt_drive_angle.setValue(current_pose.Rotation().Degrees().value());
+
 }
 
 frc::Pose2d DriveSystem::updateOdometry()
