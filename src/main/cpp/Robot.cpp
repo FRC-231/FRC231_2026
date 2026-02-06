@@ -69,6 +69,13 @@ void Robot::AutonomousInit()
     {
         // Default Auto goes here
     }
+    frc::Pose2d drive_target
+    {
+        units::meter_t{6.46},
+        units::meter_t{-2.10},
+        frc::Rotation2d{units::degree_t{0.0}}
+    };
+    drive_system->driveTo(drive_target);
 }
 
 void Robot::AutonomousPeriodic()

@@ -13,6 +13,8 @@ struct DriveConfig
     static inline const std::string BACK_LEFT_MODULE = "back_left_module";
     static inline const std::string SWERVE_KINEMATICS = "swerve_kinematics";
     static inline const std::string ANGLE_CORRECTION_PID = "angle_correction_pid";
+    static inline const std::string DRIVE_TO_PROPORTIONAL = "drive_to_proportional";
+
     
     HighVoltage::MK5NSwerveModule::Mk5NConfig front_left_module;
     HighVoltage::MK5NSwerveModule::Mk5NConfig front_right_module;
@@ -20,6 +22,7 @@ struct DriveConfig
     HighVoltage::MK5NSwerveModule::Mk5NConfig back_right_module;    
     HighVoltage::SwerveKinematicsConfig swerve_kinematics;
     HighVoltage::PIDConfig angle_correction_pid;
+    double drive_to_proportional;
 
 
     friend void from_json(const nlohmann::json &j, DriveConfig &drive);

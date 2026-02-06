@@ -23,7 +23,8 @@ public:
         MANUAL, 
         DRIVE_FF,
         TURN_FF,
-        STOP
+        STOP,
+        DRIVE_TO
     };
     std::string driveModeToString(DriveMode mode);
     DriveMode getDriveMode() { return drive_mode; }
@@ -48,6 +49,9 @@ public:
     void stopDrive();
     void setDriveFF(units::volt_t voltage);
     void setTurnFF(units::volt_t voltage, ModuleName module_name);
+    void driveTo(frc::Pose2d pose);
+    units::degree_t getAngleFromTarget();
+    units::meter_t getDistanceFromTarget();
     units::degree_t getRobotAngleInDegrees();
     static inline const std::string MODULE_NT_PREFIX = "DriveSystem/SwerveModules/";
     static inline constexpr double MANUAL_TRANSLATE_DEADZONE = 0.05;
@@ -56,7 +60,9 @@ public:
     static inline const std::string X_KEY = "X";
     static inline const std::string Y_KEY = "Y";
     static inline const std::string ANGLE_KEY = "Angle";
-
+    static inline const std::string TARGET_X_KEY = "Target_X";
+    static inline const std::string TARGET_Y_KEY = "Target_Y";
+    static inline const std::string TARGET_ANGLE_KEY = "Target_Angle";
 
 private:
     void updateNetworkTables();
@@ -64,6 +70,7 @@ private:
     void doStop();
     void doDriveFF();
     void doTurnFF();
+    void doDriveTo();
     std::shared_ptr<RobotContext> context;
     DriveMode drive_mode{DriveMode::STOP};
 
@@ -77,7 +84,9 @@ private:
     double manual_drive_y{0.0};
     double manual_rotate{0.0};
     units::degree_t target_angle = 0_deg;
+    frc::Pose2d target_pose;
     std::shared_ptr<HighVoltage::SmartPID> angle_correction_pid;
+    double drive_to_proportional = 1.0;
 
     std::shared_ptr<frc::SwerveDriveKinematics<4>> kinematics;
     std::shared_ptr<frc::SwerveDrivePoseEstimator<4>> odometry;
@@ -93,6 +102,8 @@ private:
     HighVoltage::NetworkTableValue<double> nt_drive_x{ORIENTATION_TABLE_NAME + "/" + X_KEY, 0.0};
     HighVoltage::NetworkTableValue<double> nt_drive_y{ORIENTATION_TABLE_NAME + "/" + Y_KEY, 0.0};
     HighVoltage::NetworkTableValue<double> nt_drive_angle{ORIENTATION_TABLE_NAME + "/" + ANGLE_KEY, 0.0};
-
+    HighVoltage::NetworkTableValue<double> nt_target_drive_x{ORIENTATION_TABLE_NAME + "/" + TARGET_X_KEY, 0.0};
+    HighVoltage::NetworkTableValue<double> nt_target_drive_y{ORIENTATION_TABLE_NAME + "/" + TARGET_Y_KEY, 0.0};
+    HighVoltage::NetworkTableValue<double> nt_target_drive_angle{ORIENTATION_TABLE_NAME + "/" + TARGET_ANGLE_KEY, 0.0};
 
 };

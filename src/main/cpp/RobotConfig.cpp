@@ -9,6 +9,8 @@ void from_json(const nlohmann::json &j, DriveConfig &drive)
     j.at(DriveConfig::BACK_LEFT_MODULE).get_to(drive.back_left_module);
     j.at(DriveConfig::BACK_RIGHT_MODULE).get_to(drive.back_right_module);
     j.at(DriveConfig::ANGLE_CORRECTION_PID).get_to(drive.angle_correction_pid);
+    j.at(DriveConfig::DRIVE_TO_PROPORTIONAL).get_to(drive.drive_to_proportional);
+
 }
 void from_json(const nlohmann::json &j, RobotConfig &robot)
 {
