@@ -36,7 +36,7 @@ DriveSystem::DriveSystem(std::shared_ptr<RobotContext> context):
         0.6096, //TODO: Use config values
         0.6096 //TODO: Use config values
     );
-    swerve_cordinator->setMaxSpeed(1.5_mps);
+    swerve_cordinator->setMaxSpeed(5.0_mps);
     swerve_cordinator->setFieldOriented(true);
 
     kinematics = std::make_shared<frc::SwerveDriveKinematics<4>>(
@@ -98,6 +98,9 @@ void DriveSystem::addToLuaState(Keeko::ThreadedScript& script)
             .addFunction("getAngleFromTarget", &DriveSystem::getAngleFromTargetLua)
             .addFunction("getDistanceFromTarget", &DriveSystem::getDistanceFromTargetLua)
             .addFunction("getRobotAngleInDegrees", &DriveSystem::getRobotAngleInDegreesLua)
+            .addFunction("setOdometry", &DriveSystem::setOdometryLua)
+            .addFunction("rotateTo", &DriveSystem::rotateToLua)
+            .addFunction("getRotationError", &DriveSystem::getRotationErrorLua)
         .endClass();
     script.addInstance("drive_system", this);
 }
@@ -131,6 +134,11 @@ void DriveSystem::Periodic()
         case DRIVE_TO:
         {
             doDriveTo();
+        }break;
+
+        case ROTATE_TO:
+        {
+            doRotateTo();
         }break;
 
         default:
@@ -226,7 +234,7 @@ void DriveSystem::doTurnFF()
 
 units::degree_t DriveSystem::getRobotAngleInDegrees()
 {
-    return HighVoltage::get180Range(context->getPigeon().GetYaw().GetValue() - context->getStartAngle()+180_deg);
+    return HighVoltage::get180Range(context->getPigeon().GetYaw().GetValue() - context->getStartAngle());
 }
 
 double DriveSystem::getRobotAngleInDegreesLua()
@@ -441,9 +449,9 @@ void DriveSystem::doDriveTo()
     units::degree_t current_angle = getRobotAngleInDegrees();
     units::degree_t angle_error = HighVoltage::get180Range(target_pose.Rotation().Degrees()-current_angle);
     double turn = angle_correction_pid->Calculate(angle_error.value(), 0);
-    std::cout << angle.value() << " " << distance.value() << " " << speed << std::endl;
-    swerve_cordinator->setDrive(angle, speed, 0);
-    swerve_cordinator->setFieldAngle(getRobotAngleInDegrees());
+    std::cout << angle.value() << " " << distance.value() << " " << current_angle.value() << std::endl;
+    swerve_cordinator->setDrive(HighVoltage::get180Range(angle + 180_deg + current_angle), speed, turn);
+    //swerve_cordinator->setFieldAngle(getRobotAngleInDegrees());
     swerve_cordinator->update();
 }
 
@@ -470,4 +478,63 @@ units::meter_t DriveSystem::getDistanceFromTarget()
 double DriveSystem::getDistanceFromTargetLua()
 {
     return getDistanceFromTarget().value();
+}
+
+void DriveSystem::setOdometry(frc::Pose2d pose)
+{
+    context->setStartAngle(context->getPigeon().GetYaw().GetValue() - pose.Rotation().Degrees());
+    odometry->ResetPosition(frc::Rotation2d(getRobotAngleInDegrees()),
+    std::array<frc::SwerveModulePosition,4>{
+            front_left_module->getModulePosition(),
+            front_right_module->getModulePosition(),
+            back_left_module->getModulePosition(),
+            back_right_module->getModulePosition(),
+        },
+        pose
+    );
+}
+
+void DriveSystem::setOdometryLua(double x, double y, double angle)
+{
+    setOdometry(
+        frc::Pose2d{
+            units::meter_t{x},
+            units::meter_t{y},
+            frc::Rotation2d{units::degree_t{angle}}
+        }
+    );
+}
+
+void DriveSystem::rotateTo(units::degree_t angle)
+{
+    drive_mode = ROTATE_TO;
+    target_angle = angle;
+    target_pose = frc::Pose2d(target_pose.Translation(), frc::Rotation2d{angle});
+}
+
+void DriveSystem::rotateToLua(double angle)
+{
+    rotateTo(units::degree_t{angle});
+}
+
+void DriveSystem::doRotateTo()
+{
+    units::degree_t angle_error = target_angle - getRobotAngleInDegrees();
+    angle_error *= -1;
+    std::cout << angle_error.value() << std::endl;
+    double power = angle_error.value() * rotate_to_proportional;
+    swerve_cordinator->setRotate(power);
+    swerve_cordinator->update();
+}
+
+units::degree_t DriveSystem::getRotationError()
+{
+    units::degree_t angle_error = target_angle - getRobotAngleInDegrees();
+    angle_error *= -1;
+    return angle_error;
+}
+
+double DriveSystem::getRotationErrorLua()
+{
+    return getRotationError().value();
 }

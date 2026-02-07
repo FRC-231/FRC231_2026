@@ -24,7 +24,8 @@ public:
         DRIVE_FF,
         TURN_FF,
         STOP,
-        DRIVE_TO
+        DRIVE_TO,
+        ROTATE_TO
     };
     std::string driveModeToString(DriveMode mode);
     DriveMode getDriveMode() { return drive_mode; }
@@ -51,12 +52,18 @@ public:
     void setTurnFF(units::volt_t voltage, ModuleName module_name);
     void driveTo(frc::Pose2d pose);
     void driveToLua(double x, double y, double angle);
+    void rotateTo(units::degree_t angle);
+    void rotateToLua(double angle);
     units::degree_t getAngleFromTarget();
     double getAngleFromTargetLua();
     units::meter_t getDistanceFromTarget();
     double getDistanceFromTargetLua();
     units::degree_t getRobotAngleInDegrees();
     double getRobotAngleInDegreesLua();
+    units::degree_t getRotationError();
+    double getRotationErrorLua();
+    void setOdometry(frc::Pose2d pose);
+    void setOdometryLua(double x, double y, double angle);
 
     void addToLuaState(Keeko::ThreadedScript& script);
 
@@ -78,6 +85,7 @@ private:
     void doDriveFF();
     void doTurnFF();
     void doDriveTo();
+    void doRotateTo();
     std::shared_ptr<RobotContext> context;
     DriveMode drive_mode{DriveMode::STOP};
 
@@ -94,6 +102,7 @@ private:
     frc::Pose2d target_pose;
     std::shared_ptr<HighVoltage::SmartPID> angle_correction_pid;
     double drive_to_proportional = 1.0;
+    double rotate_to_proportional = 0.0105;
 
     std::shared_ptr<frc::SwerveDriveKinematics<4>> kinematics;
     std::shared_ptr<frc::SwerveDrivePoseEstimator<4>> odometry;
