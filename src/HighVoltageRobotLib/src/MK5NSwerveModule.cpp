@@ -161,7 +161,7 @@ frc::SwerveModulePosition MK5NSwerveModule::getModulePosition()
 {
     frc::SwerveModulePosition result;
     result.angle = units::degree_t{getAngle().value()};
-    result.distance = units::meter_t{drive_motor->GetPosition().GetValue().value() * drive_turns_per_meter};
+    result.distance = -units::meter_t{drive_motor->GetPosition().GetValue().value() * drive_turns_per_meter};
     return result;
 }
 
