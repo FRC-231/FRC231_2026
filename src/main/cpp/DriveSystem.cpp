@@ -87,6 +87,21 @@ DriveSystem::DriveSystem(std::shared_ptr<RobotContext> context):
     });
 
 }
+
+void DriveSystem::addToLuaState(Keeko::ThreadedScript& script)
+{
+    luabridge::getGlobalNamespace(script)
+        .beginClass<DriveSystem> ("DriveSystem")
+            .addFunction("driveTo", &DriveSystem::driveToLua)
+            .addFunction("stop", &DriveSystem::stopDrive)
+            .addFunction("stopDrive", &DriveSystem::stopDrive)
+            .addFunction("getAngleFromTarget", &DriveSystem::getAngleFromTargetLua)
+            .addFunction("getDistanceFromTarget", &DriveSystem::getDistanceFromTargetLua)
+            .addFunction("getRobotAngleInDegrees", &DriveSystem::getRobotAngleInDegreesLua)
+        .endClass();
+    script.addInstance("drive_system", this);
+}
+
 void DriveSystem::Periodic()
 {
     current_pose = updateOdometry();
@@ -212,6 +227,11 @@ void DriveSystem::doTurnFF()
 units::degree_t DriveSystem::getRobotAngleInDegrees()
 {
     return HighVoltage::get180Range(context->getPigeon().GetYaw().GetValue() - context->getStartAngle()+180_deg);
+}
+
+double DriveSystem::getRobotAngleInDegreesLua()
+{
+    return getRobotAngleInDegrees().value();
 }
 
 void DriveSystem::doManualDrive()
@@ -367,7 +387,6 @@ frc::Pose2d DriveSystem::updateOdometry()
     auto current_alliance = frc::DriverStation::GetAlliance();
     if(!current_alliance.has_value())
     {
-        std::cerr << "No alliance color set!" << std::endl;
         return frc::Pose2d{};
     }
     if(current_alliance.value() == frc::DriverStation::kRed)
@@ -401,6 +420,17 @@ void DriveSystem::driveTo(frc::Pose2d pose)
 {
     target_pose = pose;
     drive_mode = DRIVE_TO;
+    target_angle = target_pose.Rotation().Degrees();
+}
+
+void DriveSystem::driveToLua(double x, double y, double angle)
+{
+    driveTo(
+        frc::Pose2d{
+            units::meter_t{x},
+            units::meter_t{y},
+            frc::Rotation2d{units::degree_t{angle}}
+    });
 }
 
 void DriveSystem::doDriveTo()
@@ -424,10 +454,20 @@ units::degree_t DriveSystem::getAngleFromTarget()
     return units::angle::degree_t{HighVoltage::get180Range(HighVoltage::toDegrees(angle_in_rad))};
 }
 
+double DriveSystem::getAngleFromTargetLua()
+{
+    return getAngleFromTarget().value();
+}
+
 units::meter_t DriveSystem::getDistanceFromTarget()
 {
     auto delta_pose = target_pose - current_pose;
     double x = delta_pose.X().value();
     double y = delta_pose.Y().value();
     return units::meter_t{std::sqrt(x*x+y*y)};
+}
+
+double DriveSystem::getDistanceFromTargetLua()
+{
+    return getDistanceFromTarget().value();
 }

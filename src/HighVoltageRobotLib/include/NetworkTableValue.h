@@ -4,6 +4,7 @@
 #include <networktables/DoubleTopic.h>
 #include <networktables/NetworkTable.h>
 #include <networktables/DoubleArrayTopic.h>
+#include <networktables/StringArrayTopic.h>
 #include <networktables/StringTopic.h>
 #include <networktables/BooleanTopic.h>
 #include <networktables/NetworkTableListener.h>
@@ -32,35 +33,41 @@ private:
     using TopicType =
     std::conditional_t<std::is_same_v<T, bool>,
         nt::BooleanTopic,
-    std::conditional_t<std::is_arithmetic_v<T>,
+    std::conditional_t<std::is_arithmetic_v<T> && !std::is_same_v<T, bool>,
         nt::DoubleTopic,
     std::conditional_t<std::is_same_v<T, std::string>,
         nt::StringTopic,
     std::conditional_t<std::is_same_v<T, std::vector<double>>,
         nt::DoubleArrayTopic,
-    void>>>>;
+    std::conditional_t<std::is_same_v<T, std::vector<std::string>>,
+        nt::StringArrayTopic,
+    void>>>>>;
 
     using PublisherType =
     std::conditional_t<std::is_same_v<T, bool>,
         nt::BooleanPublisher,
-    std::conditional_t<std::is_arithmetic_v<T>,
+    std::conditional_t<std::is_arithmetic_v<T> && !std::is_same_v<T, bool>,
         nt::DoublePublisher,
     std::conditional_t<std::is_same_v<T, std::string>,
         nt::StringPublisher,
     std::conditional_t<std::is_same_v<T, std::vector<double>>,
         nt::DoubleArrayPublisher,
-    void>>>>;
+    std::conditional_t<std::is_same_v<T, std::vector<std::string>>,
+        nt::StringArrayPublisher,
+    void>>>>>;
 
     using SubscriberType =
     std::conditional_t<std::is_same_v<T, bool>,
         nt::BooleanSubscriber,
-    std::conditional_t<std::is_arithmetic_v<T>,
+    std::conditional_t<std::is_arithmetic_v<T> && !std::is_same_v<T, bool>,
         nt::DoubleSubscriber,
     std::conditional_t<std::is_same_v<T, std::string>,
         nt::StringSubscriber,
     std::conditional_t<std::is_same_v<T, std::vector<double>>,
         nt::DoubleArraySubscriber,
-    void>>>>;
+    std::conditional_t<std::is_same_v<T, std::vector<std::string>>,
+        nt::StringArraySubscriber,
+    void>>>>>;
 
     TopicType topic;
     PublisherType publisher;
@@ -83,6 +90,8 @@ namespace detail {
             return table->GetBooleanTopic(key);
         } else if constexpr (std::is_same_v<T, std::vector<double>>) {
             return table->GetDoubleArrayTopic(key);
+        } else if constexpr (std::is_same_v<T, std::vector<std::string>>) {
+            return table->GetStringArrayTopic(key);
         } else {
             static_assert(sizeof(T) == 0, "Unsupported type for NetworkTableValue");
         }
@@ -153,6 +162,22 @@ NetworkTableValue<T>::NetworkTableValue(std::string key, T initial_value)
                 {
                     auto array = event.GetValueEventData()->value.GetDoubleArray();
                     T new_value(array.begin(), array.end());
+                    if(onUpdate)
+                    {
+                        onUpdate(new_value);
+                    }
+                }
+            }
+            else if constexpr (std::is_same_v<T, std::vector<std::string>>)
+            {
+                if(event.GetValueEventData()->value.IsStringArray())
+                {
+                    auto array = event.GetValueEventData()->value.GetStringArray();
+                    T new_value;
+                    new_value.reserve(array.size());
+                    for (const auto& str : array) {
+                        new_value.push_back(std::string(str));
+                    }
                     if(onUpdate)
                     {
                         onUpdate(new_value);

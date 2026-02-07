@@ -20,12 +20,38 @@ Robot::Robot()
 
     drive_system = std::make_shared<DriveSystem>(context);
 
-    m_chooser.SetDefaultOption(k_auto_name_default, k_auto_name_default);
-    m_chooser.AddOption(k_auto_name_custom, k_auto_name_custom);
-    frc::SmartDashboard::PutData("Auto Modes", &m_chooser);
-
     context->setStartAngle(context->getPigeon().GetYaw().GetValue());
 
+    setupAutonSelector();
+
+}
+
+Robot::~Robot()
+{
+    if(auton_loader_thread && auton_loader_thread->joinable())
+    {
+        auton_loader_thread->join();
+    }
+    if(auton_script)
+    {
+        auton_script->stop();
+        auton_script->join();
+    }
+}
+
+void Robot::setupAutonSelector()
+{
+    std::vector<std::string> auton_names;
+    for(const auto& auton : AUTONS)
+    {
+        auton_names.push_back(auton.name);
+    }
+    nt_auto_selected = std::make_unique<HighVoltage::NetworkTable::StringSelector>("Auto_Selector", auton_names, AUTONS[0].name);
+    nt_auto_selected->setOnUpdateCallback([this](const std::string& selected_auton)
+    {
+        std::cout << "Selected auton: " << selected_auton << std::endl;
+        // You can add additional logic here to handle the selected auton, such as loading the corresponding file or setting a variable.
+    });
 }
 
 /**
@@ -56,42 +82,24 @@ void Robot::RobotPeriodic()
  */
 void Robot::AutonomousInit()
 {
-    m_auto_selected = m_chooser.GetSelected();
-    // m_auto_selected = SmartDashboard::GetString("Auto Selector",
-    //     k_auto_name_default);
-    std::cout << "Auto selected: " << m_auto_selected << std::endl;
-
-    if (m_auto_selected == k_auto_name_custom)
+    std::lock_guard<std::mutex> lock(mutex);
+    if(auton_script && !auton_script_loading)
     {
-        // Custom Auto goes here
+        std::cout << "Starting auton script: " << current_loaded_auton << std::endl;
+        auton_script->runFunction("autonomous");
     }
-    else
-    {
-        // Default Auto goes here
-    }
-    frc::Pose2d drive_target
-    {
-        units::meter_t{6.46},
-        units::meter_t{-2.10},
-        frc::Rotation2d{units::degree_t{0.0}}
-    };
-    drive_system->driveTo(drive_target);
 }
 
 void Robot::AutonomousPeriodic()
 {
-    if (m_auto_selected == k_auto_name_custom)
-    {
-        // Custom Auto goes here
-    }
-    else
-    {
-        // Default Auto goes here
-    }
 }
 
 void Robot::TeleopInit()
 {
+    if(auton_script && !auton_script_loading)
+    {
+        auton_script->stop();
+    }
 }
 
 void Robot::TeleopPeriodic()
@@ -118,6 +126,59 @@ void Robot::DisabledInit()
 void Robot::DisabledPeriodic()
 {
     drive_system->stopDrive();
+    if(auton_script)
+    {
+        auton_script->stop();
+    }
+    checkIfAutonScriptNeedsLoading();
+}
+
+void Robot::checkIfAutonScriptNeedsLoading()
+{
+    if(current_loaded_auton != nt_auto_selected->getSelected())
+    {
+        std::lock_guard<std::mutex> lock(mutex);
+        std::string selected_auton_name = nt_auto_selected->getSelected();
+        auto selected_auton = std::find_if(AUTONS.begin(), AUTONS.end(), [&selected_auton_name](const Auton& auton)
+        {
+            return auton.name == selected_auton_name;
+        });
+        if(selected_auton == AUTONS.end())
+        {
+            std::cerr << "Selected auton not found: " << selected_auton_name << std::endl;
+            auton_script_loading = false;
+            return;
+        }
+        if(auton_script_loading)
+        {
+            return;
+        }
+        if(auton_loader_thread && auton_loader_thread->joinable())
+        {
+            auton_loader_thread->join();
+        }
+        std::cout << "Loading auton script: " << selected_auton->name << std::endl;
+        auton_loader_thread = std::make_unique<std::thread>([this, selected_auton]()
+        {
+            std::lock_guard<std::mutex> lock(mutex);
+            auton_script_loading = true;
+            auton_script = std::make_unique<Keeko::ThreadedScript>();
+            auton_script->setOnFailCallback([this]()
+            {
+                std::cout << "Script failed! Stopping subsystems." << std::endl;
+                drive_system->stopDrive();
+            });
+            auton_script->loadFile(selected_auton->path.string());
+            addToLuaState(*auton_script);
+            current_loaded_auton = selected_auton->name;
+            auton_script_loading = false;
+        });
+    }
+}
+
+void Robot::addToLuaState(Keeko::ThreadedScript& script)
+{
+    drive_system->addToLuaState(script);
 }
 
 void Robot::TestInit()

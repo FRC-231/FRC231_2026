@@ -13,7 +13,7 @@
 #include "SwerveDriveCordinator.h"
 #include "NetworkTableValue.h"
 #include "SmartPID.h"
-
+#include "Keeko/ThreadedScript.h"
 
 class DriveSystem: public frc2::SubsystemBase
 {
@@ -50,9 +50,16 @@ public:
     void setDriveFF(units::volt_t voltage);
     void setTurnFF(units::volt_t voltage, ModuleName module_name);
     void driveTo(frc::Pose2d pose);
+    void driveToLua(double x, double y, double angle);
     units::degree_t getAngleFromTarget();
+    double getAngleFromTargetLua();
     units::meter_t getDistanceFromTarget();
+    double getDistanceFromTargetLua();
     units::degree_t getRobotAngleInDegrees();
+    double getRobotAngleInDegreesLua();
+
+    void addToLuaState(Keeko::ThreadedScript& script);
+
     static inline const std::string MODULE_NT_PREFIX = "DriveSystem/SwerveModules/";
     static inline constexpr double MANUAL_TRANSLATE_DEADZONE = 0.05;
     static inline constexpr double MANUAL_ROTATE_DEADZONE = 0.05;
