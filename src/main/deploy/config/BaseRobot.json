@@ -132,5 +132,16 @@
             }
         },
         "drive_to_proportional":2.0
+    },
+    "intake":{
+        "pivot_motor_id":9,
+        "feed_motor_id":10,
+        "pivot_encoder_id":24,
+        "feed_intake_voltage":2,
+        "feed_outtake_voltage":-2,
+        "pivot_max_voltage":2,
+        "pivot_min_voltage":-2,
+        "pivot_max_angle":0,
+        "pivot_min_angle":0
     }
 }

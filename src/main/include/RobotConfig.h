@@ -27,12 +27,38 @@ struct DriveConfig
 
     friend void from_json(const nlohmann::json &j, DriveConfig &drive);
 };
+struct IntakeConfig
+{
+    static inline const std::string PIVOT_MOTOR_ID = "pivot_motor_id";
+    static inline const std::string FEED_MOTOR_ID = "feed_motor_id";
+    static inline const std::string PIVOT_ENCODER_ID = "pivot_encoder_id";
+    static inline const std::string FEED_INTAKE_VOLTAGE = "feed_intake_voltage";
+    static inline const std::string FEED_OUTTAKE_VOLTAGE = "feed_outtake_voltage";
+    static inline const std::string PIVOT_MAX_VOLTAGE = "pivot_max_voltage";
+    static inline const std::string PIVOT_MIN_VOLTAGE = "pivot_min_voltage";
+    static inline const std::string PIVOT_MAX_ANGLE = "pivot_max_angle";
+    static inline const std::string PIVOT_MIN_ANGLE = "pivot_min_angle";
+
+    uint8_t pivot_motor_id;
+    uint8_t feed_motor_id;
+    uint8_t pivot_encoder_id;
+    double feed_intake_voltage;
+    double feed_outtake_voltage;
+    double pivot_max_voltage;
+    double pivot_min_voltage;
+    double pivot_max_angle;
+    double pivot_min_angle;
+
+    friend void from_json(const nlohmann::json &j, IntakeConfig &drive);
+};
 
 struct RobotConfig
 {
     static inline const std::string DRIVE = "drive";
+    static inline const std::string INTAKE = "intake";
 
     DriveConfig drive_config;
+    IntakeConfig intake_config;
     friend void from_json(const nlohmann::json &j, RobotConfig &robot);
 };
 }

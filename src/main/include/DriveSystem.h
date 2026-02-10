@@ -121,5 +121,5 @@ private:
     HighVoltage::NetworkTableValue<double> nt_target_drive_x{ORIENTATION_TABLE_NAME + "/" + TARGET_X_KEY, 0.0};
     HighVoltage::NetworkTableValue<double> nt_target_drive_y{ORIENTATION_TABLE_NAME + "/" + TARGET_Y_KEY, 0.0};
     HighVoltage::NetworkTableValue<double> nt_target_drive_angle{ORIENTATION_TABLE_NAME + "/" + TARGET_ANGLE_KEY, 0.0};
-
+    
 };
