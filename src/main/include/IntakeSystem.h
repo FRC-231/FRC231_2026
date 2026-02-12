@@ -24,6 +24,7 @@ public:
     IntakeSystem(std::shared_ptr<RobotContext> context);
     IntakeSystem() = delete;
     void Periodic() override;
+    units::degree_t getPivotAngle(); 
     static inline const std::string INTAKE_TABLE_NAME = "IntakeSystem";
 
     enum class FeedMode
@@ -44,6 +45,9 @@ public:
     void feedStop();
     void feedIntake();
     void feedOuttake();
+    void pivotStop();
+    void pivotUp();
+    void pivotDown();
 
 private: 
     std::shared_ptr<RobotContext> context;
@@ -58,11 +62,16 @@ private:
     units::volt_t pivot_min_voltage;
     units::degree_t pivot_max_angle;
     units::degree_t pivot_min_angle;
+    units::degree_t pivot_up_angle;
+    units::degree_t pivot_down_angle;
+    std::unique_ptr<frc::PIDController> pivot_pid;
+    units::degree_t pivot_encoder_offset;
 
     void doFeedStop();
     void doPivotStop();
     void doFeedIntake();
     void doFeedOuttake();
+    void doPivotMove();
     void updateNetworkTable();
 
     HighVoltage::NetworkTableValue<double> nt_feed_intake_voltage{INTAKE_TABLE_NAME + "/" + "feed_intake_voltage", 0.0};
@@ -73,5 +82,8 @@ private:
     HighVoltage::NetworkTableValue<double> nt_pivot_min_angle{INTAKE_TABLE_NAME + "/" + "pivot_min_angle", 0.0};
     HighVoltage::NetworkTableValue<std::string> nt_feed_mode{INTAKE_TABLE_NAME + "/" + "feed_mode", "STOP"};
     HighVoltage::NetworkTableValue<std::string> nt_pivot_mode{INTAKE_TABLE_NAME + "/" + "pivot_mode", "STOP"};
+    HighVoltage::NetworkTableValue<double> nt_pivot_up_angle{INTAKE_TABLE_NAME + "/" + "pivot_up_angle", 0.0};
+    HighVoltage::NetworkTableValue<double> nt_pivot_down_angle{INTAKE_TABLE_NAME + "/" + "pivot_down_angle", 0.0};
+    HighVoltage::NetworkTableValue<double> nt_pivot_encoder_offset{INTAKE_TABLE_NAME + "/" + "pivot_encoder_offset", 0.0};
 
 };

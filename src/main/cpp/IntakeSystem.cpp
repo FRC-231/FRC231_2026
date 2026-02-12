@@ -14,6 +14,15 @@ IntakeSystem::IntakeSystem(std::shared_ptr<RobotContext> context):
     pivot_min_voltage = units::volt_t{intake_config.pivot_min_voltage};
     pivot_max_angle = units::degree_t{intake_config.pivot_max_angle};
     pivot_min_angle = units::degree_t{intake_config.pivot_min_angle};
+    pivot_up_angle = units::degree_t{intake_config.pivot_up_angle};
+    pivot_down_angle = units::degree_t{intake_config.pivot_down_angle};
+    pivot_pid = std::make_unique<frc::PIDController>(
+        intake_config.pivot_pid.k_p,
+        intake_config.pivot_pid.k_i,
+        intake_config.pivot_pid.k_d
+    );
+    pivot_encoder_offset = units::degree_t{intake_config.pivot_encoder_offset};
+
 
     nt_feed_intake_voltage.setOnUpdate([this](const double& value)
     {
@@ -79,6 +88,16 @@ void IntakeSystem::Periodic()
             doFeedStop();
         }break;
 
+        case FeedMode::INTAKE:
+        {
+            doFeedIntake();
+        }break;
+
+        case FeedMode::OUTTAKE:
+        {
+            doFeedOuttake();
+        }break;
+
         default:
         {
             doFeedStop();
@@ -94,7 +113,7 @@ void IntakeSystem::Periodic()
 
         default:
         {
-            doPivotStop();
+            doPivotMove();
         }break;
     }
     updateNetworkTable();
@@ -120,6 +139,11 @@ void IntakeSystem::updateNetworkTable()
     nt_pivot_min_angle.setValue(pivot_min_angle.value());
     nt_feed_mode.setValue(feedModeToString(feed_mode));
     nt_pivot_mode.setValue(pivotModeToString(pivot_mode));
+    nt_pivot_encoder_offset.setValue(pivot_encoder_offset.value());
+    nt_pivot_down_angle.setValue(pivot_down_angle.value());
+    nt_pivot_up_angle.setValue(pivot_up_angle.value());
+
+
 }
 
 void IntakeSystem::doFeedIntake()
@@ -145,6 +169,18 @@ void IntakeSystem::feedIntake()
 void IntakeSystem::feedOuttake()
 {
     feed_mode = FeedMode::OUTTAKE;
+}
+void IntakeSystem::pivotStop()
+{
+    pivot_mode = PivotMode::STOP;
+}
+void IntakeSystem::pivotUp()
+{
+    pivot_mode = PivotMode::UP;
+}
+void IntakeSystem::pivotDown()
+{
+    pivot_mode = PivotMode::DOWN;
 }
 
 std::string IntakeSystem::feedModeToString(FeedMode mode)
@@ -177,5 +213,37 @@ std::string IntakeSystem::pivotModeToString(PivotMode mode)
             return "DOWN";
     }
     return "UNKNOWN";
+}
+
+void IntakeSystem::doPivotMove()
+{
+    units::degree_t current_angle = getPivotAngle();
+    units::degree_t target_angle;
+    if(pivot_mode == PivotMode::UP)
+    {
+        target_angle = pivot_up_angle;
+    }
+    else
+    {
+        target_angle = pivot_down_angle;
+    }
+    pivot_pid->SetSetpoint(target_angle.value());
+    units::volt_t power = units::volt_t{pivot_pid->Calculate(current_angle.value())};
+    power = HighVoltage::clamp(pivot_min_voltage, pivot_max_voltage, power);
+    if(current_angle > pivot_max_angle)
+    {
+        power = std::min(power, 0_V);
+    }
+    else if(current_angle < pivot_min_angle)
+    {
+        power = std::max(power, 0_V);
+    }
+    
+    pivot_motor->SetVoltage(power);
+}
+
+units::degree_t IntakeSystem::getPivotAngle()
+{
+    units::degree_t current_angle = (pivot_encoder->GetPosition().GetValue() * 360.0) - pivot_encoder_offset;
 }
 

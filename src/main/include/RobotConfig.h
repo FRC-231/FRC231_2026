@@ -38,6 +38,12 @@ struct IntakeConfig
     static inline const std::string PIVOT_MIN_VOLTAGE = "pivot_min_voltage";
     static inline const std::string PIVOT_MAX_ANGLE = "pivot_max_angle";
     static inline const std::string PIVOT_MIN_ANGLE = "pivot_min_angle";
+    static inline const std::string PIVOT_PID = "pivot_pid";
+    static inline const std::string PIVOT_UP_ANGLE = "pivot_up_angle";
+    static inline const std::string PIVOT_DOWN_ANGLE = "pivot_down_angle";
+    static inline const std::string PIVOT_ENCODER_OFFSET = "pivot_encoder_offset";
+
+
 
     uint8_t pivot_motor_id;
     uint8_t feed_motor_id;
@@ -48,6 +54,10 @@ struct IntakeConfig
     double pivot_min_voltage;
     double pivot_max_angle;
     double pivot_min_angle;
+    HighVoltage::PIDConfig pivot_pid;
+    double pivot_up_angle;
+    double pivot_down_angle;
+    double pivot_encoder_offset;
 
     friend void from_json(const nlohmann::json &j, IntakeConfig &drive);
 };

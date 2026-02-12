@@ -142,6 +142,14 @@
         "pivot_max_voltage":2,
         "pivot_min_voltage":-2,
         "pivot_max_angle":0,
-        "pivot_min_angle":0
+        "pivot_min_angle":0,
+        "pivot_pid":{
+            "k_p":0.033,
+            "k_i":0.0,
+            "k_d":0.0
+        },
+        "pivot_up_angle": 45,
+        "pivot_down_angle": 20,
+        "pivot_encoder_offset": 0
     }
 }
