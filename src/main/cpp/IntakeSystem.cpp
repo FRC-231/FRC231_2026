@@ -1,6 +1,8 @@
 #include <IntakeSystem.h>
 #include <iostream> 
 
+// ==== Constructor ====
+
 IntakeSystem::IntakeSystem(std::shared_ptr<RobotContext> context):
     context(context)
 {
@@ -79,6 +81,8 @@ IntakeSystem::IntakeSystem(std::shared_ptr<RobotContext> context):
     });
 }
 
+// ==== Subsystem Override ====
+
 void IntakeSystem::Periodic()
 {
     switch(feed_mode)
@@ -119,42 +123,7 @@ void IntakeSystem::Periodic()
     updateNetworkTable();
 }
 
-void IntakeSystem::doFeedStop()
-{
-    feed_motor->SetVoltage(0_V);
-}
-
-void IntakeSystem::doPivotStop()
-{
-    pivot_motor->SetVoltage(0_V);
-}
-
-void IntakeSystem::updateNetworkTable()
-{
-    nt_feed_intake_voltage.setValue(feed_intake_voltage.value());
-    nt_feed_outtake_voltage.setValue(feed_outtake_voltage.value());
-    nt_pivot_max_voltage.setValue(pivot_max_voltage.value());
-    nt_pivot_min_voltage.setValue(pivot_min_voltage.value());
-    nt_pivot_max_angle.setValue(pivot_max_angle.value());
-    nt_pivot_min_angle.setValue(pivot_min_angle.value());
-    nt_feed_mode.setValue(feedModeToString(feed_mode));
-    nt_pivot_mode.setValue(pivotModeToString(pivot_mode));
-    nt_pivot_encoder_offset.setValue(pivot_encoder_offset.value());
-    nt_pivot_down_angle.setValue(pivot_down_angle.value());
-    nt_pivot_up_angle.setValue(pivot_up_angle.value());
-
-
-}
-
-void IntakeSystem::doFeedIntake()
-{
-    feed_motor->SetVoltage(feed_intake_voltage);
-}
-
-void IntakeSystem::doFeedOuttake()
-{
-    feed_motor->SetVoltage(feed_outtake_voltage);
-}
+// ==== Feed Commands ====
 
 void IntakeSystem::feedStop()
 {
@@ -170,18 +139,32 @@ void IntakeSystem::feedOuttake()
 {
     feed_mode = FeedMode::OUTTAKE;
 }
+
+// ==== Pivot Commands ====
+
 void IntakeSystem::pivotStop()
 {
     pivot_mode = PivotMode::STOP;
 }
+
 void IntakeSystem::pivotUp()
 {
     pivot_mode = PivotMode::UP;
 }
+
 void IntakeSystem::pivotDown()
 {
     pivot_mode = PivotMode::DOWN;
 }
+
+// ==== Getters ====
+
+units::degree_t IntakeSystem::getPivotAngle()
+{
+    units::degree_t current_angle = (pivot_encoder->GetPosition().GetValue() * 360.0) - pivot_encoder_offset;
+}
+
+// ==== Enum Helpers ====
 
 std::string IntakeSystem::feedModeToString(FeedMode mode)
 {
@@ -215,6 +198,28 @@ std::string IntakeSystem::pivotModeToString(PivotMode mode)
     return "UNKNOWN";
 }
 
+// ==== Private: Mode Handlers ====
+
+void IntakeSystem::doFeedStop()
+{
+    feed_motor->SetVoltage(0_V);
+}
+
+void IntakeSystem::doFeedIntake()
+{
+    feed_motor->SetVoltage(feed_intake_voltage);
+}
+
+void IntakeSystem::doFeedOuttake()
+{
+    feed_motor->SetVoltage(feed_outtake_voltage);
+}
+
+void IntakeSystem::doPivotStop()
+{
+    pivot_motor->SetVoltage(0_V);
+}
+
 void IntakeSystem::doPivotMove()
 {
     units::degree_t current_angle = getPivotAngle();
@@ -242,8 +247,19 @@ void IntakeSystem::doPivotMove()
     pivot_motor->SetVoltage(power);
 }
 
-units::degree_t IntakeSystem::getPivotAngle()
-{
-    units::degree_t current_angle = (pivot_encoder->GetPosition().GetValue() * 360.0) - pivot_encoder_offset;
-}
+// ==== Private: Internal Helpers ====
 
+void IntakeSystem::updateNetworkTable()
+{
+    nt_feed_intake_voltage.setValue(feed_intake_voltage.value());
+    nt_feed_outtake_voltage.setValue(feed_outtake_voltage.value());
+    nt_pivot_max_voltage.setValue(pivot_max_voltage.value());
+    nt_pivot_min_voltage.setValue(pivot_min_voltage.value());
+    nt_pivot_max_angle.setValue(pivot_max_angle.value());
+    nt_pivot_min_angle.setValue(pivot_min_angle.value());
+    nt_feed_mode.setValue(feedModeToString(feed_mode));
+    nt_pivot_mode.setValue(pivotModeToString(pivot_mode));
+    nt_pivot_encoder_offset.setValue(pivot_encoder_offset.value());
+    nt_pivot_down_angle.setValue(pivot_down_angle.value());
+    nt_pivot_up_angle.setValue(pivot_up_angle.value());
+}
