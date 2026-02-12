@@ -88,22 +88,7 @@ DriveSystem::DriveSystem(std::shared_ptr<RobotContext> context):
 
 }
 
-void DriveSystem::addToLuaState(Keeko::ThreadedScript& script)
-{
-    luabridge::getGlobalNamespace(script)
-        .beginClass<DriveSystem> ("DriveSystem")
-            .addFunction("driveTo", &DriveSystem::driveToLua)
-            .addFunction("stop", &DriveSystem::stopDrive)
-            .addFunction("stopDrive", &DriveSystem::stopDrive)
-            .addFunction("getAngleFromTarget", &DriveSystem::getAngleFromTargetLua)
-            .addFunction("getDistanceFromTarget", &DriveSystem::getDistanceFromTargetLua)
-            .addFunction("getRobotAngleInDegrees", &DriveSystem::getRobotAngleInDegreesLua)
-            .addFunction("setOdometry", &DriveSystem::setOdometryLua)
-            .addFunction("rotateTo", &DriveSystem::rotateToLua)
-            .addFunction("getRotationError", &DriveSystem::getRotationErrorLua)
-        .endClass();
-    script.addInstance("drive_system", this);
-}
+// ==== Subsystem Override ====
 
 void DriveSystem::Periodic()
 {
@@ -149,6 +134,7 @@ void DriveSystem::Periodic()
     updateNetworkTables();
 }
 
+// ==== Drive Commands ====
 
 void DriveSystem::setDrive(double x, double y, double rotate)
 {
@@ -156,6 +142,11 @@ void DriveSystem::setDrive(double x, double y, double rotate)
     manual_drive_x = x;
     manual_drive_y = y;
     manual_rotate = rotate;
+}
+
+void DriveSystem::stopDrive()
+{
+    drive_mode = STOP;
 }
 
 void DriveSystem::setDriveFF(units::volt_t voltage)
@@ -171,65 +162,35 @@ void DriveSystem::setTurnFF(units::volt_t voltage, ModuleName module_name)
     turn_ff_module_name = module_name;
 }
 
-void DriveSystem::doStop()
+// ==== Navigation ====
+
+void DriveSystem::driveTo(frc::Pose2d pose)
 {
-    swerve_cordinator->stopDrive();
-    swerve_cordinator->update();
+    target_pose = pose;
+    drive_mode = DRIVE_TO;
+    target_angle = target_pose.Rotation().Degrees();
 }
 
-void DriveSystem::doDriveFF()
+void DriveSystem::rotateTo(units::degree_t angle)
 {
-    front_left_module->pointTurnMotor(0_deg);
-    front_right_module->pointTurnMotor(0_deg);
-    back_left_module->pointTurnMotor(0_deg);
-    back_right_module->pointTurnMotor(0_deg);
-    front_left_module->updateDriveMotorVoltage(ff_voltage);
-    front_right_module->updateDriveMotorVoltage(ff_voltage);
-    back_left_module->updateDriveMotorVoltage(ff_voltage);
-    back_right_module->updateDriveMotorVoltage(ff_voltage);
-    std::vector<double> ff_data =
-    {
-        ff_voltage.value(), 
-        front_left_module->getDriveMotor()->GetVelocity().GetValueAsDouble()*front_left_module->getDriveTurnsPerMeter(),
-        front_right_module->getDriveMotor()->GetVelocity().GetValueAsDouble()*front_right_module->getDriveTurnsPerMeter(),
-        back_left_module->getDriveMotor()->GetVelocity().GetValueAsDouble()*back_left_module->getDriveTurnsPerMeter(),
-        back_right_module->getDriveMotor()->GetVelocity().GetValueAsDouble()*back_right_module->getDriveTurnsPerMeter()
-    };
-    nt_ff_data.setValue(ff_data);
+    drive_mode = ROTATE_TO;
+    target_angle = angle;
+    target_pose = frc::Pose2d(target_pose.Translation(), frc::Rotation2d{angle});
 }
 
-void DriveSystem::doTurnFF()
+units::degree_t DriveSystem::getAngleFromTarget()
 {
-    std::shared_ptr<HighVoltage::MK5NSwerveModule> target_module = nullptr;
-    switch(turn_ff_module_name)
-    {
-        case FRONT_LEFT:
-            target_module = front_left_module;
-            break;
+    auto delta_pose = target_pose - current_pose;
+    double angle_in_rad = std::atan2(delta_pose.Y().value(), delta_pose.X().value());
+    return units::angle::degree_t{HighVoltage::get180Range(HighVoltage::toDegrees(angle_in_rad))};
+}
 
-        case FRONT_RIGHT:
-            target_module = front_right_module;
-            break;
-
-        case BACK_LEFT:
-            target_module = back_left_module;
-            break;
-
-        case BACK_RIGHT:
-            target_module = back_right_module;
-            break;
-        
-        default:
-            target_module = front_left_module;
-            break;
-    }
-    target_module->getRotateMotor()->SetVoltage(ff_voltage);
-    std::vector<double> ff_data =
-    {
-        ff_voltage.value(), 
-        target_module->getEncoder()->GetVelocity().GetValueAsDouble()*360.0
-    };
-    nt_ff_data.setValue(ff_data);
+units::meter_t DriveSystem::getDistanceFromTarget()
+{
+    auto delta_pose = target_pose - current_pose;
+    double x = delta_pose.X().value();
+    double y = delta_pose.Y().value();
+    return units::meter_t{std::sqrt(x*x+y*y)};
 }
 
 units::degree_t DriveSystem::getRobotAngleInDegrees()
@@ -237,46 +198,30 @@ units::degree_t DriveSystem::getRobotAngleInDegrees()
     return HighVoltage::get180Range(context->getPigeon().GetYaw().GetValue() - context->getStartAngle());
 }
 
-double DriveSystem::getRobotAngleInDegreesLua()
+units::degree_t DriveSystem::getRotationError()
 {
-    return getRobotAngleInDegrees().value();
+    units::degree_t angle_error = target_angle - getRobotAngleInDegrees();
+    angle_error *= -1;
+    return angle_error;
 }
 
-void DriveSystem::doManualDrive()
+// ==== Odometry ====
+
+void DriveSystem::setOdometry(frc::Pose2d pose)
 {
-    double stick_angle = HighVoltage::get180Range(HighVoltage::toDegrees(std::atan2(-manual_drive_y, manual_drive_x)) - 90.0);
-    double stick_magnitude = std::sqrt(manual_drive_x*manual_drive_x + manual_drive_y*manual_drive_y);//std::pow is slow relative to multiplication, just multiply by itself to square
-    stick_magnitude = std::min(1.0, stick_magnitude);
-    units::degree_t current_angle = getRobotAngleInDegrees();
-    if(stick_magnitude > DriveSystem::MANUAL_TRANSLATE_DEADZONE)
-    {
-        double turn = manual_rotate;
-        if(std::abs(manual_rotate)>MANUAL_ROTATE_DEADZONE)
-        {
-            target_angle = current_angle;
-            angle_correction_pid->Reset();
-        }
-        else
-        {
-            auto degrees_off = HighVoltage::get180Range(target_angle - current_angle);
-            turn = angle_correction_pid->Calculate(degrees_off.value());
-            std::cout << degrees_off.value() << std::endl;
-        }
-        swerve_cordinator->setDrive(units::degree_t{stick_angle}, stick_magnitude, turn);
-    }
-    else if(std::abs(manual_rotate) > MANUAL_ROTATE_DEADZONE)
-    {
-        swerve_cordinator->setRotate(manual_rotate);
-        target_angle = current_angle;
-        angle_correction_pid->Reset();
-    }
-    else
-    {
-        swerve_cordinator->stopDrive();
-    }
-    swerve_cordinator->setFieldAngle(getRobotAngleInDegrees());
-    swerve_cordinator->update();
+    context->setStartAngle(context->getPigeon().GetYaw().GetValue() - pose.Rotation().Degrees());
+    odometry->ResetPosition(frc::Rotation2d(getRobotAngleInDegrees()),
+    std::array<frc::SwerveModulePosition,4>{
+            front_left_module->getModulePosition(),
+            front_right_module->getModulePosition(),
+            back_left_module->getModulePosition(),
+            back_right_module->getModulePosition(),
+        },
+        pose
+    );
 }
+
+// ==== Enum Helpers ====
 
 std::string DriveSystem::driveModeToString(DriveMode mode)
 {
@@ -365,21 +310,195 @@ DriveSystem::ModuleName DriveSystem::stringToModuleName(const std::string& name_
     return FRONT_LEFT;
 }
 
-void DriveSystem::stopDrive()
+// ==== Lua Bindings ====
+
+void DriveSystem::addToLuaState(Keeko::ThreadedScript& script)
 {
-    drive_mode = STOP;
+    luabridge::getGlobalNamespace(script)
+        .beginClass<DriveSystem> ("DriveSystem")
+            .addFunction("driveTo", &DriveSystem::driveToLua)
+            .addFunction("stop", &DriveSystem::stopDrive)
+            .addFunction("stopDrive", &DriveSystem::stopDrive)
+            .addFunction("getAngleFromTarget", &DriveSystem::getAngleFromTargetLua)
+            .addFunction("getDistanceFromTarget", &DriveSystem::getDistanceFromTargetLua)
+            .addFunction("getRobotAngleInDegrees", &DriveSystem::getRobotAngleInDegreesLua)
+            .addFunction("setOdometry", &DriveSystem::setOdometryLua)
+            .addFunction("rotateTo", &DriveSystem::rotateToLua)
+            .addFunction("getRotationError", &DriveSystem::getRotationErrorLua)
+        .endClass();
+    script.addInstance("drive_system", this);
 }
 
-void DriveSystem::updateNetworkTables()
+void DriveSystem::driveToLua(double x, double y, double angle)
 {
-    nt_drive_mode.setValue(driveModeToString(drive_mode));
-    nt_drive_x.setValue(current_pose.X().value());
-    nt_drive_y.setValue(current_pose.Y().value());
-    nt_drive_angle.setValue(current_pose.Rotation().Degrees().value());
-    nt_target_drive_x.setValue(target_pose.X().value());
-    nt_target_drive_y.setValue(target_pose.Y().value());
-    nt_target_drive_angle.setValue(target_pose.Rotation().Degrees().value());
+    driveTo(
+        frc::Pose2d{
+            units::meter_t{x},
+            units::meter_t{y},
+            frc::Rotation2d{units::degree_t{angle}}
+    });
 }
+
+void DriveSystem::rotateToLua(double angle)
+{
+    rotateTo(units::degree_t{angle});
+}
+
+double DriveSystem::getAngleFromTargetLua()
+{
+    return getAngleFromTarget().value();
+}
+
+double DriveSystem::getDistanceFromTargetLua()
+{
+    return getDistanceFromTarget().value();
+}
+
+double DriveSystem::getRobotAngleInDegreesLua()
+{
+    return getRobotAngleInDegrees().value();
+}
+
+double DriveSystem::getRotationErrorLua()
+{
+    return getRotationError().value();
+}
+
+void DriveSystem::setOdometryLua(double x, double y, double angle)
+{
+    setOdometry(
+        frc::Pose2d{
+            units::meter_t{x},
+            units::meter_t{y},
+            frc::Rotation2d{units::degree_t{angle}}
+        }
+    );
+}
+
+// ==== Private: Drive Mode Handlers ====
+
+void DriveSystem::doStop()
+{
+    swerve_cordinator->stopDrive();
+    swerve_cordinator->update();
+}
+
+void DriveSystem::doManualDrive()
+{
+    double stick_angle = HighVoltage::get180Range(HighVoltage::toDegrees(std::atan2(-manual_drive_y, manual_drive_x)) - 90.0);
+    double stick_magnitude = std::sqrt(manual_drive_x*manual_drive_x + manual_drive_y*manual_drive_y);//std::pow is slow relative to multiplication, just multiply by itself to square
+    stick_magnitude = std::min(1.0, stick_magnitude);
+    units::degree_t current_angle = getRobotAngleInDegrees();
+    if(stick_magnitude > DriveSystem::MANUAL_TRANSLATE_DEADZONE)
+    {
+        double turn = manual_rotate;
+        if(std::abs(manual_rotate)>MANUAL_ROTATE_DEADZONE)
+        {
+            target_angle = current_angle;
+            angle_correction_pid->Reset();
+        }
+        else
+        {
+            auto degrees_off = HighVoltage::get180Range(target_angle - current_angle);
+            turn = angle_correction_pid->Calculate(degrees_off.value());
+            std::cout << degrees_off.value() << std::endl;
+        }
+        swerve_cordinator->setDrive(units::degree_t{stick_angle}, stick_magnitude, turn);
+    }
+    else if(std::abs(manual_rotate) > MANUAL_ROTATE_DEADZONE)
+    {
+        swerve_cordinator->setRotate(manual_rotate);
+        target_angle = current_angle;
+        angle_correction_pid->Reset();
+    }
+    else
+    {
+        swerve_cordinator->stopDrive();
+    }
+    swerve_cordinator->setFieldAngle(getRobotAngleInDegrees());
+    swerve_cordinator->update();
+}
+
+void DriveSystem::doDriveFF()
+{
+    front_left_module->pointTurnMotor(0_deg);
+    front_right_module->pointTurnMotor(0_deg);
+    back_left_module->pointTurnMotor(0_deg);
+    back_right_module->pointTurnMotor(0_deg);
+    front_left_module->updateDriveMotorVoltage(ff_voltage);
+    front_right_module->updateDriveMotorVoltage(ff_voltage);
+    back_left_module->updateDriveMotorVoltage(ff_voltage);
+    back_right_module->updateDriveMotorVoltage(ff_voltage);
+    std::vector<double> ff_data =
+    {
+        ff_voltage.value(), 
+        front_left_module->getDriveMotor()->GetVelocity().GetValueAsDouble()*front_left_module->getDriveTurnsPerMeter(),
+        front_right_module->getDriveMotor()->GetVelocity().GetValueAsDouble()*front_right_module->getDriveTurnsPerMeter(),
+        back_left_module->getDriveMotor()->GetVelocity().GetValueAsDouble()*back_left_module->getDriveTurnsPerMeter(),
+        back_right_module->getDriveMotor()->GetVelocity().GetValueAsDouble()*back_right_module->getDriveTurnsPerMeter()
+    };
+    nt_ff_data.setValue(ff_data);
+}
+
+void DriveSystem::doTurnFF()
+{
+    std::shared_ptr<HighVoltage::MK5NSwerveModule> target_module = nullptr;
+    switch(turn_ff_module_name)
+    {
+        case FRONT_LEFT:
+            target_module = front_left_module;
+            break;
+
+        case FRONT_RIGHT:
+            target_module = front_right_module;
+            break;
+
+        case BACK_LEFT:
+            target_module = back_left_module;
+            break;
+
+        case BACK_RIGHT:
+            target_module = back_right_module;
+            break;
+        
+        default:
+            target_module = front_left_module;
+            break;
+    }
+    target_module->getRotateMotor()->SetVoltage(ff_voltage);
+    std::vector<double> ff_data =
+    {
+        ff_voltage.value(), 
+        target_module->getEncoder()->GetVelocity().GetValueAsDouble()*360.0
+    };
+    nt_ff_data.setValue(ff_data);
+}
+
+void DriveSystem::doDriveTo()
+{
+    auto angle = getAngleFromTarget();
+    auto distance = getDistanceFromTarget();
+    double speed = std::min(1.0, drive_to_proportional * distance.value());
+    units::degree_t current_angle = getRobotAngleInDegrees();
+    units::degree_t angle_error = HighVoltage::get180Range(target_pose.Rotation().Degrees()-current_angle);
+    double turn = angle_correction_pid->Calculate(angle_error.value(), 0);
+    std::cout << angle.value() << " " << distance.value() << " " << current_angle.value() << std::endl;
+    swerve_cordinator->setDrive(HighVoltage::get180Range(angle + 180_deg + current_angle), speed, turn);
+    //swerve_cordinator->setFieldAngle(getRobotAngleInDegrees());
+    swerve_cordinator->update();
+}
+
+void DriveSystem::doRotateTo()
+{
+    units::degree_t angle_error = target_angle - getRobotAngleInDegrees();
+    angle_error *= -1;
+    std::cout << angle_error.value() << std::endl;
+    double power = angle_error.value() * rotate_to_proportional;
+    swerve_cordinator->setRotate(power);
+    swerve_cordinator->update();
+}
+
+// ==== Private: Internal Helpers ====
 
 frc::Pose2d DriveSystem::updateOdometry()
 {
@@ -424,117 +543,13 @@ frc::Pose2d DriveSystem::updateOdometry()
     
 }
 
-void DriveSystem::driveTo(frc::Pose2d pose)
+void DriveSystem::updateNetworkTables()
 {
-    target_pose = pose;
-    drive_mode = DRIVE_TO;
-    target_angle = target_pose.Rotation().Degrees();
-}
-
-void DriveSystem::driveToLua(double x, double y, double angle)
-{
-    driveTo(
-        frc::Pose2d{
-            units::meter_t{x},
-            units::meter_t{y},
-            frc::Rotation2d{units::degree_t{angle}}
-    });
-}
-
-void DriveSystem::doDriveTo()
-{
-    auto angle = getAngleFromTarget();
-    auto distance = getDistanceFromTarget();
-    double speed = std::min(1.0, drive_to_proportional * distance.value());
-    units::degree_t current_angle = getRobotAngleInDegrees();
-    units::degree_t angle_error = HighVoltage::get180Range(target_pose.Rotation().Degrees()-current_angle);
-    double turn = angle_correction_pid->Calculate(angle_error.value(), 0);
-    std::cout << angle.value() << " " << distance.value() << " " << current_angle.value() << std::endl;
-    swerve_cordinator->setDrive(HighVoltage::get180Range(angle + 180_deg + current_angle), speed, turn);
-    //swerve_cordinator->setFieldAngle(getRobotAngleInDegrees());
-    swerve_cordinator->update();
-}
-
-units::degree_t DriveSystem::getAngleFromTarget()
-{
-    auto delta_pose = target_pose - current_pose;
-    double angle_in_rad = std::atan2(delta_pose.Y().value(), delta_pose.X().value());
-    return units::angle::degree_t{HighVoltage::get180Range(HighVoltage::toDegrees(angle_in_rad))};
-}
-
-double DriveSystem::getAngleFromTargetLua()
-{
-    return getAngleFromTarget().value();
-}
-
-units::meter_t DriveSystem::getDistanceFromTarget()
-{
-    auto delta_pose = target_pose - current_pose;
-    double x = delta_pose.X().value();
-    double y = delta_pose.Y().value();
-    return units::meter_t{std::sqrt(x*x+y*y)};
-}
-
-double DriveSystem::getDistanceFromTargetLua()
-{
-    return getDistanceFromTarget().value();
-}
-
-void DriveSystem::setOdometry(frc::Pose2d pose)
-{
-    context->setStartAngle(context->getPigeon().GetYaw().GetValue() - pose.Rotation().Degrees());
-    odometry->ResetPosition(frc::Rotation2d(getRobotAngleInDegrees()),
-    std::array<frc::SwerveModulePosition,4>{
-            front_left_module->getModulePosition(),
-            front_right_module->getModulePosition(),
-            back_left_module->getModulePosition(),
-            back_right_module->getModulePosition(),
-        },
-        pose
-    );
-}
-
-void DriveSystem::setOdometryLua(double x, double y, double angle)
-{
-    setOdometry(
-        frc::Pose2d{
-            units::meter_t{x},
-            units::meter_t{y},
-            frc::Rotation2d{units::degree_t{angle}}
-        }
-    );
-}
-
-void DriveSystem::rotateTo(units::degree_t angle)
-{
-    drive_mode = ROTATE_TO;
-    target_angle = angle;
-    target_pose = frc::Pose2d(target_pose.Translation(), frc::Rotation2d{angle});
-}
-
-void DriveSystem::rotateToLua(double angle)
-{
-    rotateTo(units::degree_t{angle});
-}
-
-void DriveSystem::doRotateTo()
-{
-    units::degree_t angle_error = target_angle - getRobotAngleInDegrees();
-    angle_error *= -1;
-    std::cout << angle_error.value() << std::endl;
-    double power = angle_error.value() * rotate_to_proportional;
-    swerve_cordinator->setRotate(power);
-    swerve_cordinator->update();
-}
-
-units::degree_t DriveSystem::getRotationError()
-{
-    units::degree_t angle_error = target_angle - getRobotAngleInDegrees();
-    angle_error *= -1;
-    return angle_error;
-}
-
-double DriveSystem::getRotationErrorLua()
-{
-    return getRotationError().value();
+    nt_drive_mode.setValue(driveModeToString(drive_mode));
+    nt_drive_x.setValue(current_pose.X().value());
+    nt_drive_y.setValue(current_pose.Y().value());
+    nt_drive_angle.setValue(current_pose.Rotation().Degrees().value());
+    nt_target_drive_x.setValue(target_pose.X().value());
+    nt_target_drive_y.setValue(target_pose.Y().value());
+    nt_target_drive_angle.setValue(target_pose.Rotation().Degrees().value());
 }

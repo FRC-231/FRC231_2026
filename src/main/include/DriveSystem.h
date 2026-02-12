@@ -18,18 +18,16 @@
 class DriveSystem: public frc2::SubsystemBase
 {
 public:
+    // ---- Enums ----
     enum DriveMode
     {
+        STOP,
         MANUAL, 
         DRIVE_FF,
         TURN_FF,
-        STOP,
         DRIVE_TO,
         ROTATE_TO
     };
-    std::string driveModeToString(DriveMode mode);
-    DriveMode getDriveMode() { return drive_mode; }
-    DriveMode stringToDriveMode(const std::string& mode_str);
 
     enum ModuleName
     {
@@ -38,35 +36,8 @@ public:
         BACK_LEFT,
         BACK_RIGHT
     };
-    std::string moduleNameToString(ModuleName name);
-    ModuleName stringToModuleName(const std::string& name_str);
-    ModuleName getTurnFFModuleName() { return turn_ff_module_name; }
-    
 
-    DriveSystem(std::shared_ptr<RobotContext> context);
-    DriveSystem() = delete;
-    void Periodic() override;
-    void setDrive(double x, double y, double rotate);
-    void stopDrive();
-    void setDriveFF(units::volt_t voltage);
-    void setTurnFF(units::volt_t voltage, ModuleName module_name);
-    void driveTo(frc::Pose2d pose);
-    void driveToLua(double x, double y, double angle);
-    void rotateTo(units::degree_t angle);
-    void rotateToLua(double angle);
-    units::degree_t getAngleFromTarget();
-    double getAngleFromTargetLua();
-    units::meter_t getDistanceFromTarget();
-    double getDistanceFromTargetLua();
-    units::degree_t getRobotAngleInDegrees();
-    double getRobotAngleInDegreesLua();
-    units::degree_t getRotationError();
-    double getRotationErrorLua();
-    void setOdometry(frc::Pose2d pose);
-    void setOdometryLua(double x, double y, double angle);
-
-    void addToLuaState(Keeko::ThreadedScript& script);
-
+    // ---- Constants ----
     static inline const std::string MODULE_NT_PREFIX = "DriveSystem/SwerveModules/";
     static inline constexpr double MANUAL_TRANSLATE_DEADZONE = 0.05;
     static inline constexpr double MANUAL_ROTATE_DEADZONE = 0.05;
@@ -78,40 +49,94 @@ public:
     static inline const std::string TARGET_Y_KEY = "Target_Y";
     static inline const std::string TARGET_ANGLE_KEY = "Target_Angle";
 
+    // ---- Constructor ----
+    DriveSystem(std::shared_ptr<RobotContext> context);
+    DriveSystem() = delete;
+
+    // ---- Subsystem Override ----
+    void Periodic() override;
+
+    // ---- Drive Commands ----
+    void setDrive(double x, double y, double rotate);
+    void stopDrive();
+    void setDriveFF(units::volt_t voltage);
+    void setTurnFF(units::volt_t voltage, ModuleName module_name);
+
+    // ---- Navigation ----
+    void driveTo(frc::Pose2d pose);
+    void rotateTo(units::degree_t angle);
+    units::degree_t getAngleFromTarget();
+    units::meter_t getDistanceFromTarget();
+    units::degree_t getRobotAngleInDegrees();
+    units::degree_t getRotationError();
+
+    // ---- Odometry ----
+    void setOdometry(frc::Pose2d pose);
+
+    // ---- Enum Helpers ----
+    DriveMode getDriveMode() { return drive_mode; }
+    std::string driveModeToString(DriveMode mode);
+    DriveMode stringToDriveMode(const std::string& mode_str);
+    ModuleName getTurnFFModuleName() { return turn_ff_module_name; }
+    std::string moduleNameToString(ModuleName name);
+    ModuleName stringToModuleName(const std::string& name_str);
+
+    // ---- Lua Bindings ----
+    void addToLuaState(Keeko::ThreadedScript& script);
+    void driveToLua(double x, double y, double angle);
+    void rotateToLua(double angle);
+    double getAngleFromTargetLua();
+    double getDistanceFromTargetLua();
+    double getRobotAngleInDegreesLua();
+    double getRotationErrorLua();
+    void setOdometryLua(double x, double y, double angle);
+
 private:
-    void updateNetworkTables();
-    void doManualDrive();
+    // ---- Drive Mode Handlers ----
     void doStop();
+    void doManualDrive();
     void doDriveFF();
     void doTurnFF();
     void doDriveTo();
     void doRotateTo();
+
+    // ---- Internal Helpers ----
+    frc::Pose2d updateOdometry();
+    void updateNetworkTables();
+
+    // ---- Core State ----
     std::shared_ptr<RobotContext> context;
     DriveMode drive_mode{DriveMode::STOP};
 
+    // ---- Swerve Modules ----
     std::shared_ptr<HighVoltage::MK5NSwerveModule> front_left_module;
     std::shared_ptr<HighVoltage::MK5NSwerveModule> front_right_module;
     std::shared_ptr<HighVoltage::MK5NSwerveModule> back_left_module;
     std::shared_ptr<HighVoltage::MK5NSwerveModule> back_right_module;
     std::unique_ptr<HighVoltage::SwerveModuleCordinator> swerve_cordinator;
-    
+
+    // ---- Manual Drive State ----
     double manual_drive_x{0.0};
     double manual_drive_y{0.0};
     double manual_rotate{0.0};
+
+    // ---- Navigation State ----
     units::degree_t target_angle = 0_deg;
     frc::Pose2d target_pose;
     std::shared_ptr<HighVoltage::SmartPID> angle_correction_pid;
     double drive_to_proportional = 1.0;
     double rotate_to_proportional = 0.0105;
 
+    // ---- Odometry ----
     std::shared_ptr<frc::SwerveDriveKinematics<4>> kinematics;
     std::shared_ptr<frc::SwerveDrivePoseEstimator<4>> odometry;
     frc::Pose2d current_pose;
-    frc::Pose2d updateOdometry();
 
+    // ---- Feed Forward State ----
     units::volt_t ff_voltage{0.0_V};
     ModuleName turn_ff_module_name{FRONT_LEFT};
 
+    // ---- Network Tables ----
     HighVoltage::NetworkTableValue<std::string> nt_drive_mode{"DriveSystem/DriveMode", driveModeToString(DriveMode::STOP)};
     HighVoltage::NetworkTableValue<std::vector<double>> nt_ff_data{"DriveSystem/FFData", {0.0, 0.0}};
     HighVoltage::NetworkTableValue<std::string> nt_turn_ff_module{"DriveSystem/TurnFFModule", moduleNameToString(FRONT_LEFT)};
