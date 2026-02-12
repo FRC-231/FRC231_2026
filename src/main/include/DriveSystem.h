@@ -61,10 +61,10 @@ public:
     void stopDrive();
     void setDriveFF(units::volt_t voltage);
     void setTurnFF(units::volt_t voltage, ModuleName module_name);
-
-    // ---- Navigation ----
     void driveTo(frc::Pose2d pose);
     void rotateTo(units::degree_t angle);
+
+    // ---- Navigation ----
     units::degree_t getAngleFromTarget();
     units::meter_t getDistanceFromTarget();
     units::degree_t getRobotAngleInDegrees();
