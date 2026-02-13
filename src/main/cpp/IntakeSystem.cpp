@@ -85,6 +85,7 @@ IntakeSystem::IntakeSystem(std::shared_ptr<RobotContext> context):
 
 void IntakeSystem::Periodic()
 {
+    return;//remove
     switch(feed_mode)
     {
         case FeedMode::STOP:

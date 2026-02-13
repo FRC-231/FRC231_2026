@@ -20,6 +20,7 @@ Robot::Robot()
 
     drive_system = std::make_shared<DriveSystem>(context);
     intake_system = std::make_shared<IntakeSystem>(context);
+    shooter_system = std::make_shared<ShooterSystem>(context);
 
     context->setStartAngle(context->getPigeon().GetYaw().GetValue());
 

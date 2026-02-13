@@ -17,6 +17,7 @@
 #include "RobotContext.h"
 #include "DriveSystem.h"
 #include "IntakeSystem.h"
+#include "ShooterSystem.h"
 #include "Paths.h"
 #include "NetworkTable/StringSelector.h"
 #include "Keeko/ThreadedScript.h"
@@ -57,6 +58,7 @@ private:
     std::shared_ptr<RobotContext> context;
     std::shared_ptr<DriveSystem> drive_system;
     std::shared_ptr<IntakeSystem> intake_system;
+    std::shared_ptr<ShooterSystem> shooter_system;
     units::volt_t ff_voltage = 0_V;
 
     //Auton script stuff

@@ -59,16 +59,43 @@ struct IntakeConfig
     double pivot_down_angle;
     double pivot_encoder_offset;
 
-    friend void from_json(const nlohmann::json &j, IntakeConfig &drive);
+    friend void from_json(const nlohmann::json &j, IntakeConfig &intake);
+};
+
+struct ShooterConfig
+{
+    static inline const std::string HOPPER_MOTOR_ID = "hopper_motor_id";
+    static inline const std::string FEED_MOTOR_ID = "feed_motor_id";
+    static inline const std::string LEFT_SHOOTER_MOTOR_ID = "left_shooter_motor_id";
+    static inline const std::string RIGHT_SHOOTER_MOTOR_ID = "right_shooter_motor_id";
+    static inline const std::string SHOOTER_PID = "shooter_pid";
+    static inline const std::string HOPPER_VOLTAGE = "hopper_voltage";
+    static inline const std::string FEED_VOLTAGE = "feed_voltage";
+    static inline const std::string SHOOTER_FF = "shooter_ff";
+
+
+    uint8_t hopper_motor_id;
+    uint8_t feed_motor_id;
+    uint8_t left_shooter_motor_id;
+    uint8_t right_shooter_motor_id;
+    HighVoltage::PIDConfig shooter_pid;
+    HighVoltage::FeedForwardConfig shooter_ff;
+    double hopper_voltage;
+    double feed_voltage;
+
+
+    friend void from_json(const nlohmann::json &j, ShooterConfig &shooter);
 };
 
 struct RobotConfig
 {
     static inline const std::string DRIVE = "drive";
     static inline const std::string INTAKE = "intake";
+    static inline const std::string SHOOTER = "shooter";
 
     DriveConfig drive_config;
     IntakeConfig intake_config;
+    ShooterConfig shooter_config;
     friend void from_json(const nlohmann::json &j, RobotConfig &robot);
 };
 }

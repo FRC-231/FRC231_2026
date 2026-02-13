@@ -151,5 +151,23 @@
         "pivot_up_angle": 45,
         "pivot_down_angle": 20,
         "pivot_encoder_offset": 0
+    },
+    "shooter":{
+        "hopper_motor_id":11,
+        "feed_motor_id":12,
+        "left_shooter_motor_id":13,
+        "right_shooter_motor_id":14,
+        "shooter_pid":{
+            "k_p":0.0,
+            "k_i":0.0,
+            "k_d":0.0
+        },
+        "hopper_voltage":2,
+        "feed_voltage":2,
+        "shooter_ff":{
+            "k_s":0.0,
+            "k_v":0.0,
+            "k_a":0.0
+        }
     }
 }
