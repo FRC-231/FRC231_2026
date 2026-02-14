@@ -26,7 +26,8 @@ public:
         DRIVE_FF,
         TURN_FF,
         DRIVE_TO,
-        ROTATE_TO
+        ROTATE_TO,
+        MANUAL_AA
     };
 
     enum ModuleName
@@ -58,6 +59,7 @@ public:
 
     // ---- Drive Commands ----
     void setDrive(double x, double y, double rotate);
+    void setManualAA(double x, double y);
     void stopDrive();
     void setDriveFF(units::volt_t voltage);
     void setTurnFF(units::volt_t voltage, ModuleName module_name);
@@ -96,6 +98,7 @@ private:
     // ---- Drive Mode Handlers ----
     void doStop();
     void doManualDrive();
+    void doManualAA();
     void doDriveFF();
     void doTurnFF();
     void doDriveTo();

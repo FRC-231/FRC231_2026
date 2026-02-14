@@ -110,6 +110,7 @@ void Robot::TeleopPeriodic()
     double y = context->getPilotController().GetLeftY();
     double rotate = context->getPilotController().GetRightX();
     bool reset_field_orientation = context->getPilotController().GetR3Button();
+    bool auto_aim = context->getPilotController().GetR1Button();
     
     if(reset_field_orientation)
     {
@@ -117,7 +118,14 @@ void Robot::TeleopPeriodic()
         //drive_system->resetTargetAngle();
     }
 
-    drive_system->setDrive(x, y, rotate);
+    if(auto_aim)
+    {
+        drive_system->setManualAA(x, y);
+    }
+    else
+    {
+        drive_system->setDrive(x, y, rotate);
+    }
 }
     
 

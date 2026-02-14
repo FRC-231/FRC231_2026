@@ -107,6 +107,11 @@ void DriveSystem::Periodic()
             doManualDrive();
         }break;
 
+        case MANUAL_AA:
+        {
+            doManualAA();
+        }break;
+
         case DRIVE_FF:
         {
             doDriveFF();
@@ -143,6 +148,13 @@ void DriveSystem::setDrive(double x, double y, double rotate)
     manual_drive_x = x;
     manual_drive_y = y;
     manual_rotate = rotate;
+}
+
+void DriveSystem::setManualAA(double x, double y)
+{
+    drive_mode = DriveMode::MANUAL_AA;
+    manual_drive_x = x;
+    manual_drive_y = y;
 }
 
 void DriveSystem::stopDrive()
@@ -255,6 +267,9 @@ std::string DriveSystem::driveModeToString(DriveMode mode)
 
         case DRIVE_TO:
             return "DRIVE_TO";
+
+        case MANUAL_AA:
+            return "MANUAL_AA";
     }
     return "UNKNOWN";
 }
@@ -280,6 +295,10 @@ DriveSystem::DriveMode DriveSystem::stringToDriveMode(const std::string& mode_st
     else if(mode_str == "DRIVE_TO")
     {
         return DRIVE_TO;
+    }
+    else if(mode_str == "MANUAL_AA")
+    {
+        return MANUAL_AA;
     }
     return STOP;
 }
@@ -430,6 +449,37 @@ void DriveSystem::doManualDrive()
         swerve_cordinator->stopDrive();
     }
     swerve_cordinator->setFieldAngle(getRobotAngleInDegrees());
+    swerve_cordinator->update();
+}
+
+void DriveSystem::doManualAA()
+{
+    double stick_angle = HighVoltage::get180Range(HighVoltage::toDegrees(std::atan2(-manual_drive_y, manual_drive_x)) - 90.0);
+    double stick_magnitude = std::sqrt(manual_drive_x*manual_drive_x + manual_drive_y*manual_drive_y);//std::pow is slow relative to multiplication, just multiply by itself to square
+    stick_magnitude = std::min(1.0, stick_magnitude);
+    units::degree_t current_angle = getRobotAngleInDegrees();
+    units::degree_t angle_error = angle_to_hub - getRobotAngleInDegrees();
+    angle_error = HighVoltage::get180Range(angle_error);
+    angle_error *= -1;
+    std::cout << angle_error.value() << std::endl;
+    if(std::abs(angle_error.value()) > 90)
+    {
+        angle_error -= 180_deg;
+        angle_error = HighVoltage::get180Range(angle_error);
+    }
+
+    if(stick_magnitude > DriveSystem::MANUAL_TRANSLATE_DEADZONE)
+    {
+        angle_correction_pid->SetSetpoint(0.0);
+        double turn = -angle_correction_pid->Calculate(angle_error.value());
+        swerve_cordinator->setDrive(units::degree_t{stick_angle}, stick_magnitude, turn);
+    }
+    else
+    {
+        double power = angle_error.value() * rotate_to_proportional;
+        swerve_cordinator->setRotate(power);
+    }
+    target_angle = angle_to_hub;
     swerve_cordinator->update();
 }
 

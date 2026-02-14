@@ -1,7 +1,7 @@
 {
     "drive":{
         "angle_correction_pid":{
-            "k_p":0.025,
+            "k_p":0.05,
             "k_i":0.0,
             "k_d":0.0
         },
