@@ -208,9 +208,14 @@ units::degree_t DriveSystem::getRotationError()
 
 units::degree_t DriveSystem::getAngleFromTargetPosition(frc::Pose2d target_point)
 {
-    auto delta_pose = target_point - current_pose;
-    std::cout << delta_pose.X().value() << " " << delta_pose.Y().value() << " " << delta_pose.Rotation().Degrees().value() << std::endl;
-    double angle_in_rad = std::atan2(delta_pose.Y().value(), delta_pose.X().value());
+    // Calculate the vector from current position to target position
+    double delta_x = target_point.X().value() - current_pose.X().value();
+    double delta_y = target_point.Y().value() - current_pose.Y().value();
+    
+    // Calculate the angle in field coordinates (0° = +X axis, 90° = +Y axis)
+    double angle_in_rad = std::atan2(delta_y, delta_x);
+    
+    // Convert to degrees and normalize to [-180, 180]
     return units::degree_t{HighVoltage::get180Range(HighVoltage::toDegrees(angle_in_rad))};
 }
 
