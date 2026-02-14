@@ -21,6 +21,12 @@ public:
         LOAD,
         UNLOAD
     };
+    enum class ShooterMode
+    {
+        STOP,
+        SPEED,
+        FF
+    };
     static inline const std::string SHOOTER_TABLE_NAME = "ShooterSystem";
 
     ShooterSystem(std::shared_ptr<RobotContext> context);
@@ -28,12 +34,14 @@ public:
 
     void Periodic() override;
     std::string loaderModeToString(LoaderMode mode);
+    std::string shooterModeToString(ShooterMode mode);
 
 private:
     void updateNetworkTable();
 
     std::shared_ptr<RobotContext> context;
     LoaderMode loader_mode{LoaderMode::STOP};
+    ShooterMode shooter_mode{ShooterMode::STOP};
 
     std::unique_ptr<ctre::phoenix6::hardware::TalonFX> hopper_motor;
     std::unique_ptr<ctre::phoenix6::hardware::TalonFX> feed_motor;
@@ -44,8 +52,11 @@ private:
     std::unique_ptr<frc::SimpleMotorFeedforward<units::meters>> shooter_ff;
     units::volt_t hopper_voltage;
     units::volt_t feed_voltage;
+    units::volt_t ff_voltage;
 
     HighVoltage::NetworkTableValue<double> nt_hopper_voltage{SHOOTER_TABLE_NAME + "/" + "hopper_voltage", 0.0};
     HighVoltage::NetworkTableValue<double> nt_feed_voltage{SHOOTER_TABLE_NAME + "/" + "feed_voltage", 0.0};
     HighVoltage::NetworkTableValue<std::string> nt_loader_mode{SHOOTER_TABLE_NAME + "/" + "loader_mode", "STOP"};
+    HighVoltage::NetworkTableValue<std::string> nt_shooter_mode{SHOOTER_TABLE_NAME + "/" + "shooter_mode", "STOP"};
+    HighVoltage::NetworkTableValue<double> nt_ff_voltage{SHOOTER_TABLE_NAME + "/" + "ff_voltage", 0.0};
 };

@@ -39,6 +39,15 @@ ShooterSystem::ShooterSystem(std::shared_ptr<RobotContext> context):
             feed_voltage = units::volt_t{value};
         }
     });
+
+    nt_ff_voltage.setOnUpdate([this](const double& value)
+    {
+        if(value != ff_voltage.value())
+        {
+            std::cout << "Set ff_voltage to " << value << std::endl;
+            ff_voltage = units::volt_t{value};
+        }
+    });
 }
 
 void ShooterSystem::Periodic()
@@ -51,6 +60,8 @@ void ShooterSystem::updateNetworkTable()
     nt_hopper_voltage.setValue(hopper_voltage.value());
     nt_feed_voltage.setValue(feed_voltage.value());
     nt_loader_mode.setValue(loaderModeToString(loader_mode));
+    nt_shooter_mode.setValue(shooterModeToString(shooter_mode));
+    nt_ff_voltage.setValue(ff_voltage.value());
 }
 
 std::string ShooterSystem::loaderModeToString(LoaderMode mode)
@@ -65,6 +76,22 @@ std::string ShooterSystem::loaderModeToString(LoaderMode mode)
 
         case LoaderMode::UNLOAD:
             return "UNLOAD";
+    }
+    return "UNKNOWN";
+}
+
+std::string ShooterSystem::shooterModeToString(ShooterMode mode)
+{
+    switch(mode)
+    {
+        case ShooterMode::STOP:
+            return "STOP";
+
+        case ShooterMode::SPEED:
+            return "SPEED";
+
+        case ShooterMode::FF:
+            return "FF";
     }
     return "UNKNOWN";
 }

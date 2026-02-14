@@ -69,6 +69,7 @@ public:
     units::meter_t getDistanceFromTarget();
     units::degree_t getRobotAngleInDegrees();
     units::degree_t getRotationError();
+    units::degree_t getAngleFromTargetPosition(frc::Pose2d target_point);
 
     // ---- Odometry ----
     void setOdometry(frc::Pose2d pose);
@@ -126,6 +127,7 @@ private:
     std::shared_ptr<HighVoltage::SmartPID> angle_correction_pid;
     double drive_to_proportional = 1.0;
     double rotate_to_proportional = 0.0105;
+    units::degree_t angle_to_hub = 0.0_deg;
 
     // ---- Odometry ----
     std::shared_ptr<frc::SwerveDriveKinematics<4>> kinematics;
@@ -146,5 +148,5 @@ private:
     HighVoltage::NetworkTableValue<double> nt_target_drive_x{ORIENTATION_TABLE_NAME + "/" + TARGET_X_KEY, 0.0};
     HighVoltage::NetworkTableValue<double> nt_target_drive_y{ORIENTATION_TABLE_NAME + "/" + TARGET_Y_KEY, 0.0};
     HighVoltage::NetworkTableValue<double> nt_target_drive_angle{ORIENTATION_TABLE_NAME + "/" + TARGET_ANGLE_KEY, 0.0};
-    
+    HighVoltage::NetworkTableValue<double> nt_angle_to_hub{ORIENTATION_TABLE_NAME + "/" + "angle_to_hub", 0.0};
 };

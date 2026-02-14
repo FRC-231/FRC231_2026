@@ -17,6 +17,8 @@ public:
     void setStartAngle(units::angle::degree_t angle);
     units::angle::degree_t getStartAngle();
     Vision& getVision();
+    inline static const frc::Pose2d HUB_POSITION{units::inch_t{182.11}, units::inch_t{0.0}, frc::Rotation2d{units::degree_t{0.0}}};
+
 
 private:
     std::optional<RobotConfig::RobotConfig> config;

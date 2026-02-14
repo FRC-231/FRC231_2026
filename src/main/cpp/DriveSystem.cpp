@@ -94,6 +94,7 @@ void DriveSystem::Periodic()
 {
     current_pose = updateOdometry();
     swerve_cordinator->setFieldAngle(getRobotAngleInDegrees());
+    angle_to_hub = getAngleFromTargetPosition(RobotContext::HUB_POSITION);
     switch(drive_mode)
     {
         case STOP:
@@ -203,6 +204,14 @@ units::degree_t DriveSystem::getRotationError()
     units::degree_t angle_error = target_angle - getRobotAngleInDegrees();
     angle_error *= -1;
     return angle_error;
+}
+
+units::degree_t DriveSystem::getAngleFromTargetPosition(frc::Pose2d target_point)
+{
+    auto delta_pose = target_point - current_pose;
+    std::cout << delta_pose.X().value() << " " << delta_pose.Y().value() << " " << delta_pose.Rotation().Degrees().value() << std::endl;
+    double angle_in_rad = std::atan2(delta_pose.Y().value(), delta_pose.X().value());
+    return units::degree_t{HighVoltage::get180Range(HighVoltage::toDegrees(angle_in_rad))};
 }
 
 // ==== Odometry ====
@@ -552,4 +561,5 @@ void DriveSystem::updateNetworkTables()
     nt_target_drive_x.setValue(target_pose.X().value());
     nt_target_drive_y.setValue(target_pose.Y().value());
     nt_target_drive_angle.setValue(target_pose.Rotation().Degrees().value());
+    nt_angle_to_hub.setValue(angle_to_hub.value());
 }
