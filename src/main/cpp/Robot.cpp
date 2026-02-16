@@ -26,6 +26,13 @@ Robot::Robot()
 
     setupAutonSelector();
 
+    //If we are in simulation, set up our network tables for the simulation dashboard
+    if(frc::RobotBase::IsSimulation())
+    {
+        nt_simulation_data = std::make_unique<NTSimulationData::NTSimulationData>();
+        std::cout << "Running in simulation, set up NT simulation data" << std::endl;
+    }
+
 }
 
 Robot::~Robot()

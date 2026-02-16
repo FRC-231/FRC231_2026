@@ -47,7 +47,7 @@ void HighVoltage::NetworkTable::StringSelector::setSelected(const std::string& o
 
     if (std::find(options.begin(), options.end(), option) == options.end())
     {
-        throw std::invalid_argument("Option must be one of the options, "+ option + " is not in " + nt_prefix + OPTIONS_KEY);
+        return;
     }
 
     selected_option = option;

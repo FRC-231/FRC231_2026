@@ -23,6 +23,7 @@
 #include "Keeko/ThreadedScript.h"
 #include <thread>
 #include <mutex>
+#include "NTSimulationData.h"
 
 
 class Robot : public frc::TimedRobot
@@ -60,6 +61,8 @@ private:
     std::shared_ptr<IntakeSystem> intake_system;
     std::shared_ptr<ShooterSystem> shooter_system;
     units::volt_t ff_voltage = 0_V;
+
+    std::unique_ptr<NTSimulationData::NTSimulationData> nt_simulation_data;
 
     //Auton script stuff
     void setupAutonSelector();
