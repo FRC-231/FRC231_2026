@@ -51,7 +51,8 @@ public:
 
     std::vector<Auton> AUTONS = {
         {"Test", Paths::TEST_AUTON},
-        {"Dance", Paths::DANCE_AUTON}
+        {"Dance", Paths::DANCE_AUTON},
+        {"BumpTest", Paths::BUMP_TEST_AUTON}
     };
 
 private:

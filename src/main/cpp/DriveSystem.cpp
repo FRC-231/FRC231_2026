@@ -157,6 +157,11 @@ void DriveSystem::setManualAA(double x, double y)
     manual_drive_y = y;
 }
 
+void DriveSystem::setDriveToShootLocation()
+{
+    drive_mode = DriveMode::DRIVE_TO_SHOOT_LOCATION;
+}
+
 void DriveSystem::stopDrive()
 {
     drive_mode = STOP;
@@ -189,6 +194,21 @@ void DriveSystem::rotateTo(units::degree_t angle)
     drive_mode = ROTATE_TO;
     target_angle = angle;
     target_pose = frc::Pose2d(target_pose.Translation(), frc::Rotation2d{angle});
+}
+
+void DriveSystem::setMaxSpeed(units::meters_per_second_t speed)
+{
+    swerve_cordinator->setMaxSpeed(speed);
+}
+
+void DriveSystem::setMaxSpeedLua(double speed)
+{
+    setMaxSpeed(units::meters_per_second_t{speed});
+}
+
+void DriveSystem::setMinPercentage(double percentage)
+{
+    min_auto_percentage = percentage;
 }
 
 units::degree_t DriveSystem::getAngleFromTarget()
@@ -300,6 +320,10 @@ DriveSystem::DriveMode DriveSystem::stringToDriveMode(const std::string& mode_st
     {
         return MANUAL_AA;
     }
+    else if(mode_str == "DRIVE_TO_SHOOT_LOCATION")
+    {
+        return DRIVE_TO_SHOOT_LOCATION;
+    }
     return STOP;
 }
 
@@ -358,6 +382,8 @@ void DriveSystem::addToLuaState(Keeko::ThreadedScript& script)
             .addFunction("setOdometry", &DriveSystem::setOdometryLua)
             .addFunction("rotateTo", &DriveSystem::rotateToLua)
             .addFunction("getRotationError", &DriveSystem::getRotationErrorLua)
+            .addFunction("setMaxSpeed", &DriveSystem::setMaxSpeedLua)
+            .addFunction("setMinPercentage", &DriveSystem::setMinPercentage)
         .endClass();
     script.addInstance("drive_system", this);
 }
@@ -542,7 +568,7 @@ void DriveSystem::doDriveTo()
 {
     auto angle = getAngleFromTarget();
     auto distance = getDistanceFromTarget();
-    double speed = std::min(1.0, drive_to_proportional * distance.value());
+    double speed = HighVoltage::clamp(min_auto_percentage, 1.0, drive_to_proportional * distance.value());
     units::degree_t current_angle = getRobotAngleInDegrees();
     units::degree_t angle_error = HighVoltage::get180Range(target_pose.Rotation().Degrees()-current_angle);
     double turn = angle_correction_pid->Calculate(angle_error.value(), 0);

@@ -10,6 +10,8 @@ end
 
 function autonomous()
     print("Dance autonomous script running")
+    drive_system:setMaxSpeed(1.5)
+    drive_system:setMinPercentage(0.0)
     drive_system:rotateTo(90)
     waitUntilRotationError(1)
     control:sleep(0.5)

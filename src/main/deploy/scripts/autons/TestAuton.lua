@@ -8,6 +8,8 @@ end
 
 function autonomous()
     print("TestAuton autonomous script running")
+    drive_system:setMaxSpeed(1.5)
+    drive_system:setMinPercentage(0.0)
     drive_system:setOdometry(3.19, -1.68, 0.0)
     drive_system:driveTo(3.16, 0.83, 0.0)
     waitUntilDistance(0.05)

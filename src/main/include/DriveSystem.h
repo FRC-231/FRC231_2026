@@ -27,7 +27,8 @@ public:
         TURN_FF,
         DRIVE_TO,
         ROTATE_TO,
-        MANUAL_AA
+        MANUAL_AA,
+        DRIVE_TO_SHOOT_LOCATION
     };
 
     enum ModuleName
@@ -60,11 +61,15 @@ public:
     // ---- Drive Commands ----
     void setDrive(double x, double y, double rotate);
     void setManualAA(double x, double y);
+    void setDriveToShootLocation();
     void stopDrive();
     void setDriveFF(units::volt_t voltage);
     void setTurnFF(units::volt_t voltage, ModuleName module_name);
     void driveTo(frc::Pose2d pose);
     void rotateTo(units::degree_t angle);
+    void setMaxSpeed(units::meters_per_second_t speed);
+    void setMaxSpeedLua(double speed);
+    void setMinPercentage(double percentage);
 
     // ---- Navigation ----
     units::degree_t getAngleFromTarget();
@@ -131,6 +136,7 @@ private:
     double drive_to_proportional = 1.0;
     double rotate_to_proportional = 0.0105;
     units::degree_t angle_to_hub = 0.0_deg;
+    double min_auto_percentage = 0.0;
 
     // ---- Odometry ----
     std::shared_ptr<frc::SwerveDriveKinematics<4>> kinematics;
