@@ -10,4 +10,6 @@ namespace Paths
     inline const std::filesystem::path TEST_AUTON = AUTON_DIRECTORY/"TestAuton.lua";
     inline const std::filesystem::path DANCE_AUTON = AUTON_DIRECTORY/"Dance.lua";
     inline const std::filesystem::path BUMP_TEST_AUTON = AUTON_DIRECTORY/"BumpTest.lua";
+    inline const std::filesystem::path SCORE_TEST_AUTON = AUTON_DIRECTORY/"ScoreTest.lua";
+
 }

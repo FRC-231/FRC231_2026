@@ -29,18 +29,19 @@ function autonomous()
     waitUntilDistance(0.0127)
     drive_system:driveTo(6.10, 1.57, 0.0)--Back to OG position
     waitUntilDistance(0.0127)
-    drive_system:setMinPercentage(0.5)
-    drive_system:driveTo(6.10, 3.34, 0.0)--Drive to trench side
-    waitUntilDistance(0.0127)
-    drive_system:driveTo(2.84, 3.34, 0.0)--Drive thru trench
-    waitUntilDistance(0.0127)
+    drive_system:setMaxSpeed(3.0)
+    drive_system:setMinPercentage(0.25)
+    drive_system:driveTo(6.10, 3.25, 0.0)--Drive to trench side
+    waitUntilDistance(0.05)
+    drive_system:driveTo(2.84, 3.25, 0.0)--Drive thru trench
+    waitUntilDistance(0.05)
     drive_system:driveTo(2.84, -3.34, 0.0)--Drive to opp. side
-    waitUntilDistance(0.0127)
+    waitUntilDistance(0.05)
     drive_system:driveTo(6.10, -3.34, 0.0)--Drive thru 2nd trench
-    waitUntilDistance(0.0127)
+    waitUntilDistance(0.05)
     drive_system:setMinPercentage(0.0)
     drive_system:driveTo(6.10, 1.57, 0.0)--Back to OG
-    waitUntilDistance(0.0127)
+    waitUntilDistance(0.05)
     drive_system:stop()
 end
 
