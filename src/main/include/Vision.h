@@ -23,7 +23,7 @@ public:
 
     static constexpr double Y_OFFSET = 4.105148;
     inline static const std::string LIMELIGHT_TABLE_NAME{"limelight"};
-    inline static const std::string INTAKE_LIMELIGHT_TABLE_NAME{"limelight-intake"};
+    inline static const std::string LIMELIGHT_FRONT_TABLE_NAME{"limelight-front"};
     inline static const std::string RED_BOT_POSE_NAME{"botpose_orb_wpired"};
     inline static const std::string BLUE_BOT_POSE_NAME{"botpose_orb_wpiblue"};
     inline static const std::string PIPELINE_LATENCY_NAME{"tl"};

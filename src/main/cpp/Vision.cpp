@@ -37,6 +37,7 @@ void Vision::setRobotOrientation(
 {
     std::vector<double> entries = {yaw, yaw_rate, pitch, pitch_rate, roll, roll_rate};
     nt::NetworkTableInstance::GetDefault().GetTable(LIMELIGHT_TABLE_NAME)->GetEntry("robot_orientation_set").SetDoubleArray(entries);
+    nt::NetworkTableInstance::GetDefault().GetTable(LIMELIGHT_FRONT_TABLE_NAME)->GetEntry("robot_orientation_set").SetDoubleArray(entries);
 }
 
 void Vision::applyVisionData(frc::SwerveDrivePoseEstimator<4>& estimator)
