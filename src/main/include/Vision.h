@@ -61,15 +61,17 @@ public:
     static constexpr double MULTI_TAG_DEG_BASE      = 3.0;   // degrees — base trust for rotation
     static constexpr double MULTI_TAG_DEG_PER_METER = 1.0;   // additional uncertainty per meter of distance
 
-    // Single-tag (MegaTag 2): gyro eliminates ambiguity → much better than standard
-    static constexpr double SINGLE_TAG_XY_BASE      = 0.5;
-    static constexpr double SINGLE_TAG_XY_PER_METER  = 0.3;
-    static constexpr double SINGLE_TAG_DEG_BASE      = 8.0;
-    static constexpr double SINGLE_TAG_DEG_PER_METER = 4.0;
+    // Single-tag (MegaTag 2): gyro eliminates ambiguity, but a single tag can
+    // still produce a bad solve at extreme angles or partial occlusion (e.g.
+    // exiting a tunnel). Keep std devs high so a bad reading can't cause a
+    // sudden jump — it will only gently nudge the estimate.
+    static constexpr double SINGLE_TAG_XY_BASE      = 1.5;
+    static constexpr double SINGLE_TAG_XY_PER_METER  = 0.8;
+    static constexpr double SINGLE_TAG_DEG_BASE      = 20.0;
+    static constexpr double SINGLE_TAG_DEG_PER_METER = 8.0;
 
     // Reject a single-tag measurement if the tag is farther than this (meters)
-    // MegaTag 2 single-tag is reliable further out since the gyro constrains the solve
-    static constexpr double MAX_SINGLE_TAG_DISTANCE = 5.0;
+    static constexpr double MAX_SINGLE_TAG_DISTANCE = 3.5;
 
     // Reject any vision measurement if it disagrees with odometry by more than
     // this distance (meters). Prevents wild jumps from bad solves.
