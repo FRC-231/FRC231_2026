@@ -147,15 +147,16 @@ void Vision::applyCameraData(LimelightCamera& camera, frc::SwerveDrivePoseEstima
 
         // If vision says we're very far from where odometry thinks we are,
         // something is probably wrong — reject this measurement.
-        // We allow a larger gap for multi-tag since those solves are very
-        // reliable and we want them to correct odometry drift from wheel
-        // slip (e.g. going over bumps).
+        // Single-tag gets a STRICT distance check (1.0m) — this was the key
+        // filter in the old working code that prevented bad single-tag solves
+        // from jumping the position forward.
+        // Multi-tag gets a generous limit since those solves are reliable.
         auto robot_estimate = estimator.GetEstimatedPosition();
         double odometry_vs_vision_distance =
             robot_estimate.Translation().Distance(vision_position.Translation()).value();
         double max_distance = (number_of_targets >= 2)
-            ? MAX_ACCEPTED_VISION_DISTANCE * 2.0   // multi-tag: allow up to 6m correction
-            : MAX_ACCEPTED_VISION_DISTANCE;         // single-tag: stricter
+            ? MAX_ACCEPTED_VISION_DISTANCE
+            : MAX_SINGLE_TAG_VISION_DISTANCE;
         if (odometry_vs_vision_distance > max_distance)
         {
             return;
