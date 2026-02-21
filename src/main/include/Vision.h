@@ -30,16 +30,16 @@ class Vision
 public:
     /**
      * Construct with any number of Limelight NetworkTable names.
-     * Example: Vision({"limelight", "limelight-front", "limelight-back"})
+     * Camera names are defined in RobotContext::CAMERA_NAMES.
      */
-    explicit Vision(std::vector<std::string> camera_names = {"limelight", "limelight-front"});
+    Vision(std::vector<std::string> camera_names);
 
     /** Process every camera and add each valid measurement to the estimator. */
     void applyVisionData(frc::SwerveDrivePoseEstimator<4>& estimator);
 
     std::optional<std::vector<double>> filterData(std::vector<double> raw, LimelightCamera& camera);
-
-    static constexpr double Y_OFFSET = 4.105148;
+    static constexpr double FIELD_HEIGHT = 8.069326;
+    static constexpr double Y_OFFSET = FIELD_HEIGHT / 2.0;
 
     // ── Tuning constants for standard deviations ──
     // The pose estimator is a Kalman filter. Standard deviations (std devs)

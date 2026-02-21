@@ -9,6 +9,13 @@
 class RobotContext
 {
 public:
+    // ── Camera configuration ──
+    // Add or remove Limelight names here when cameras are added to the robot.
+    inline static const std::vector<std::string> CAMERA_NAMES{
+        "limelight",
+        "limelight-front"
+    };
+
     RobotContext();
     bool loadConfig(const std::filesystem::path& path);
     const std::optional<RobotConfig::RobotConfig>& getConfig() const;
@@ -25,5 +32,5 @@ private:
     frc::PS5Controller pilot_controller{0};
     ctre::phoenix6::hardware::Pigeon2 pigeon{30};
     units::angle::degree_t start_angle{0.0};
-    Vision vision;
+    Vision vision{CAMERA_NAMES};
 };
