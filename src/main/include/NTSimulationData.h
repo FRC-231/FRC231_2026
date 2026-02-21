@@ -32,6 +32,21 @@ private:
     std::unique_ptr<HighVoltage::NetworkTableValue<bool>> nt_value{nullptr};
 };
 
+class Counter: public SimulationData
+{
+public:
+    Counter(const std::string& nt_name, double start_value = 0, double end_value = 100, double step = 1);
+    ~Counter();
+    void update() override;
+
+private:
+    std::string nt_name;
+    double count{0.0};
+    double start_value{0.0};
+    double end_value{100.0};
+    double step{1.37};
+    std::unique_ptr<HighVoltage::NetworkTableValue<double>> nt_value{nullptr};
+};
 
 class NTSimulationData
 {

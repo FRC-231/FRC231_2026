@@ -27,6 +27,32 @@ void Blinker::update()
     nt_value->setValue(new_value);
 }
 
+Counter::Counter(const std::string& nt_name, double start_value, double end_value, double step)
+{
+    this->nt_name = nt_name;
+    this->count = start_value;
+    this->start_value = start_value;
+    this->end_value = end_value;
+    this->step = step;
+    nt_value = std::make_unique<HighVoltage::NetworkTableValue<double>>(nt_name, count);
+}
+
+Counter::~Counter()
+{
+
+}
+
+void Counter::update()
+{
+    count += step;
+    if(count > end_value)
+    {
+        auto leftover = count - end_value;
+        count = start_value + leftover;
+    }
+    nt_value->setValue(count);
+}
+
 NTSimulationData::NTSimulationData()
 {
     simulation_data_entries.push_back(
@@ -46,6 +72,11 @@ NTSimulationData::NTSimulationData()
     );
     simulation_data_entries.push_back(
         std::make_unique<Blinker>(std::chrono::milliseconds(1000), SIMULATION_TABLE_NAME + "/Blinker_1000ms")
+    );
+
+
+    simulation_data_entries.push_back(
+        std::make_unique<Counter>(SIMULATION_TABLE_NAME + "/Counter_0-100_step1_076547", 0, 100, 0.076547)
     );
     
     nt_update_thread_running = true;
