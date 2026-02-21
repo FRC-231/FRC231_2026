@@ -55,29 +55,30 @@ public:
     // orientation to constrain the solve. This makes both multi-tag and
     // single-tag measurements significantly more accurate than standard solves.
 
-    // Multi-tag (MegaTag 2): gyro-constrained + triangulation → very high confidence
-    static constexpr double MULTI_TAG_XY_BASE      = 0.1;   // meters — base trust for xy
-    static constexpr double MULTI_TAG_XY_PER_METER  = 0.05;  // additional uncertainty per meter of distance
-    static constexpr double MULTI_TAG_DEG_BASE      = 3.0;   // degrees — base trust for rotation
-    static constexpr double MULTI_TAG_DEG_PER_METER = 1.0;   // additional uncertainty per meter of distance
+    // Multi-tag (MegaTag 2): gyro-constrained + triangulation → high confidence
+    // Old working values were 0.7 / 6 — these are slightly better for MegaTag 2
+    static constexpr double MULTI_TAG_XY_BASE      = 0.5;   // meters — base trust for xy
+    static constexpr double MULTI_TAG_XY_PER_METER  = 0.1;   // additional uncertainty per meter of distance
+    static constexpr double MULTI_TAG_DEG_BASE      = 6.0;   // degrees — base trust for rotation
+    static constexpr double MULTI_TAG_DEG_PER_METER = 1.5;   // additional uncertainty per meter of distance
 
-    // Single-tag (MegaTag 2): gyro eliminates ambiguity, but a single tag can
-    // still produce a bad solve at extreme angles or partial occlusion (e.g.
-    // exiting a tunnel). Keep std devs high so a bad reading can't cause a
-    // sudden jump — it will only gently nudge the estimate.
+    // Single-tag: keep std devs high so a bad reading can't cause a sudden jump.
     static constexpr double SINGLE_TAG_XY_BASE      = 1.5;
     static constexpr double SINGLE_TAG_XY_PER_METER  = 0.8;
-    static constexpr double SINGLE_TAG_DEG_BASE      = 20.0;
+    static constexpr double SINGLE_TAG_DEG_BASE      = 30.0;
     static constexpr double SINGLE_TAG_DEG_PER_METER = 8.0;
 
     // Reject a single-tag measurement if the tag is farther than this (meters)
     static constexpr double MAX_SINGLE_TAG_DISTANCE = 3.5;
 
-    // Reject any vision measurement if it disagrees with odometry by more than
-    // this distance (meters). Prevents wild jumps from bad solves.
-    // Set generously to allow vision to correct drift from wheel slip
-    // (e.g. going over bumps where encoders spin without real movement).
-    // MegaTag 2 produces very reliable poses, so we can afford a larger window.
+    // Reject a SINGLE-tag measurement if it disagrees with odometry by more
+    // than this distance (meters). This was the key filter in the old working
+    // code — single-tag solves that are far from the current estimate are
+    // almost always wrong. The old code used 1.0m.
+    static constexpr double MAX_SINGLE_TAG_VISION_DISTANCE = 1.0;
+
+    // Reject any vision measurement (including multi-tag) if it disagrees
+    // with odometry by more than this distance (meters).
     static constexpr double MAX_ACCEPTED_VISION_DISTANCE = 4.0;
 
     inline static const std::string RED_BOT_POSE_NAME{"botpose_orb_wpired"};
