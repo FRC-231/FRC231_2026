@@ -40,6 +40,44 @@ public:
     std::optional<std::vector<double>> filterData(std::vector<double> raw, LimelightCamera& camera);
 
     static constexpr double Y_OFFSET = 4.105148;
+
+    // ── Tuning constants for standard deviations ──
+    // The pose estimator is a Kalman filter. Standard deviations (std devs)
+    // control how much we trust each vision measurement:
+    //   - LOWER std dev = we trust vision MORE  (vision pulls the estimate harder)
+    //   - HIGHER std dev = we trust vision LESS  (odometry dominates)
+    //
+    // Formula:  std_dev = BASE + (PER_METER * average_tag_distance)
+    // So a tag 1m away gives a low std dev (high trust), and a tag 5m away
+    // gives a higher std dev (low trust), scaling linearly.
+    //
+    // These values are tuned for MegaTag 2, which uses the gyro-fed robot
+    // orientation to constrain the solve. This makes both multi-tag and
+    // single-tag measurements significantly more accurate than standard solves.
+
+    // Multi-tag (MegaTag 2): gyro-constrained + triangulation → very high confidence
+    static constexpr double MULTI_TAG_XY_BASE      = 0.1;   // meters — base trust for xy
+    static constexpr double MULTI_TAG_XY_PER_METER  = 0.05;  // additional uncertainty per meter of distance
+    static constexpr double MULTI_TAG_DEG_BASE      = 3.0;   // degrees — base trust for rotation
+    static constexpr double MULTI_TAG_DEG_PER_METER = 1.0;   // additional uncertainty per meter of distance
+
+    // Single-tag (MegaTag 2): gyro eliminates ambiguity → much better than standard
+    static constexpr double SINGLE_TAG_XY_BASE      = 0.5;
+    static constexpr double SINGLE_TAG_XY_PER_METER  = 0.3;
+    static constexpr double SINGLE_TAG_DEG_BASE      = 8.0;
+    static constexpr double SINGLE_TAG_DEG_PER_METER = 4.0;
+
+    // Reject a single-tag measurement if the tag is farther than this (meters)
+    // MegaTag 2 single-tag is reliable further out since the gyro constrains the solve
+    static constexpr double MAX_SINGLE_TAG_DISTANCE = 5.0;
+
+    // Reject any vision measurement if it disagrees with odometry by more than
+    // this distance (meters). Prevents wild jumps from bad solves.
+    // Set generously to allow vision to correct drift from wheel slip
+    // (e.g. going over bumps where encoders spin without real movement).
+    // MegaTag 2 produces very reliable poses, so we can afford a larger window.
+    static constexpr double MAX_ACCEPTED_VISION_DISTANCE = 4.0;
+
     inline static const std::string RED_BOT_POSE_NAME{"botpose_orb_wpired"};
     inline static const std::string BLUE_BOT_POSE_NAME{"botpose_orb_wpiblue"};
     inline static const std::string PIPELINE_LATENCY_NAME{"tl"};
