@@ -205,7 +205,7 @@ void Robot::TestInit()
 
 void Robot::TestPeriodic()
 {
-    drive_system->setDriveFF(ff_voltage);
+    drive_system->setDriveFF(0_V);
     ff_voltage -= 0.005_V;
 }
 
