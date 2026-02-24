@@ -104,6 +104,9 @@ NTSimulationData::NTSimulationData()
     simulation_data_entries.push_back(
         std::make_unique<SineWave>(SIMULATION_TABLE_NAME + "/SineWave_Amplitude1_Frequency1", 50.0, 1.0)
     );
+    simulation_data_entries.push_back(
+        std::make_unique<SineWave>(SIMULATION_TABLE_NAME + "/SineWave_Amplitude1_Frequency0.25", 50.0, 0.25)
+    );
     
     nt_update_thread_running = true;
     nt_update_thread = std::make_unique<std::thread>(&NTSimulationData::ntUpdateLoop, this);
