@@ -53,6 +53,28 @@ void Counter::update()
     nt_value->setValue(count);
 }
 
+SineWave::SineWave(const std::string& nt_name, double amplitude, double frequency)
+{
+    this->nt_name = nt_name;
+    this->amplitude = amplitude;
+    this->frequency = frequency;
+    start_time = std::chrono::steady_clock::now();
+    nt_value = std::make_unique<HighVoltage::NetworkTableValue<double>>(nt_name, 0.0);
+}
+
+SineWave::~SineWave()
+{
+
+}
+
+void SineWave::update()
+{
+    auto now = std::chrono::steady_clock::now();
+    double time_since_start = std::chrono::duration_cast<std::chrono::milliseconds>(now - start_time).count() / 1000.0;
+    double new_value = amplitude * std::sin(2 * M_PI * frequency * time_since_start);
+    nt_value->setValue(new_value);
+}
+
 NTSimulationData::NTSimulationData()
 {
     simulation_data_entries.push_back(
@@ -77,6 +99,10 @@ NTSimulationData::NTSimulationData()
 
     simulation_data_entries.push_back(
         std::make_unique<Counter>(SIMULATION_TABLE_NAME + "/Counter_0-100_step1_076547", 0, 100, 0.076547)
+    );
+
+    simulation_data_entries.push_back(
+        std::make_unique<SineWave>(SIMULATION_TABLE_NAME + "/SineWave_Amplitude1_Frequency1", 50.0, 1.0)
     );
     
     nt_update_thread_running = true;

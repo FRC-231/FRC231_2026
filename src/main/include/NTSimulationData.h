@@ -48,6 +48,23 @@ private:
     std::unique_ptr<HighVoltage::NetworkTableValue<double>> nt_value{nullptr};
 };
 
+class SineWave: public SimulationData
+{
+public:
+    SineWave(const std::string& nt_name, double amplitude = 1.0, double frequency = 1.0);
+    ~SineWave();
+    void update() override;
+
+private:
+    std::string nt_name;
+    double amplitude{1.0};
+    double frequency{1.0};
+    double phase{0.0};
+    //start time to calculate the sine wave value based on how much time has passed
+    std::chrono::steady_clock::time_point start_time;
+    std::unique_ptr<HighVoltage::NetworkTableValue<double>> nt_value{nullptr};
+};
+
 class NTSimulationData
 {
 public:
