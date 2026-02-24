@@ -17,7 +17,7 @@ bump_speed = 2.0
 rotate_speed = 4.5
 travel_speed = 3.0
 intake_speed = 2.0
-trench_y = 3.2
+trench_y = 2.9
 function autonomous()
     drive_system:setMaxSpeed(bump_speed)
     drive_system:setMinPercentage(0.0)

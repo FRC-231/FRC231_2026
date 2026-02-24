@@ -7,7 +7,7 @@ ShooterSystem::ShooterSystem(std::shared_ptr<RobotContext> context):
     const auto& shooter_config = context->getConfig()->shooter_config;
     hopper_motor = std::make_unique<ctre::phoenix6::hardware::TalonFX>(shooter_config.hopper_motor_id);
     feed_motor = std::make_unique<ctre::phoenix6::hardware::TalonFX>(shooter_config.feed_motor_id);
-    left_shooter_motor = std::make_unique<ctre::phoenix6::hardware::TalonFX>(shooter_config.right_shooter_motor_id);
+    left_shooter_motor = std::make_unique<ctre::phoenix6::hardware::TalonFX>(shooter_config.left_shooter_motor_id);
     right_shooter_motor = std::make_unique<ctre::phoenix6::hardware::TalonFX>(shooter_config.right_shooter_motor_id);
     hopper_voltage = units::volt_t{shooter_config.hopper_voltage};
     feed_voltage = units::volt_t{shooter_config.feed_voltage};
@@ -22,6 +22,21 @@ ShooterSystem::ShooterSystem(std::shared_ptr<RobotContext> context):
         HighVoltage::VoltsPerMeterPerSecond{shooter_config.shooter_ff.k_v},
         HighVoltage::VoltsPerMeterPerSecondSquared{shooter_config.shooter_ff.k_a}
     );
+
+    ctre::phoenix6::configs::TalonFXConfiguration shooter_left_config{};
+    shooter_left_config.MotorOutput.Inverted = ctre::phoenix6::signals::InvertedValue::Clockwise_Positive;
+    shooter_left_config.MotorOutput.NeutralMode = ctre::phoenix6::signals::NeutralModeValue::Coast;
+    left_shooter_motor->GetConfigurator().Apply(shooter_left_config);
+
+    ctre::phoenix6::configs::TalonFXConfiguration shooter_right_config{};
+    shooter_right_config.MotorOutput.Inverted = ctre::phoenix6::signals::InvertedValue::Clockwise_Positive;
+    shooter_right_config.MotorOutput.NeutralMode = ctre::phoenix6::signals::NeutralModeValue::Coast;
+    right_shooter_motor->GetConfigurator().Apply(shooter_right_config);
+
+    ctre::phoenix6::configs::TalonFXConfiguration shooter_feed_config{};
+    shooter_feed_config.MotorOutput.Inverted = ctre::phoenix6::signals::InvertedValue::Clockwise_Positive;
+    shooter_feed_config.MotorOutput.NeutralMode = ctre::phoenix6::signals::NeutralModeValue::Brake;
+    feed_motor->GetConfigurator().Apply(shooter_feed_config);
 
     nt_hopper_voltage.setOnUpdate([this](const double& value)
     {
@@ -129,7 +144,8 @@ void ShooterSystem::setShooterMode(ShooterMode mode)
 void ShooterSystem::doShooterVoltageControl()
 {
     left_shooter_motor->SetVoltage(shooter_voltage);
-    right_shooter_motor->SetVoltage(shooter_voltage);
+    right_shooter_motor->SetVoltage(shooter_voltage-2_V);
+    feed_motor->SetVoltage(feed_voltage);
 }
 
 
@@ -137,6 +153,7 @@ void ShooterSystem::doShooterStop()
 {
     left_shooter_motor->SetVoltage(0_V);
     right_shooter_motor->SetVoltage(0_V);
+    feed_motor->SetVoltage(0_V);
 }
 
 units::revolutions_per_minute_t ShooterSystem::getLeftShooterVelocity()
