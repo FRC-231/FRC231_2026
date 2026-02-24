@@ -34,6 +34,8 @@ public:
     ShooterSystem() = delete;
 
     void setShooterMode(ShooterMode mode);
+    units::revolutions_per_minute_t getLeftShooterVelocity();
+    units::revolutions_per_minute_t getRightShooterVelocity();
 
     void Periodic() override;
     std::string loaderModeToString(LoaderMode mode);
@@ -60,6 +62,7 @@ private:
     units::volt_t feed_voltage;
     units::volt_t ff_voltage;
     units::volt_t shooter_voltage{0_V};
+    double shooter_gear_ratio;
 
     HighVoltage::NetworkTableValue<double> nt_hopper_voltage{SHOOTER_TABLE_NAME + "/" + "hopper_voltage", 0.0};
     HighVoltage::NetworkTableValue<double> nt_feed_voltage{SHOOTER_TABLE_NAME + "/" + "feed_voltage", 0.0};
@@ -68,6 +71,10 @@ private:
     HighVoltage::NetworkTableValue<double> nt_ff_voltage{SHOOTER_TABLE_NAME + "/" + "ff_voltage", 0.0};
     HighVoltage::NetworkTableValue<double> nt_shooter_velocity{SHOOTER_TABLE_NAME + "/" + "shooter_velocity", 0.0};
     HighVoltage::NetworkTableValue<double> nt_shooter_voltage{SHOOTER_TABLE_NAME + "/" + "shooter_voltage", 0.0};
+    HighVoltage::NetworkTableValue<double> nt_shooter_gear_ratio{SHOOTER_TABLE_NAME + "/" + "shooter_gear_ratio", 0.0};
+    HighVoltage::NetworkTableValue<double> nt_shooter_pid_kp{SHOOTER_TABLE_NAME + "/" + "left_shooter_velocity", 0.0};
+    HighVoltage::NetworkTableValue<double> nt_shooter_pid_ki{SHOOTER_TABLE_NAME + "/" + "right_shooter_velocity", 0.0};
+    HighVoltage
 
 
 };

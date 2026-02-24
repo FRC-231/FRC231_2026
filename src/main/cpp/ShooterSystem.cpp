@@ -11,6 +11,7 @@ ShooterSystem::ShooterSystem(std::shared_ptr<RobotContext> context):
     right_shooter_motor = std::make_unique<ctre::phoenix6::hardware::TalonFX>(shooter_config.right_shooter_motor_id);
     hopper_voltage = units::volt_t{shooter_config.hopper_voltage};
     feed_voltage = units::volt_t{shooter_config.feed_voltage};
+    shooter_gear_ratio = shooter_config.shooter_gear_ratio;
     shooter_pid = std::make_unique<frc::PIDController>(
         shooter_config.shooter_pid.k_p,
         shooter_config.shooter_pid.k_i,
@@ -82,6 +83,9 @@ void ShooterSystem::updateNetworkTable()
     nt_shooter_mode.setValue(shooterModeToString(shooter_mode));
     nt_ff_voltage.setValue(ff_voltage.value());
     nt_shooter_velocity.setValue(left_shooter_motor->GetVelocity().GetValueAsDouble());
+    nt_shooter_gear_ratio.setValue(shooter_gear_ratio);
+    nt_left_shooter_velocity.setValue(getLeftShooterVelocity().value());
+    nt_right_shooter_velocity.setValue(getRightShooterVelocity().value());
     //nt_shooter_voltage.setValue(shooter_voltage.value());
 }
 
@@ -133,5 +137,15 @@ void ShooterSystem::doShooterStop()
 {
     left_shooter_motor->SetVoltage(0_V);
     right_shooter_motor->SetVoltage(0_V);
+}
+
+units::revolutions_per_minute_t ShooterSystem::getLeftShooterVelocity()
+{
+    return left_shooter_motor->GetVelocity().GetValue();
+}
+
+units::revolutions_per_minute_t ShooterSystem::getRightShooterVelocity()
+{
+    return right_shooter_motor->GetVelocity().GetValue();
 }
 
