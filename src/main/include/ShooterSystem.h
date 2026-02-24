@@ -3,6 +3,8 @@
 
 #include <frc2/command/SubsystemBase.h>
 #include <frc/controller/PIDController.h>
+#include <frc/controller/SimpleMotorFeedforward.h>
+#include <units/velocity.h>
 #include <ctre/phoenix6/CANcoder.hpp>
 #include <ctre/phoenix6/TalonFX.hpp>
 #include <ctre/phoenix6/signals/SpnEnums.hpp>
@@ -25,8 +27,7 @@ public:
     {
         STOP,
         SPEED,
-        VOLTAGE,
-        FF
+        VOLTAGE
     };
     static inline const std::string SHOOTER_TABLE_NAME = "ShooterSystem";
 
@@ -34,6 +35,8 @@ public:
     ShooterSystem() = delete;
 
     void setShooterMode(ShooterMode mode);
+    void setShooterVoltages(units::volt_t left_voltage, units::volt_t right_voltage);
+    void setLoaderMode(LoaderMode mode);
     units::revolutions_per_minute_t getLeftShooterVelocity();
     units::revolutions_per_minute_t getRightShooterVelocity();
 
@@ -46,6 +49,11 @@ private:
 
     void doShooterVoltageControl();
     void doShooterStop();
+    void doShooterSpeedControl();
+
+    void doLoaderStop();
+    void doLoaderLoad();
+    void doLoaderUnload();
 
     std::shared_ptr<RobotContext> context;
     LoaderMode loader_mode{LoaderMode::STOP};
@@ -60,21 +68,31 @@ private:
     std::unique_ptr<frc::SimpleMotorFeedforward<units::meters>> shooter_ff;
     units::volt_t hopper_voltage;
     units::volt_t feed_voltage;
-    units::volt_t ff_voltage;
-    units::volt_t shooter_voltage{0_V};
+    units::volt_t left_shooter_voltage{0_V};
+    units::volt_t right_shooter_voltage{0_V};
+    units::revolutions_per_minute_t left_shooter_target_velocity{0_rpm};
+    units::revolutions_per_minute_t right_shooter_target_velocity{0_rpm};
     double shooter_gear_ratio;
 
     HighVoltage::NetworkTableValue<double> nt_hopper_voltage{SHOOTER_TABLE_NAME + "/" + "hopper_voltage", 0.0};
     HighVoltage::NetworkTableValue<double> nt_feed_voltage{SHOOTER_TABLE_NAME + "/" + "feed_voltage", 0.0};
     HighVoltage::NetworkTableValue<std::string> nt_loader_mode{SHOOTER_TABLE_NAME + "/" + "loader_mode", "STOP"};
     HighVoltage::NetworkTableValue<std::string> nt_shooter_mode{SHOOTER_TABLE_NAME + "/" + "shooter_mode", "STOP"};
-    HighVoltage::NetworkTableValue<double> nt_ff_voltage{SHOOTER_TABLE_NAME + "/" + "ff_voltage", 0.0};
     HighVoltage::NetworkTableValue<double> nt_shooter_velocity{SHOOTER_TABLE_NAME + "/" + "shooter_velocity", 0.0};
-    HighVoltage::NetworkTableValue<double> nt_shooter_voltage{SHOOTER_TABLE_NAME + "/" + "shooter_voltage", 0.0};
     HighVoltage::NetworkTableValue<double> nt_shooter_gear_ratio{SHOOTER_TABLE_NAME + "/" + "shooter_gear_ratio", 0.0};
-    HighVoltage::NetworkTableValue<double> nt_shooter_pid_kp{SHOOTER_TABLE_NAME + "/" + "left_shooter_velocity", 0.0};
-    HighVoltage::NetworkTableValue<double> nt_shooter_pid_ki{SHOOTER_TABLE_NAME + "/" + "right_shooter_velocity", 0.0};
-    HighVoltage
+    HighVoltage::NetworkTableValue<double> nt_left_shooter_velocity{SHOOTER_TABLE_NAME + "/" + "left_shooter_velocity", 0.0};
+    HighVoltage::NetworkTableValue<double> nt_right_shooter_velocity{SHOOTER_TABLE_NAME + "/" + "right_shooter_velocity", 0.0};
+    HighVoltage::NetworkTableValue<double> nt_left_shooter_voltage{SHOOTER_TABLE_NAME + "/" + "left_shooter_voltage", 0.0};
+    HighVoltage::NetworkTableValue<double> nt_right_shooter_voltage{SHOOTER_TABLE_NAME + "/" + "right_shooter_voltage", 0.0};
+
+    //PID network table values
+    HighVoltage::NetworkTableValue<double> nt_shooter_kP{SHOOTER_TABLE_NAME + "/" + "shooter_kP", 0.0};
+    HighVoltage::NetworkTableValue<double> nt_shooter_kI{SHOOTER_TABLE_NAME + "/" + "shooter_kI", 0.0};
+    HighVoltage::NetworkTableValue<double> nt_shooter_kD{SHOOTER_TABLE_NAME + "/" + "shooter_kD", 0.0};
+
+    //Network table values for recording data during testing
+    HighVoltage::NetworkTableValue<std::vector<double>> nt_shooter_velocities{SHOOTER_TABLE_NAME + "/" + "shooter_velocities", std::vector<double>{0,0}};
+
 
 
 };
