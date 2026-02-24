@@ -25,6 +25,7 @@ public:
     {
         STOP,
         SPEED,
+        VOLTAGE,
         FF
     };
     static inline const std::string SHOOTER_TABLE_NAME = "ShooterSystem";
@@ -32,12 +33,17 @@ public:
     ShooterSystem(std::shared_ptr<RobotContext> context);
     ShooterSystem() = delete;
 
+    void setShooterMode(ShooterMode mode);
+
     void Periodic() override;
     std::string loaderModeToString(LoaderMode mode);
     std::string shooterModeToString(ShooterMode mode);
 
 private:
     void updateNetworkTable();
+
+    void doShooterVoltageControl();
+    void doShooterStop();
 
     std::shared_ptr<RobotContext> context;
     LoaderMode loader_mode{LoaderMode::STOP};
@@ -53,10 +59,15 @@ private:
     units::volt_t hopper_voltage;
     units::volt_t feed_voltage;
     units::volt_t ff_voltage;
+    units::volt_t shooter_voltage{0_V};
 
     HighVoltage::NetworkTableValue<double> nt_hopper_voltage{SHOOTER_TABLE_NAME + "/" + "hopper_voltage", 0.0};
     HighVoltage::NetworkTableValue<double> nt_feed_voltage{SHOOTER_TABLE_NAME + "/" + "feed_voltage", 0.0};
     HighVoltage::NetworkTableValue<std::string> nt_loader_mode{SHOOTER_TABLE_NAME + "/" + "loader_mode", "STOP"};
     HighVoltage::NetworkTableValue<std::string> nt_shooter_mode{SHOOTER_TABLE_NAME + "/" + "shooter_mode", "STOP"};
     HighVoltage::NetworkTableValue<double> nt_ff_voltage{SHOOTER_TABLE_NAME + "/" + "ff_voltage", 0.0};
+    HighVoltage::NetworkTableValue<double> nt_shooter_velocity{SHOOTER_TABLE_NAME + "/" + "shooter_velocity", 0.0};
+    HighVoltage::NetworkTableValue<double> nt_shooter_voltage{SHOOTER_TABLE_NAME + "/" + "shooter_voltage", 0.0};
+
+
 };

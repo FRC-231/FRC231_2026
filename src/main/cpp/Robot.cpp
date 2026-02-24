@@ -118,6 +118,8 @@ void Robot::TeleopPeriodic()
     double rotate = context->getPilotController().GetRightX();
     bool reset_field_orientation = context->getPilotController().GetR3Button();
     bool auto_aim = context->getPilotController().GetR1Button();
+
+    
     
     if(reset_field_orientation)
     {
@@ -133,6 +135,28 @@ void Robot::TeleopPeriodic()
     {
         drive_system->setDrive(x, y, rotate);
     }
+
+    //Temp controls for setting shooter to voltage mode--------------------------
+
+    bool do_shooter_voltage_control_toggle = context->getPilotController().GetCrossButtonPressed();
+    static bool do_shooter_voltage_control = false;
+    if(do_shooter_voltage_control_toggle)
+    {
+        do_shooter_voltage_control = !do_shooter_voltage_control;
+        std::cout << "Toggled shooter voltage control to " << (do_shooter_voltage_control ? "ON" : "OFF") << std::endl;
+    }
+    if(do_shooter_voltage_control)
+    {
+        shooter_system->setShooterMode(ShooterSystem::ShooterMode::VOLTAGE);
+    }
+    else
+    {
+        shooter_system->setShooterMode(ShooterSystem::ShooterMode::STOP);
+    }
+
+
+    //---------------------------------------------------------------------------
+
 }
     
 
@@ -205,8 +229,7 @@ void Robot::TestInit()
 
 void Robot::TestPeriodic()
 {
-    drive_system->setDriveFF(ff_voltage);
-    ff_voltage -= 0.005_V;
+
 }
 
 void Robot::SimulationInit()
