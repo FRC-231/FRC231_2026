@@ -148,10 +148,12 @@ void Robot::TeleopPeriodic()
     if(do_shooter_voltage_control)
     {
         shooter_system->setShooterMode(ShooterSystem::ShooterMode::VOLTAGE);
+        shooter_system->setLoaderMode(ShooterSystem::LoaderMode::LOAD);
     }
     else
     {
         shooter_system->setShooterMode(ShooterSystem::ShooterMode::STOP);
+        shooter_system->setLoaderMode(ShooterSystem::LoaderMode::STOP);
     }
 
 
