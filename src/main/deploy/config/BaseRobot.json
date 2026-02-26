@@ -163,7 +163,7 @@
             "k_d":0.0
         },
         "hopper_voltage":2,
-        "feed_voltage":2,
+        "feed_voltage":5,
         "shooter_ff":{
             "k_s":0.0,
             "k_v":0.0,
