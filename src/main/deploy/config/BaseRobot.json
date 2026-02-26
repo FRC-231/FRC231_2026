@@ -169,6 +169,8 @@
             "k_v":0.0,
             "k_a":0.0
         },
-        "shooter_gear_ratio":0.75
+        "shooter_gear_ratio":0.75,
+        "shooter_max_voltage": 8.0,
+        "shooter_min_voltage": -1.0
     }
 }

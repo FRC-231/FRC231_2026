@@ -73,6 +73,8 @@ struct ShooterConfig
     static inline const std::string FEED_VOLTAGE = "feed_voltage";
     static inline const std::string SHOOTER_FF = "shooter_ff";
     static inline const std::string SHOOTER_GEAR_RATIO = "shooter_gear_ratio";
+    static inline const std::string SHOOTER_MAX_VOLTAGE = "shooter_max_voltage";
+    static inline const std::string SHOOTER_MIN_VOLTAGE = "shooter_min_voltage";
 
 
     uint8_t hopper_motor_id;
@@ -84,7 +86,8 @@ struct ShooterConfig
     double hopper_voltage;
     double feed_voltage;
     double shooter_gear_ratio;
-
+    double shooter_max_voltage;
+    double shooter_min_voltage;
 
     friend void from_json(const nlohmann::json &j, ShooterConfig &shooter);
 };
