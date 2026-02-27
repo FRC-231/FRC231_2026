@@ -28,6 +28,7 @@ public:
     void setValue(T value);
     T getValue(T default_value);
     void setOnUpdate(std::function<void(const T&)> callback);
+    const std::string& getKey() const { return key_; }
 
 private:
     using TopicType =
@@ -75,6 +76,7 @@ private:
     std::optional<NT_Listener> listener;
     // Listener lambda to handle updates
     std::function<void(const T&)> onUpdate;
+    std::string key_;
 
 };
 
@@ -103,6 +105,7 @@ namespace detail {
 template <typename T>
 NetworkTableValue<T>::NetworkTableValue(std::string key)
 {
+    key_ = key;
     auto network_table_inst = nt::NetworkTableInstance::GetDefault();
     auto table = network_table_inst.GetTable("");
     topic = detail::GetTypedTopic<T>(table, key);
@@ -113,6 +116,7 @@ NetworkTableValue<T>::NetworkTableValue(std::string key)
 template <typename T>
 NetworkTableValue<T>::NetworkTableValue(std::string key, T initial_value)
 {
+    key_ = key;
     auto network_table_inst = nt::NetworkTableInstance::GetDefault();
     auto table = network_table_inst.GetTable("");
     topic = detail::GetTypedTopic<T>(table, key);

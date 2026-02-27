@@ -2,6 +2,7 @@
 
 #include <nlohmann/json.hpp>
 #include <string>
+#include <iostream>
 #include <ctre/phoenix6/TalonFX.hpp>
 #include "NetworkTableValue.h"
 
@@ -178,8 +179,6 @@ void bindPIDNetworkTableToTalonFXFromRPM(NetworkTableValue<double>& nt_kP,
                                           ctre::phoenix6::hardware::TalonFX& motor,
                                           double gear_ratio)
 {
-    // Capture raw pointers to the NT values so each callback can read the
-    // current value of the other two gains when it fires.
     auto* p_kP = &nt_kP;
     auto* p_kI = &nt_kI;
     auto* p_kD = &nt_kD;
@@ -195,9 +194,21 @@ void bindPIDNetworkTableToTalonFXFromRPM(NetworkTableValue<double>& nt_kP,
         applyMotionConfigToTalonFXFromRPM<slot>(pid, ff_config, *p_motor, gear_ratio);
     };
 
-    nt_kP.setOnUpdate([reapply](const double&) { reapply(); });
-    nt_kI.setOnUpdate([reapply](const double&) { reapply(); });
-    nt_kD.setOnUpdate([reapply](const double&) { reapply(); });
+    nt_kP.setOnUpdate([reapply, key = nt_kP.getKey()](const double& value)
+    {
+        std::cout << key << " set to " << value << std::endl;
+        reapply();
+    });
+    nt_kI.setOnUpdate([reapply, key = nt_kI.getKey()](const double& value)
+    {
+        std::cout << key << " set to " << value << std::endl;
+        reapply();
+    });
+    nt_kD.setOnUpdate([reapply, key = nt_kD.getKey()](const double& value)
+    {
+        std::cout << key << " set to " << value << std::endl;
+        reapply();
+    });
 }
 
 
