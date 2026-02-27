@@ -231,7 +231,8 @@ void Robot::TestInit()
 
 void Robot::TestPeriodic()
 {
-
+    shooter_system->setLoaderMode(ShooterSystem::LoaderMode::LOAD);
+    shooter_system->setShooterMode(ShooterSystem::ShooterMode::SPEED);
 }
 
 void Robot::SimulationInit()

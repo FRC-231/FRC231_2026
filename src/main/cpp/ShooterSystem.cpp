@@ -22,6 +22,10 @@ ShooterSystem::ShooterSystem(std::shared_ptr<RobotContext> context):
         units::unit_t<frc::SimpleMotorFeedforward<units::meters>::kv_unit>{shooter_config.shooter_ff.k_v},
         units::unit_t<frc::SimpleMotorFeedforward<units::meters>::ka_unit>{shooter_config.shooter_ff.k_a}
     );
+    max_shooter_voltage = units::volt_t{shooter_config.shooter_max_voltage};
+    min_shooter_voltage = units::volt_t{shooter_config.shooter_min_voltage};
+
+
 
     ctre::phoenix6::configs::TalonFXConfiguration shooter_left_config{};
     shooter_left_config.MotorOutput.Inverted = ctre::phoenix6::signals::InvertedValue::Clockwise_Positive;
@@ -73,6 +77,25 @@ ShooterSystem::ShooterSystem(std::shared_ptr<RobotContext> context):
             right_shooter_voltage = units::volt_t{value};
         }
     });
+
+    nt_left_shooter_target_velocity.setOnUpdate([this](const double& value)
+    {
+        if(value != left_shooter_target_velocity.value())
+        {
+            std::cout << "Set left_shooter_target_velocity to " << value << std::endl;
+            left_shooter_target_velocity = units::revolutions_per_minute_t{value};
+        }
+    });
+
+    nt_right_shooter_target_velocity.setOnUpdate([this](const double& value)
+    {
+        if(value != right_shooter_target_velocity.value())
+        {
+            std::cout << "Set right_shooter_target_velocity to " << value << std::endl;
+            right_shooter_target_velocity = units::revolutions_per_minute_t{value};
+        }
+    });
+
 
     nt_shooter_kP.setOnUpdate([this](const double& value)
     {
@@ -148,7 +171,7 @@ void ShooterSystem::updateNetworkTable()
     nt_shooter_kP.setValue(shooter_pid->GetP());
     nt_shooter_kI.setValue(shooter_pid->GetI());
     nt_shooter_kD.setValue(shooter_pid->GetD());
-    nt_shooter_velocities.setValue({getLeftShooterVelocity().value(), getRightShooterVelocity().value()});
+    nt_shooter_velocities.setValue({left_shooter_voltage.value(),right_shooter_voltage.value(),getLeftShooterVelocity().value(), getRightShooterVelocity().value()});
 }
 
 std::string ShooterSystem::loaderModeToString(LoaderMode mode)
@@ -220,6 +243,13 @@ void ShooterSystem::setShooterVoltages(units::volt_t left_voltage, units::volt_t
     shooter_mode = ShooterMode::VOLTAGE;
 }
 
+void ShooterSystem::setShooterTargetVelocities(units::revolutions_per_minute_t left_velocity, units::revolutions_per_minute_t right_velocity)
+{
+    right_shooter_target_velocity = left_velocity;
+    left_shooter_target_velocity = right_velocity;
+    shooter_mode = ShooterMode::SPEED;
+}
+
 void ShooterSystem::doShooterSpeedControl()
 {
     //Calculate feedforward voltage. The FF wants "meters" but will will just cast
@@ -237,8 +267,10 @@ void ShooterSystem::doShooterSpeedControl()
     units::volt_t right_fb_voltage = units::volt_t{shooter_pid->Calculate(right_velocity_error)};
 
     //Set voltages
-    left_shooter_motor->SetVoltage(left_ff_voltage + left_fb_voltage);
-    right_shooter_motor->SetVoltage(right_ff_voltage + right_fb_voltage);
+    auto total_left_voltage = HighVoltage::clamp(min_shooter_voltage, max_shooter_voltage, left_ff_voltage + left_fb_voltage);
+    auto total_right_voltage = HighVoltage::clamp(min_shooter_voltage, max_shooter_voltage, right_ff_voltage + right_fb_voltage);
+    left_shooter_motor->SetVoltage(total_left_voltage);
+    right_shooter_motor->SetVoltage(total_right_voltage);
 }
 
 void ShooterSystem::setLoaderMode(LoaderMode mode)

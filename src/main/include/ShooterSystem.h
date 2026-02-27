@@ -36,6 +36,7 @@ public:
 
     void setShooterMode(ShooterMode mode);
     void setShooterVoltages(units::volt_t left_voltage, units::volt_t right_voltage);
+    void setShooterTargetVelocities(units::revolutions_per_minute_t left_velocity, units::revolutions_per_minute_t right_velocity);
     void setLoaderMode(LoaderMode mode);
     units::revolutions_per_minute_t getLeftShooterVelocity();
     units::revolutions_per_minute_t getRightShooterVelocity();
@@ -73,6 +74,8 @@ private:
     units::revolutions_per_minute_t left_shooter_target_velocity{0_rpm};
     units::revolutions_per_minute_t right_shooter_target_velocity{0_rpm};
     double shooter_gear_ratio;
+    units::volt_t max_shooter_voltage;
+    units::volt_t min_shooter_voltage;
 
     HighVoltage::NetworkTableValue<double> nt_hopper_voltage{SHOOTER_TABLE_NAME + "/" + "hopper_voltage", 0.0};
     HighVoltage::NetworkTableValue<double> nt_feed_voltage{SHOOTER_TABLE_NAME + "/" + "feed_voltage", 0.0};
@@ -84,14 +87,16 @@ private:
     HighVoltage::NetworkTableValue<double> nt_right_shooter_velocity{SHOOTER_TABLE_NAME + "/" + "right_shooter_velocity", 0.0};
     HighVoltage::NetworkTableValue<double> nt_left_shooter_voltage{SHOOTER_TABLE_NAME + "/" + "left_shooter_voltage", 0.0};
     HighVoltage::NetworkTableValue<double> nt_right_shooter_voltage{SHOOTER_TABLE_NAME + "/" + "right_shooter_voltage", 0.0};
-
+    HighVoltage::NetworkTableValue<double> nt_left_shooter_target_velocity{SHOOTER_TABLE_NAME + "/" + "left_shooter_target_velocity", 0.0};
+    HighVoltage::NetworkTableValue<double> nt_right_shooter_target_velocity{SHOOTER_TABLE_NAME + "/" + "right_shooter_target_velocity", 0.0};
+    
     //PID network table values
     HighVoltage::NetworkTableValue<double> nt_shooter_kP{SHOOTER_TABLE_NAME + "/" + "shooter_kP", 0.0};
     HighVoltage::NetworkTableValue<double> nt_shooter_kI{SHOOTER_TABLE_NAME + "/" + "shooter_kI", 0.0};
     HighVoltage::NetworkTableValue<double> nt_shooter_kD{SHOOTER_TABLE_NAME + "/" + "shooter_kD", 0.0};
 
     //Network table values for recording data during testing
-    HighVoltage::NetworkTableValue<std::vector<double>> nt_shooter_velocities{SHOOTER_TABLE_NAME + "/" + "shooter_velocities", std::vector<double>{0,0}};
+    HighVoltage::NetworkTableValue<std::vector<double>> nt_shooter_velocities{SHOOTER_TABLE_NAME + "/" + "shooter_velocities", std::vector<double>{0,0,0,0}};
 
 
 
