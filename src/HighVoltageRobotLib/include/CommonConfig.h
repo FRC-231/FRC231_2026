@@ -2,6 +2,7 @@
 
 #include <nlohmann/json.hpp>
 #include <string>
+#include <ctre/phoenix6/TalonFX.hpp>
 
 namespace HighVoltage
 {
@@ -119,6 +120,26 @@ struct MK4SwerveModuleConfig
 
     friend void from_json(const nlohmann::json &j, MK4SwerveModuleConfig &module);
 };
+
+template <uint8_t slot = 0>
+void applyMotionConfigToTalonFX(const PIDConfig& pid_config, const FeedForwardConfig& ff_config, ctre::phoenix6::hardware::TalonFX& motor)
+{
+    using SlotType =
+        std::conditional_t<slot == 0, ctre::phoenix6::configs::Slot0Configs,
+        std::conditional_t<slot == 1, ctre::phoenix6::configs::Slot1Configs,
+        std::conditional_t<slot == 2, ctre::phoenix6::configs::Slot2Configs,
+        void>>>;
+
+    SlotType slot_config;
+    slot_config.kP = pid_config.k_p;
+    slot_config.kI = pid_config.k_i;
+    slot_config.kD = pid_config.k_d;
+    slot_config.kS = ff_config.k_s;
+    slot_config.kV = ff_config.k_v;
+    slot_config.kA = ff_config.k_a;
+
+    motor.GetConfigurator().Apply(slot_config);
+}
 
 
 
