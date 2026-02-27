@@ -3,6 +3,7 @@
 #include <nlohmann/json.hpp>
 #include <string>
 #include <ctre/phoenix6/TalonFX.hpp>
+#include "NetworkTableValue.h"
 
 namespace HighVoltage
 {
@@ -139,6 +140,64 @@ void applyMotionConfigToTalonFX(const PIDConfig& pid_config, const FeedForwardCo
     slot_config.kA = ff_config.k_a;
 
     motor.GetConfigurator().Apply(slot_config);
+}
+
+// Overload for constants tuned in RPM. The TalonFX closed-loop runs in rot/s at
+// the motor shaft, so velocity/acceleration-dependent gains are divided by
+// (gear_ratio / 60) to convert V/RPM -> V/rps (and V/RPM^2 -> V/rps^2).
+// kS is unit-free and is left unscaled. kP/kI/kD are scaled the same way since
+// they were also tuned against RPM error.
+template <uint8_t slot = 0>
+void applyMotionConfigToTalonFXFromRPM(const PIDConfig& pid_config, const FeedForwardConfig& ff_config,
+                                        ctre::phoenix6::hardware::TalonFX& motor, double gear_ratio)
+{
+    const double rpm_to_rps = gear_ratio / 60.0;
+    PIDConfig scaled_pid{
+        pid_config.k_p / rpm_to_rps,
+        pid_config.k_i / rpm_to_rps,
+        pid_config.k_d / rpm_to_rps
+    };
+    FeedForwardConfig scaled_ff{
+        ff_config.k_s,
+        ff_config.k_v / rpm_to_rps,
+        ff_config.k_a / rpm_to_rps
+    };
+    applyMotionConfigToTalonFX<slot>(scaled_pid, scaled_ff, motor);
+}
+
+// Wires NT update callbacks for kP/kI/kD so that any change written to the
+// network table is immediately re-applied to the motor (with RPM->rps scaling).
+// nt_kP/kI/kD are the existing NetworkTableValue members that already hold the
+// current values and publish them — this just attaches the onUpdate side.
+// ff_config is captured by value since it is not expected to change at runtime.
+template <uint8_t slot = 0>
+void bindPIDNetworkTableToTalonFXFromRPM(NetworkTableValue<double>& nt_kP,
+                                          NetworkTableValue<double>& nt_kI,
+                                          NetworkTableValue<double>& nt_kD,
+                                          const FeedForwardConfig& ff_config,
+                                          ctre::phoenix6::hardware::TalonFX& motor,
+                                          double gear_ratio)
+{
+    // Capture raw pointers to the NT values so each callback can read the
+    // current value of the other two gains when it fires.
+    auto* p_kP = &nt_kP;
+    auto* p_kI = &nt_kI;
+    auto* p_kD = &nt_kD;
+    auto* p_motor = &motor;
+
+    auto reapply = [p_kP, p_kI, p_kD, ff_config, p_motor, gear_ratio]()
+    {
+        PIDConfig pid{
+            p_kP->getValue(0.0),
+            p_kI->getValue(0.0),
+            p_kD->getValue(0.0)
+        };
+        applyMotionConfigToTalonFXFromRPM<slot>(pid, ff_config, *p_motor, gear_ratio);
+    };
+
+    nt_kP.setOnUpdate([reapply](const double&) { reapply(); });
+    nt_kI.setOnUpdate([reapply](const double&) { reapply(); });
+    nt_kD.setOnUpdate([reapply](const double&) { reapply(); });
 }
 
 

@@ -2,16 +2,15 @@
 #include <memory>
 
 #include <frc2/command/SubsystemBase.h>
-#include <frc/controller/PIDController.h>
-#include <frc/controller/SimpleMotorFeedforward.h>
 #include <units/velocity.h>
 #include <ctre/phoenix6/CANcoder.hpp>
 #include <ctre/phoenix6/TalonFX.hpp>
 #include <ctre/phoenix6/signals/SpnEnums.hpp>
+#include <ctre/phoenix6/controls/VelocityVoltage.hpp>
 
 #include "RobotConfig.h"
 #include "RobotContext.h"
-
+#include "CommonConfig.h"
 #include "NetworkTableValue.h"
 
 class ShooterSystem: public frc2::SubsystemBase
@@ -65,8 +64,7 @@ private:
     std::unique_ptr<ctre::phoenix6::hardware::TalonFX> left_shooter_motor;
     std::unique_ptr<ctre::phoenix6::hardware::TalonFX> right_shooter_motor;
 
-    std::unique_ptr<frc::PIDController> shooter_pid;
-    std::unique_ptr<frc::SimpleMotorFeedforward<units::meters>> shooter_ff;
+    ctre::phoenix6::controls::VelocityVoltage shooter_velocity_request{0_tps};
     units::volt_t hopper_voltage;
     units::volt_t feed_voltage;
     units::volt_t left_shooter_voltage{0_V};
@@ -89,8 +87,8 @@ private:
     HighVoltage::NetworkTableValue<double> nt_right_shooter_voltage{SHOOTER_TABLE_NAME + "/" + "right_shooter_voltage", 0.0};
     HighVoltage::NetworkTableValue<double> nt_left_shooter_target_velocity{SHOOTER_TABLE_NAME + "/" + "left_shooter_target_velocity", 0.0};
     HighVoltage::NetworkTableValue<double> nt_right_shooter_target_velocity{SHOOTER_TABLE_NAME + "/" + "right_shooter_target_velocity", 0.0};
-    
-    //PID network table values
+
+    //PID network table values (used to live-tune the TalonFX closed-loop gains)
     HighVoltage::NetworkTableValue<double> nt_shooter_kP{SHOOTER_TABLE_NAME + "/" + "shooter_kP", 0.0};
     HighVoltage::NetworkTableValue<double> nt_shooter_kI{SHOOTER_TABLE_NAME + "/" + "shooter_kI", 0.0};
     HighVoltage::NetworkTableValue<double> nt_shooter_kD{SHOOTER_TABLE_NAME + "/" + "shooter_kD", 0.0};

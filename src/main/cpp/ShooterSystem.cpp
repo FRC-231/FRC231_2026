@@ -12,16 +12,6 @@ ShooterSystem::ShooterSystem(std::shared_ptr<RobotContext> context):
     hopper_voltage = units::volt_t{shooter_config.hopper_voltage};
     feed_voltage = units::volt_t{shooter_config.feed_voltage};
     shooter_gear_ratio = shooter_config.shooter_gear_ratio;
-    shooter_pid = std::make_unique<frc::PIDController>(
-        shooter_config.shooter_pid.k_p,
-        shooter_config.shooter_pid.k_i,
-        shooter_config.shooter_pid.k_d
-    );
-    shooter_ff = std::make_unique<frc::SimpleMotorFeedforward<units::meters>>(
-        units::volt_t{shooter_config.shooter_ff.k_s},
-        units::unit_t<frc::SimpleMotorFeedforward<units::meters>::kv_unit>{shooter_config.shooter_ff.k_v},
-        units::unit_t<frc::SimpleMotorFeedforward<units::meters>::ka_unit>{shooter_config.shooter_ff.k_a}
-    );
     max_shooter_voltage = units::volt_t{shooter_config.shooter_max_voltage};
     min_shooter_voltage = units::volt_t{shooter_config.shooter_min_voltage};
 
@@ -36,6 +26,21 @@ ShooterSystem::ShooterSystem(std::shared_ptr<RobotContext> context):
     shooter_right_config.MotorOutput.Inverted = ctre::phoenix6::signals::InvertedValue::Clockwise_Positive;
     shooter_right_config.MotorOutput.NeutralMode = ctre::phoenix6::signals::NeutralModeValue::Coast;
     right_shooter_motor->GetConfigurator().Apply(shooter_right_config);
+
+    HighVoltage::applyMotionConfigToTalonFXFromRPM(shooter_config.shooter_pid, shooter_config.shooter_ff, *left_shooter_motor,  shooter_gear_ratio);
+    HighVoltage::applyMotionConfigToTalonFXFromRPM(shooter_config.shooter_pid, shooter_config.shooter_ff, *right_shooter_motor, shooter_gear_ratio);
+
+    // Seed the NT values with the config values so they display correctly on boot.
+    nt_shooter_kP.setValue(shooter_config.shooter_pid.k_p);
+    nt_shooter_kI.setValue(shooter_config.shooter_pid.k_i);
+    nt_shooter_kD.setValue(shooter_config.shooter_pid.k_d);
+
+    // Bind NT updates: writing kP/kI/kD from a dashboard will immediately
+    // re-apply the scaled gains to both shooter motors.
+    HighVoltage::bindPIDNetworkTableToTalonFXFromRPM(nt_shooter_kP, nt_shooter_kI, nt_shooter_kD,
+                                                      shooter_config.shooter_ff, *left_shooter_motor,  shooter_gear_ratio);
+    HighVoltage::bindPIDNetworkTableToTalonFXFromRPM(nt_shooter_kP, nt_shooter_kI, nt_shooter_kD,
+                                                      shooter_config.shooter_ff, *right_shooter_motor, shooter_gear_ratio);
 
     ctre::phoenix6::configs::TalonFXConfiguration shooter_feed_config{};
     shooter_feed_config.MotorOutput.Inverted = ctre::phoenix6::signals::InvertedValue::Clockwise_Positive;
@@ -95,34 +100,6 @@ ShooterSystem::ShooterSystem(std::shared_ptr<RobotContext> context):
             right_shooter_target_velocity = units::revolutions_per_minute_t{value};
         }
     });
-
-
-    nt_shooter_kP.setOnUpdate([this](const double& value)
-    {
-        if(value != shooter_pid->GetP())
-        {
-            std::cout << "Set shooter_kP to " << value << std::endl;
-            shooter_pid->SetP(value);
-        }
-    });
-
-    nt_shooter_kI.setOnUpdate([this](const double& value)
-    {
-        if(value != shooter_pid->GetI())
-        {
-            std::cout << "Set shooter_kI to " << value << std::endl;
-            shooter_pid->SetI(value);
-        }
-    });
-
-    nt_shooter_kD.setOnUpdate([this](const double& value)
-    {
-        if(value != shooter_pid->GetD())
-        {
-            std::cout << "Set shooter_kD to " << value << std::endl;
-            shooter_pid->SetD(value);
-        }
-    });
 }
 
 void ShooterSystem::Periodic()
@@ -168,9 +145,6 @@ void ShooterSystem::updateNetworkTable()
     nt_right_shooter_velocity.setValue(getRightShooterVelocity().value());
     nt_left_shooter_voltage.setValue(left_shooter_voltage.value());
     nt_right_shooter_voltage.setValue(right_shooter_voltage.value());
-    nt_shooter_kP.setValue(shooter_pid->GetP());
-    nt_shooter_kI.setValue(shooter_pid->GetI());
-    nt_shooter_kD.setValue(shooter_pid->GetD());
     nt_shooter_velocities.setValue({left_shooter_voltage.value(),right_shooter_voltage.value(),getLeftShooterVelocity().value(), getRightShooterVelocity().value()});
 }
 
@@ -252,25 +226,13 @@ void ShooterSystem::setShooterTargetVelocities(units::revolutions_per_minute_t l
 
 void ShooterSystem::doShooterSpeedControl()
 {
-    //Calculate feedforward voltage. The FF wants "meters" but will will just cast
-    //the RPMs to MPS without any conversion since the feedforward constants will
-    //just be tuned to match the RPMs instead of MPS
-    units::meters_per_second_t left_velocity_as_mps = units::meters_per_second_t{left_shooter_target_velocity.value()};
-    units::meters_per_second_t right_velocity_as_mps = units::meters_per_second_t{right_shooter_target_velocity.value()};
-    units::volt_t left_ff_voltage = shooter_ff->Calculate(left_velocity_as_mps);
-    units::volt_t right_ff_voltage = shooter_ff->Calculate(right_velocity_as_mps);
+    // Convert output RPM to motor-shaft rot/s for the TalonFX closed-loop.
+    // The motor's kP/kI/kD/kS/kV/kA were already scaled for this unit in the constructor.
+    units::turns_per_second_t left_rps  = units::turns_per_second_t{left_shooter_target_velocity.value()  / 60.0 * shooter_gear_ratio};
+    units::turns_per_second_t right_rps = units::turns_per_second_t{right_shooter_target_velocity.value() / 60.0 * shooter_gear_ratio};
 
-    //Calculate feedback voltage
-    double left_velocity_error = left_shooter_target_velocity.value() - getLeftShooterVelocity().value();
-    double right_velocity_error = right_shooter_target_velocity.value() - getRightShooterVelocity().value();
-    units::volt_t left_fb_voltage = units::volt_t{shooter_pid->Calculate(left_velocity_error)};
-    units::volt_t right_fb_voltage = units::volt_t{shooter_pid->Calculate(right_velocity_error)};
-
-    //Set voltages
-    auto total_left_voltage = HighVoltage::clamp(min_shooter_voltage, max_shooter_voltage, left_ff_voltage + left_fb_voltage);
-    auto total_right_voltage = HighVoltage::clamp(min_shooter_voltage, max_shooter_voltage, right_ff_voltage + right_fb_voltage);
-    left_shooter_motor->SetVoltage(total_left_voltage);
-    right_shooter_motor->SetVoltage(total_right_voltage);
+    left_shooter_motor->SetControl(shooter_velocity_request.WithVelocity(left_rps));
+    right_shooter_motor->SetControl(shooter_velocity_request.WithVelocity(right_rps));
 }
 
 void ShooterSystem::setLoaderMode(LoaderMode mode)
