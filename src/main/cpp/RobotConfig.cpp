@@ -38,6 +38,9 @@ void from_json(const nlohmann::json &j, ShooterConfig &shooter)
     j.at(ShooterConfig::FEED_MOTOR_ID).get_to(shooter.feed_motor_id);
     j.at(ShooterConfig::LEFT_SHOOTER_MOTOR_ID).get_to(shooter.left_shooter_motor_id);
     j.at(ShooterConfig::RIGHT_SHOOTER_MOTOR_ID).get_to(shooter.right_shooter_motor_id);
+    j.at(ShooterConfig::SERVO_CONTROLLER_ID).get_to(shooter.servo_controller_id);
+    j.at(ShooterConfig::LEFT_SERVO_ID).get_to(shooter.left_servo_id);
+    j.at(ShooterConfig::RIGHT_SERVO_ID).get_to(shooter.right_servo_id);
     j.at(ShooterConfig::SHOOTER_PID).get_to(shooter.shooter_pid);
     j.at(ShooterConfig::HOPPER_VOLTAGE).get_to(shooter.hopper_voltage);
     j.at(ShooterConfig::FEED_VOLTAGE).get_to(shooter.feed_voltage);
