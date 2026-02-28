@@ -122,6 +122,16 @@ ShooterSystem::ShooterSystem(std::shared_ptr<RobotContext> context):
             right_shooter_target_velocity = units::revolutions_per_minute_t{value};
         }
     });
+
+    nt_servo_pulse_width.setOnUpdate([this](const int& value)
+    {
+        if(value != servo_pulse_width)
+        {
+            std::cout << "Set servo_pulse_width to " << value << std::endl;
+            servo_pulse_width = value;
+        }
+    });
+
 }
 
 void ShooterSystem::Periodic()
@@ -154,12 +164,8 @@ void ShooterSystem::Periodic()
 
     auto left_channel_id  = static_cast<rev::servohub::ServoChannel::ChannelId>(left_servo_id);
     auto right_channel_id = static_cast<rev::servohub::ServoChannel::ChannelId>(right_servo_id);
-    servo_controller->GetServoChannel(left_channel_id).SetEnabled(true);
-    servo_controller->GetServoChannel(left_channel_id).SetPowered(true);
-    servo_controller->GetServoChannel(right_channel_id).SetEnabled(true);
-    servo_controller->GetServoChannel(right_channel_id).SetPowered(true);
-    servo_controller->GetServoChannel(left_channel_id).SetPulseWidth(1200);
-    servo_controller->GetServoChannel(right_channel_id).SetPulseWidth(1200);
+    servo_controller->GetServoChannel(left_channel_id).SetPulseWidth(servo_pulse_width);
+    servo_controller->GetServoChannel(right_channel_id).SetPulseWidth(servo_pulse_width);
 
     // Diagnostics: print servo status once per second (~50 loops at 20ms)
     servo_diag_counter_++;
