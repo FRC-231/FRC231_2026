@@ -154,6 +154,10 @@ void ShooterSystem::Periodic()
 
     auto left_channel_id  = static_cast<rev::servohub::ServoChannel::ChannelId>(left_servo_id);
     auto right_channel_id = static_cast<rev::servohub::ServoChannel::ChannelId>(right_servo_id);
+    servo_controller->GetServoChannel(left_channel_id).SetEnabled(true);
+    servo_controller->GetServoChannel(left_channel_id).SetPowered(true);
+    servo_controller->GetServoChannel(right_channel_id).SetEnabled(true);
+    servo_controller->GetServoChannel(right_channel_id).SetPowered(true);
     servo_controller->GetServoChannel(left_channel_id).SetPulseWidth(1200);
     servo_controller->GetServoChannel(right_channel_id).SetPulseWidth(1200);
 
@@ -164,15 +168,28 @@ void ShooterSystem::Periodic()
         auto s0 = servo_controller->GetPeriodicStatus0();
         auto s2 = servo_controller->GetPeriodicStatus2();
         auto s3 = servo_controller->GetPeriodicStatus3();
-        std::cout << "[ServoHub] systemEnabled=" << s0.systemEnabled
-                  << " primaryHeartbeatLock=" << s0.primaryHeartbeatLock
-                  << " ch2: enabled=" << s2.channel2Enabled
+        std::cout << "[ServoHub] systemEnabled=" << (int)s0.systemEnabled
+                  << " primaryHeartbeatLock=" << (int)s0.primaryHeartbeatLock
+                  << " commMode=" << (int)s0.communicationMode
+                  << " servoVoltage=" << s0.servoVoltage
+                  << " deviceVoltage=" << s0.voltage
+                  << " | ch" << (int)left_servo_id
+                  << ": enabled=" << s2.channel2Enabled
                   << " pulseWidth=" << s2.channel2PulseWidth
                   << " outOfRange=" << s2.channel2OutOfRange
-                  << " | ch3: enabled=" << s3.channel3Enabled
+                  << " | ch" << (int)right_servo_id
+                  << ": enabled=" << s3.channel3Enabled
                   << " pulseWidth=" << s3.channel3PulseWidth
                   << " outOfRange=" << s3.channel3OutOfRange
                   << std::endl;
+        if (servo_controller->HasActiveFault()) {
+            auto faults = servo_controller->GetFaults();
+            std::cout << "[ServoHub] FAULTS: regulatorPowerGood=" << faults.regulatorPowerGood
+                      << " hardware=" << faults.hardware
+                      << " firmware=" << faults.firmware
+                      << " lowBattery=" << faults.lowBattery
+                      << " rawBits=0x" << std::hex << faults.rawBits << std::dec << std::endl;
+        }
     }
 
     updateNetworkTable();
