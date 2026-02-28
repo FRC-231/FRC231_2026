@@ -157,9 +157,12 @@
         "feed_motor_id":12,
         "left_shooter_motor_id":13,
         "right_shooter_motor_id":14,
+        "servo_controller_id": 15,
+        "left_servo_id":2,
+        "right_servo_id":3,
         "shooter_pid":{
-            "k_p":0.001,
-            "k_i":0.0,
+            "k_p":0.004,
+            "k_i":0.0016,
             "k_d":0.0
         },
         "hopper_voltage":2,

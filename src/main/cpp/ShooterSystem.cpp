@@ -14,6 +14,9 @@ ShooterSystem::ShooterSystem(std::shared_ptr<RobotContext> context):
     shooter_gear_ratio = shooter_config.shooter_gear_ratio;
     max_shooter_voltage = units::volt_t{shooter_config.shooter_max_voltage};
     min_shooter_voltage = units::volt_t{shooter_config.shooter_min_voltage};
+    servo_controller = std::make_unique<rev::servohub::ServoHub>(shooter_config.servo_controller_id);
+    left_servo_id = shooter_config.left_servo_id;
+    right_servo_id = shooter_config.right_servo_id;
 
 
 
@@ -129,6 +132,13 @@ void ShooterSystem::Periodic()
             doLoaderStop();
             break;
     }
+
+    servo_controller->GetServoChannel(rev::servohub::ServoChannel::ChannelId::kChannelId2).SetEnabled(true);
+    servo_controller->GetServoChannel(rev::servohub::ServoChannel::ChannelId::kChannelId3).SetEnabled(true);
+    servo_controller->GetServoChannel(rev::servohub::ServoChannel::ChannelId::kChannelId2).SetPowered(true);
+    servo_controller->GetServoChannel(rev::servohub::ServoChannel::ChannelId::kChannelId3).SetPowered(true);
+    servo_controller->GetServoChannel(rev::servohub::ServoChannel::ChannelId::kChannelId2).SetPulseWidth(1200);
+    servo_controller->GetServoChannel(rev::servohub::ServoChannel::ChannelId::kChannelId3).SetPulseWidth(1200);
 
     updateNetworkTable();
 }

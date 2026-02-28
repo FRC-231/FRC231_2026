@@ -7,6 +7,7 @@
 #include <ctre/phoenix6/TalonFX.hpp>
 #include <ctre/phoenix6/signals/SpnEnums.hpp>
 #include <ctre/phoenix6/controls/VelocityVoltage.hpp>
+#include <rev/ServoHub.h>
 
 #include "RobotConfig.h"
 #include "RobotContext.h"
@@ -63,6 +64,9 @@ private:
     std::unique_ptr<ctre::phoenix6::hardware::TalonFX> feed_motor;
     std::unique_ptr<ctre::phoenix6::hardware::TalonFX> left_shooter_motor;
     std::unique_ptr<ctre::phoenix6::hardware::TalonFX> right_shooter_motor;
+    std::unique_ptr<rev::servohub::ServoHub> servo_controller;
+    uint8_t left_servo_id;
+    uint8_t right_servo_id;
 
     ctre::phoenix6::controls::VelocityVoltage shooter_velocity_request{0_tps};
     units::volt_t hopper_voltage;
