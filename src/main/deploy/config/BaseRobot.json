@@ -158,7 +158,7 @@
         "left_shooter_motor_id":13,
         "right_shooter_motor_id":14,
         "shooter_pid":{
-            "k_p":-0.001,
+            "k_p":0.001,
             "k_i":0.0,
             "k_d":0.0
         },
