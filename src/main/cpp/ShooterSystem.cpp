@@ -18,6 +18,13 @@ ShooterSystem::ShooterSystem(std::shared_ptr<RobotContext> context):
     left_servo_id = shooter_config.left_servo_id;
     right_servo_id = shooter_config.right_servo_id;
 
+    auto left_channel_id  = static_cast<rev::servohub::ServoChannel::ChannelId>(left_servo_id);
+    auto right_channel_id = static_cast<rev::servohub::ServoChannel::ChannelId>(right_servo_id);
+    servo_controller->GetServoChannel(left_channel_id).SetEnabled(true);
+    servo_controller->GetServoChannel(left_channel_id).SetPowered(true);
+    servo_controller->GetServoChannel(right_channel_id).SetEnabled(true);
+    servo_controller->GetServoChannel(right_channel_id).SetPowered(true);
+
 
 
     ctre::phoenix6::configs::TalonFXConfiguration shooter_left_config{};
@@ -133,12 +140,10 @@ void ShooterSystem::Periodic()
             break;
     }
 
-    servo_controller->GetServoChannel(rev::servohub::ServoChannel::ChannelId::kChannelId2).SetEnabled(true);
-    servo_controller->GetServoChannel(rev::servohub::ServoChannel::ChannelId::kChannelId3).SetEnabled(true);
-    servo_controller->GetServoChannel(rev::servohub::ServoChannel::ChannelId::kChannelId2).SetPowered(true);
-    servo_controller->GetServoChannel(rev::servohub::ServoChannel::ChannelId::kChannelId3).SetPowered(true);
-    servo_controller->GetServoChannel(rev::servohub::ServoChannel::ChannelId::kChannelId2).SetPulseWidth(1200);
-    servo_controller->GetServoChannel(rev::servohub::ServoChannel::ChannelId::kChannelId3).SetPulseWidth(1200);
+    auto left_channel_id  = static_cast<rev::servohub::ServoChannel::ChannelId>(left_servo_id);
+    auto right_channel_id = static_cast<rev::servohub::ServoChannel::ChannelId>(right_servo_id);
+    servo_controller->GetServoChannel(left_channel_id).SetPulseWidth(1200);
+    servo_controller->GetServoChannel(right_channel_id).SetPulseWidth(1200);
 
     updateNetworkTable();
 }
