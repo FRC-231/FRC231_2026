@@ -20,6 +20,18 @@ ShooterSystem::ShooterSystem(std::shared_ptr<RobotContext> context):
 
     auto left_channel_id  = static_cast<rev::servohub::ServoChannel::ChannelId>(left_servo_id);
     auto right_channel_id = static_cast<rev::servohub::ServoChannel::ChannelId>(right_servo_id);
+
+    // Explicitly configure pulse range (500–1500–2500 µs, standard servo range)
+    // so the device range matches what we send regardless of hardware client state.
+    rev::servohub::ServoChannelConfig left_servo_cfg{left_channel_id};
+    left_servo_cfg.PulseRange(500, 1500, 2500);
+    rev::servohub::ServoChannelConfig right_servo_cfg{right_channel_id};
+    right_servo_cfg.PulseRange(500, 1500, 2500);
+    rev::servohub::ServoHubConfig servo_hub_config{};
+    servo_hub_config.Apply(left_channel_id, left_servo_cfg);
+    servo_hub_config.Apply(right_channel_id, right_servo_cfg);
+    servo_controller->Configure(servo_hub_config, rev::ResetMode::kNoResetSafeParameters);
+
     servo_controller->GetServoChannel(left_channel_id).SetEnabled(true);
     servo_controller->GetServoChannel(left_channel_id).SetPowered(true);
     servo_controller->GetServoChannel(right_channel_id).SetEnabled(true);
@@ -144,6 +156,24 @@ void ShooterSystem::Periodic()
     auto right_channel_id = static_cast<rev::servohub::ServoChannel::ChannelId>(right_servo_id);
     servo_controller->GetServoChannel(left_channel_id).SetPulseWidth(1200);
     servo_controller->GetServoChannel(right_channel_id).SetPulseWidth(1200);
+
+    // Diagnostics: print servo status once per second (~50 loops at 20ms)
+    servo_diag_counter_++;
+    if (servo_diag_counter_ >= 50) {
+        servo_diag_counter_ = 0;
+        auto s0 = servo_controller->GetPeriodicStatus0();
+        auto s2 = servo_controller->GetPeriodicStatus2();
+        auto s3 = servo_controller->GetPeriodicStatus3();
+        std::cout << "[ServoHub] systemEnabled=" << s0.systemEnabled
+                  << " primaryHeartbeatLock=" << s0.primaryHeartbeatLock
+                  << " ch2: enabled=" << s2.channel2Enabled
+                  << " pulseWidth=" << s2.channel2PulseWidth
+                  << " outOfRange=" << s2.channel2OutOfRange
+                  << " | ch3: enabled=" << s3.channel3Enabled
+                  << " pulseWidth=" << s3.channel3PulseWidth
+                  << " outOfRange=" << s3.channel3OutOfRange
+                  << std::endl;
+    }
 
     updateNetworkTable();
 }

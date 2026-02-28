@@ -100,6 +100,6 @@ private:
     //Network table values for recording data during testing
     HighVoltage::NetworkTableValue<std::vector<double>> nt_shooter_velocities{SHOOTER_TABLE_NAME + "/" + "shooter_velocities", std::vector<double>{0,0,0,0}};
 
-
+    int servo_diag_counter_{0};
 
 };
