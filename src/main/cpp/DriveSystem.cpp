@@ -255,6 +255,12 @@ bool DriveSystem::isLockedOn()
 {
     units::degree_t current_angle = getRobotAngleInDegrees();
     units::degree_t angle_error = angle_to_hub - current_angle;
+    angle_error = HighVoltage::get180Range(angle_error);
+    if(std::abs(angle_error.value()) > 90)
+    {
+        angle_error -= 180_deg;
+        angle_error = HighVoltage::get180Range(angle_error);
+    }
     return std::abs(angle_error.value()) < LOCK_ON_TOLERANCE.value();
 
 }
