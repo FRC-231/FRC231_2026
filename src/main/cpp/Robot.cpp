@@ -92,6 +92,7 @@ void Robot::RobotPeriodic()
 void Robot::AutonomousInit()
 {
     std::lock_guard<std::mutex> lock(mutex);
+    context->getVision().setMode(VisionMode::Auton);
     if(auton_script && !auton_script_loading)
     {
         std::cout << "Starting auton script: " << current_loaded_auton << std::endl;
@@ -105,6 +106,7 @@ void Robot::AutonomousPeriodic()
 
 void Robot::TeleopInit()
 {
+    context->getVision().setMode(VisionMode::Teleop);
     if(auton_script && !auton_script_loading)
     {
         auton_script->stop();
@@ -164,6 +166,7 @@ void Robot::TeleopPeriodic()
 
 void Robot::DisabledInit()
 {
+    context->getVision().setMode(VisionMode::Teleop);
 }
 
 void Robot::DisabledPeriodic()

@@ -147,19 +147,28 @@ void Vision::applyCameraData(LimelightCamera& camera, frc::SwerveDrivePoseEstima
 
         // If vision says we're very far from where odometry thinks we are,
         // something is probably wrong — reject this measurement.
-        // Single-tag gets a STRICT distance check (1.0m) — this was the key
-        // filter in the old working code that prevented bad single-tag solves
-        // from jumping the position forward.
-        // Multi-tag gets a generous limit since those solves are reliable.
+        //
+        // In AUTON mode we apply strict distance checks:
+        //   - Single-tag gets a STRICT distance check (1.0m) to prevent
+        //     bad single-tag solves from jumping the position forward.
+        //   - Multi-tag gets a generous limit since those solves are reliable.
+        //
+        // In TELEOP mode we skip these distance checks entirely because
+        // defence from other robots can cause large odometry drift, and we
+        // need vision to pull us back to the correct position.
         auto robot_estimate = estimator.GetEstimatedPosition();
         double odometry_vs_vision_distance =
             robot_estimate.Translation().Distance(vision_position.Translation()).value();
-        double max_distance = (number_of_targets >= 2)
-            ? MAX_ACCEPTED_VISION_DISTANCE
-            : MAX_SINGLE_TAG_VISION_DISTANCE;
-        if (odometry_vs_vision_distance > max_distance)
+
+        if (mode == VisionMode::Auton)
         {
-            return;
+            double max_distance = (number_of_targets >= 2)
+                ? MAX_ACCEPTED_VISION_DISTANCE
+                : MAX_SINGLE_TAG_VISION_DISTANCE;
+            if (odometry_vs_vision_distance > max_distance)
+            {
+                return;
+            }
         }
 
         // ── 5. Calculate standard deviations (trust level) ──
@@ -178,19 +187,37 @@ void Vision::applyCameraData(LimelightCamera& camera, frc::SwerveDrivePoseEstima
         double deg_stds;
         if (number_of_targets >= 2)
         {
-            // Multi-tag: very reliable. Scale gently with distance.
-            xy_stds = MULTI_TAG_XY_BASE + (MULTI_TAG_XY_PER_METER * avg_tag_distance);
-            deg_stds = MULTI_TAG_DEG_BASE + (MULTI_TAG_DEG_PER_METER * avg_tag_distance);
+            if (mode == VisionMode::Auton)
+            {
+                // Multi-tag auton: reliable but conservative.
+                xy_stds = MULTI_TAG_XY_BASE + (MULTI_TAG_XY_PER_METER * avg_tag_distance);
+                deg_stds = MULTI_TAG_DEG_BASE + (MULTI_TAG_DEG_PER_METER * avg_tag_distance);
+            }
+            else
+            {
+                // Multi-tag teleop: very high trust to counteract defence-induced drift.
+                xy_stds = TELEOP_MULTI_TAG_XY_BASE + (TELEOP_MULTI_TAG_XY_PER_METER * avg_tag_distance);
+                deg_stds = TELEOP_MULTI_TAG_DEG_BASE + (TELEOP_MULTI_TAG_DEG_PER_METER * avg_tag_distance);
+            }
         }
         else
         {
-            // Single tag: less reliable, scale more aggressively.
-            xy_stds = SINGLE_TAG_XY_BASE + (SINGLE_TAG_XY_PER_METER * avg_tag_distance);
-            deg_stds = SINGLE_TAG_DEG_BASE + (SINGLE_TAG_DEG_PER_METER * avg_tag_distance);
+            if (mode == VisionMode::Auton)
+            {
+                // Single tag auton: less reliable, scale aggressively.
+                xy_stds = SINGLE_TAG_XY_BASE + (SINGLE_TAG_XY_PER_METER * avg_tag_distance);
+                deg_stds = SINGLE_TAG_DEG_BASE + (SINGLE_TAG_DEG_PER_METER * avg_tag_distance);
+            }
+            else
+            {
+                // Single tag teleop: still trust more than auton.
+                xy_stds = TELEOP_SINGLE_TAG_XY_BASE + (TELEOP_SINGLE_TAG_XY_PER_METER * avg_tag_distance);
+                deg_stds = TELEOP_SINGLE_TAG_DEG_BASE + (TELEOP_SINGLE_TAG_DEG_PER_METER * avg_tag_distance);
+            }
         }
 
-        // If the single-tag measurement is too far away, don't use it at all
-        if (number_of_targets < 2 && avg_tag_distance > MAX_SINGLE_TAG_DISTANCE)
+        // In auton, reject single-tag measurements that are too far away
+        if (mode == VisionMode::Auton && number_of_targets < 2 && avg_tag_distance > MAX_SINGLE_TAG_DISTANCE)
         {
             return;
         }
@@ -200,6 +227,7 @@ void Vision::applyCameraData(LimelightCamera& camera, frc::SwerveDrivePoseEstima
         frc::SmartDashboard::PutNumber("Vision/" + camera.table_name + "/deg_std", deg_stds);
         frc::SmartDashboard::PutNumber("Vision/" + camera.table_name + "/num_targets", number_of_targets);
         frc::SmartDashboard::PutNumber("Vision/" + camera.table_name + "/avg_tag_dist", avg_tag_distance);
+        frc::SmartDashboard::PutString("Vision/mode", (mode == VisionMode::Auton) ? "Auton" : "Teleop");
 
         // ── 7. Feed the measurement into the Kalman filter ──
         estimator.SetVisionMeasurementStdDevs({xy_stds, xy_stds, HighVoltage::toRadians(deg_stds)});

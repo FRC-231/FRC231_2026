@@ -18,6 +18,20 @@
  * Each camera tracks its own last reading and last position
  * so that duplicate/stale data is filtered independently.
  */
+/**
+ * Vision operates in two modes:
+ *  - Auton:  strict distance rejection to prevent bad jumps during autonomous.
+ *  - Teleop: much more trusting of the camera because defence from other robots
+ *            can cause large odometry drift that vision needs to correct.
+ *
+ * Disabled uses Teleop mode so the pose stays accurate before a match starts.
+ */
+enum class VisionMode
+{
+    Auton,
+    Teleop
+};
+
 struct LimelightCamera
 {
     std::string table_name;
@@ -55,6 +69,10 @@ public:
     // orientation to constrain the solve. This makes both multi-tag and
     // single-tag measurements significantly more accurate than standard solves.
 
+    // ═══════════════════════════════════════════════════════════
+    //  AUTON constants — strict filtering to prevent bad jumps
+    // ═══════════════════════════════════════════════════════════
+
     // Multi-tag (MegaTag 2): gyro-constrained + triangulation → high confidence
     // Old working values were 0.7 / 6 — these are slightly better for MegaTag 2
     static constexpr double MULTI_TAG_XY_BASE      = 0.5;   // meters — base trust for xy
@@ -80,6 +98,23 @@ public:
     // Reject any vision measurement (including multi-tag) if it disagrees
     // with odometry by more than this distance (meters).
     static constexpr double MAX_ACCEPTED_VISION_DISTANCE = 4.0;
+
+    // ═══════════════════════════════════════════════════════════
+    //  TELEOP constants — trust vision much more because defence
+    //  from other robots can cause large odometry drift
+    // ═══════════════════════════════════════════════════════════
+
+    // Multi-tag in teleop: very high trust
+    static constexpr double TELEOP_MULTI_TAG_XY_BASE      = 0.3;
+    static constexpr double TELEOP_MULTI_TAG_XY_PER_METER  = 0.05;
+    static constexpr double TELEOP_MULTI_TAG_DEG_BASE      = 4.0;
+    static constexpr double TELEOP_MULTI_TAG_DEG_PER_METER = 1.0;
+
+    // Single-tag in teleop: still trust quite a bit
+    static constexpr double TELEOP_SINGLE_TAG_XY_BASE      = 0.8;
+    static constexpr double TELEOP_SINGLE_TAG_XY_PER_METER  = 0.4;
+    static constexpr double TELEOP_SINGLE_TAG_DEG_BASE      = 15.0;
+    static constexpr double TELEOP_SINGLE_TAG_DEG_PER_METER = 4.0;
 
     inline static const std::string RED_BOT_POSE_NAME{"botpose_orb_wpired"};
     inline static const std::string BLUE_BOT_POSE_NAME{"botpose_orb_wpiblue"};
@@ -111,9 +146,16 @@ public:
     /** Get the number of cameras currently configured. */
     size_t getCameraCount() const { return cameras.size(); }
 
+    /** Set the vision mode (Auton = strict filtering, Teleop = trust camera more). */
+    void setMode(VisionMode new_mode) { mode = new_mode; }
+
+    /** Get the current vision mode. */
+    VisionMode getMode() const { return mode; }
+
 private:
     /** Try to apply vision data from a single camera. */
     void applyCameraData(LimelightCamera& camera, frc::SwerveDrivePoseEstimator<4>& estimator);
 
     std::vector<LimelightCamera> cameras;
+    VisionMode mode = VisionMode::Teleop;  // default to Teleop so disabled-mode trusts camera
 };
