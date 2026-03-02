@@ -251,6 +251,14 @@ units::degree_t DriveSystem::getAngleFromTargetPosition(frc::Pose2d target_point
     return units::degree_t{HighVoltage::get180Range(HighVoltage::toDegrees(angle_in_rad))};
 }
 
+bool DriveSystem::isLockedOn()
+{
+    units::degree_t current_angle = getRobotAngleInDegrees();
+    units::degree_t angle_error = angle_to_hub - current_angle;
+    return std::abs(angle_error.value()) < LOCK_ON_TOLERANCE.value();
+
+}
+
 // ==== Odometry ====
 
 void DriveSystem::setOdometry(frc::Pose2d pose)
@@ -643,4 +651,5 @@ void DriveSystem::updateNetworkTables()
     nt_target_drive_y.setValue(target_pose.Y().value());
     nt_target_drive_angle.setValue(target_pose.Rotation().Degrees().value());
     nt_angle_to_hub.setValue(angle_to_hub.value());
+    nt_locked_on.setValue(isLockedOn());
 }

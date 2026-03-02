@@ -50,6 +50,7 @@ public:
     static inline const std::string TARGET_X_KEY = "Target_X";
     static inline const std::string TARGET_Y_KEY = "Target_Y";
     static inline const std::string TARGET_ANGLE_KEY = "Target_Angle";
+    static inline constexpr units::degree_t LOCK_ON_TOLERANCE{2.0_deg};
 
     // ---- Constructor ----
     DriveSystem(std::shared_ptr<RobotContext> context);
@@ -77,6 +78,7 @@ public:
     units::degree_t getRobotAngleInDegrees();
     units::degree_t getRotationError();
     units::degree_t getAngleFromTargetPosition(frc::Pose2d target_point);
+    bool isLockedOn();
 
     // ---- Odometry ----
     void setOdometry(frc::Pose2d pose);
@@ -158,4 +160,5 @@ private:
     HighVoltage::NetworkTableValue<double> nt_target_drive_y{ORIENTATION_TABLE_NAME + "/" + TARGET_Y_KEY, 0.0};
     HighVoltage::NetworkTableValue<double> nt_target_drive_angle{ORIENTATION_TABLE_NAME + "/" + TARGET_ANGLE_KEY, 0.0};
     HighVoltage::NetworkTableValue<double> nt_angle_to_hub{ORIENTATION_TABLE_NAME + "/" + "angle_to_hub", 0.0};
+    HighVoltage::NetworkTableValue<bool> nt_locked_on{"DriveSystem/locked_on",false};
 };
