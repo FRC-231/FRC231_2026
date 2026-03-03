@@ -50,7 +50,7 @@ public:
     static inline const std::string TARGET_X_KEY = "Target_X";
     static inline const std::string TARGET_Y_KEY = "Target_Y";
     static inline const std::string TARGET_ANGLE_KEY = "Target_Angle";
-    static inline constexpr units::degree_t LOCK_ON_TOLERANCE{2.0_deg};
+    static inline constexpr units::degree_t LOCK_ON_TOLERANCE{3.0_deg};
 
     // ---- Constructor ----
     DriveSystem(std::shared_ptr<RobotContext> context);
@@ -124,7 +124,7 @@ private:
     std::shared_ptr<HighVoltage::MK5NSwerveModule> front_right_module;
     std::shared_ptr<HighVoltage::MK5NSwerveModule> back_left_module;
     std::shared_ptr<HighVoltage::MK5NSwerveModule> back_right_module;
-    std::unique_ptr<HighVoltage::SwerveModuleCordinator> swerve_cordinator;
+    std::unique_ptr<HighVoltage::SwerveModuleCordinator> swerve_coordinator;
 
     // ---- Manual Drive State ----
     double manual_drive_x{0.0};
@@ -136,7 +136,7 @@ private:
     frc::Pose2d target_pose;
     std::shared_ptr<HighVoltage::SmartPID> angle_correction_pid;
     double drive_to_proportional = 1.0;
-    double rotate_to_proportional = 0.0105;
+    double rotate_to_proportional = 0.0115;
     units::degree_t angle_to_hub = 0.0_deg;
     double min_auto_percentage = 0.0;
 

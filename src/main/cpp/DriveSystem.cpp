@@ -28,7 +28,7 @@ DriveSystem::DriveSystem(std::shared_ptr<RobotContext> context):
         drive_config.angle_correction_pid
     );
 
-    swerve_cordinator = std::make_unique<HighVoltage::SwerveModuleCordinator>(
+    swerve_coordinator = std::make_unique<HighVoltage::SwerveModuleCordinator>(
         front_left_module,
         front_right_module,
         back_left_module,
@@ -36,8 +36,8 @@ DriveSystem::DriveSystem(std::shared_ptr<RobotContext> context):
         0.6096, //TODO: Use config values
         0.6096 //TODO: Use config values
     );
-    swerve_cordinator->setMaxSpeed(5.0_mps);
-    swerve_cordinator->setFieldOriented(true);
+    swerve_coordinator->setMaxSpeed(5.0_mps);
+    swerve_coordinator->setFieldOriented(true);
 
     kinematics = std::make_shared<frc::SwerveDriveKinematics<4>>(
         frc::Translation2d{units::meter_t{context->getConfig()->drive_config.swerve_kinematics.front_left_position.x}, units::meter_t{context->getConfig()->drive_config.swerve_kinematics.front_left_position.y}},
@@ -93,7 +93,7 @@ DriveSystem::DriveSystem(std::shared_ptr<RobotContext> context):
 void DriveSystem::Periodic()
 {
     current_pose = updateOdometry();
-    swerve_cordinator->setFieldAngle(getRobotAngleInDegrees());
+    swerve_coordinator->setFieldAngle(getRobotAngleInDegrees());
     angle_to_hub = getAngleFromTargetPosition(RobotContext::HUB_POSITION);
     switch(drive_mode)
     {
@@ -198,7 +198,7 @@ void DriveSystem::rotateTo(units::degree_t angle)
 
 void DriveSystem::setMaxSpeed(units::meters_per_second_t speed)
 {
-    swerve_cordinator->setMaxSpeed(speed);
+    swerve_coordinator->setMaxSpeed(speed);
 }
 
 void DriveSystem::setMaxSpeedLua(double speed)
@@ -452,8 +452,8 @@ void DriveSystem::setOdometryLua(double x, double y, double angle)
 
 void DriveSystem::doStop()
 {
-    swerve_cordinator->stopDrive();
-    swerve_cordinator->update();
+    swerve_coordinator->stopDrive();
+    swerve_coordinator->update();
 }
 
 void DriveSystem::doManualDrive()
@@ -476,20 +476,20 @@ void DriveSystem::doManualDrive()
             turn = angle_correction_pid->Calculate(degrees_off.value());
             std::cout << degrees_off.value() << std::endl;
         }
-        swerve_cordinator->setDrive(units::degree_t{stick_angle}, stick_magnitude, turn);
+        swerve_coordinator->setDrive(units::degree_t{stick_angle}, stick_magnitude, turn);
     }
     else if(std::abs(manual_rotate) > MANUAL_ROTATE_DEADZONE)
     {
-        swerve_cordinator->setRotate(manual_rotate);
+        swerve_coordinator->setRotate(manual_rotate);
         target_angle = current_angle;
         angle_correction_pid->Reset();
     }
     else
     {
-        swerve_cordinator->stopDrive();
+        swerve_coordinator->stopDrive();
     }
-    swerve_cordinator->setFieldAngle(getRobotAngleInDegrees());
-    swerve_cordinator->update();
+    swerve_coordinator->setFieldAngle(getRobotAngleInDegrees());
+    swerve_coordinator->update();
 }
 
 void DriveSystem::doManualAA()
@@ -512,15 +512,23 @@ void DriveSystem::doManualAA()
     {
         angle_correction_pid->SetSetpoint(0.0);
         double turn = -angle_correction_pid->Calculate(angle_error.value());
-        swerve_cordinator->setDrive(units::degree_t{stick_angle}, stick_magnitude, turn);
+        swerve_coordinator->setDrive(units::degree_t{stick_angle}, stick_magnitude, turn);
     }
     else
     {
-        double power = angle_error.value() * rotate_to_proportional;
-        swerve_cordinator->setRotate(power);
+        if(std::abs(angle_error.value())> 0.25)
+        {
+            double power = angle_error.value() * rotate_to_proportional;
+            swerve_coordinator->setRotate(power);
+        }
+        else
+        {
+            swerve_coordinator->stopDrive();
+        }
     }
     target_angle = angle_to_hub;
-    swerve_cordinator->update();
+
+    swerve_coordinator->update();
 }
 
 void DriveSystem::doDriveFF()
@@ -587,9 +595,9 @@ void DriveSystem::doDriveTo()
     units::degree_t angle_error = HighVoltage::get180Range(target_pose.Rotation().Degrees()-current_angle);
     double turn = angle_correction_pid->Calculate(angle_error.value(), 0);
     std::cout << angle.value() << " " << distance.value() << " " << current_angle.value() << std::endl;
-    swerve_cordinator->setDrive(HighVoltage::get180Range(angle + 180_deg + current_angle), speed, turn);
+    swerve_coordinator->setDrive(HighVoltage::get180Range(angle + 180_deg + current_angle), speed, turn);
     //swerve_cordinator->setFieldAngle(getRobotAngleInDegrees());
-    swerve_cordinator->update();
+    swerve_coordinator->update();
 }
 
 void DriveSystem::doRotateTo()
@@ -598,8 +606,8 @@ void DriveSystem::doRotateTo()
     angle_error *= -1;
     std::cout << angle_error.value() << std::endl;
     double power = angle_error.value() * rotate_to_proportional;
-    swerve_cordinator->setRotate(power);
-    swerve_cordinator->update();
+    swerve_coordinator->setRotate(power);
+    swerve_coordinator->update();
 }
 
 // ==== Private: Internal Helpers ====
