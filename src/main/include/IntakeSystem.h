@@ -6,6 +6,7 @@
 #include <ctre/phoenix6/CANcoder.hpp>
 #include <ctre/phoenix6/TalonFX.hpp>
 #include <ctre/phoenix6/signals/SpnEnums.hpp>
+#include "Keeko/ThreadedScript.h"
 
 #include "RobotConfig.h"
 #include "RobotContext.h"
@@ -56,6 +57,9 @@ public:
     // ---- Enum Helpers ----
     std::string feedModeToString(FeedMode mode);
     std::string pivotModeToString(PivotMode mode);
+
+    void addToLuaState(Keeko::ThreadedScript& script);
+
 
 private:
     // ---- Mode Handlers ----

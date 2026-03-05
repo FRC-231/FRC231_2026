@@ -264,3 +264,18 @@ void IntakeSystem::updateNetworkTable()
     nt_pivot_down_angle.setValue(pivot_down_angle.value());
     nt_pivot_up_angle.setValue(pivot_up_angle.value());
 }
+
+
+void IntakeSystem::addToLuaState(Keeko::ThreadedScript& script)
+{
+    luabridge::getGlobalNamespace(script)
+    .beginClass<IntakeSystem> ("IntakeSystem")
+        .addFunction("feedStop", &IntakeSystem::feedStop)
+        .addFunction("feedIntake", &IntakeSystem::feedIntake)
+        .addFunction("feedOuttake", &IntakeSystem::feedOuttake)
+        .addFunction("pivotStop", &IntakeSystem::pivotStop)
+        .addFunction("pivotUp", &IntakeSystem::pivotUp)
+        .addFunction("pivotDown", &IntakeSystem::pivotDown)
+    .endClass();
+    script.addInstance("intake_system", this);
+}
