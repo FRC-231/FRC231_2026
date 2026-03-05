@@ -1,5 +1,6 @@
 #pragma once
 #include <memory>
+#include <functional>
 
 #include <frc2/command/SubsystemBase.h>
 #include <units/velocity.h>
@@ -13,6 +14,7 @@
 #include "RobotContext.h"
 #include "CommonConfig.h"
 #include "NetworkTableValue.h"
+#include "Keeko/ThreadedScript.h"
 
 class ShooterSystem: public frc2::SubsystemBase
 {
@@ -23,11 +25,13 @@ public:
         LOAD,
         UNLOAD
     };
+
     enum class ShooterMode
     {
         STOP,
         SPEED,
-        VOLTAGE
+        VOLTAGE,
+        AUTO
     };
     static inline const std::string SHOOTER_TABLE_NAME = "ShooterSystem";
 
@@ -35,9 +39,16 @@ public:
     ShooterSystem() = delete;
 
     void setShooterMode(ShooterMode mode);
+    void stopShooter();
+    void autoShoot();
     void setShooterVoltages(units::volt_t left_voltage, units::volt_t right_voltage);
+    void setShooterVoltagesLua(double left_voltage, double right_voltage);
     void setShooterTargetVelocities(units::revolutions_per_minute_t left_velocity, units::revolutions_per_minute_t right_velocity);
+    void setShooterTargetVelocitiesLua(double left_velocity, double right_velocity);
     void setLoaderMode(LoaderMode mode);
+    void loaderStop();
+    void loaderLoad();
+    void loaderUnload();
     units::revolutions_per_minute_t getLeftShooterVelocity();
     units::revolutions_per_minute_t getRightShooterVelocity();
 
@@ -45,12 +56,15 @@ public:
     std::string loaderModeToString(LoaderMode mode);
     std::string shooterModeToString(ShooterMode mode);
 
+    void addToLuaState(Keeko::ThreadedScript& script);
+
 private:
     void updateNetworkTable();
 
     void doShooterVoltageControl();
     void doShooterStop();
     void doShooterSpeedControl();
+    void doShooterAutoControl();
 
     void doLoaderStop();
     void doLoaderLoad();

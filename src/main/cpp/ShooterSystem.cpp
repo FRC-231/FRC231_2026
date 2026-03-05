@@ -144,6 +144,9 @@ void ShooterSystem::Periodic()
         case ShooterMode::SPEED:
             doShooterSpeedControl();
             break;
+        case ShooterMode::AUTO:
+            doShooterAutoControl();
+            break;
         default:
             doShooterStop();
             break;
@@ -253,6 +256,16 @@ void ShooterSystem::setShooterMode(ShooterMode mode)
     shooter_mode = mode;
 }
 
+void ShooterSystem::stopShooter()
+{
+    setShooterMode(ShooterMode::STOP);
+}
+
+void ShooterSystem::autoShoot()
+{
+    setShooterMode(ShooterMode::AUTO);
+}
+
 void ShooterSystem::doShooterVoltageControl()
 {
     left_shooter_motor->SetVoltage(left_shooter_voltage);
@@ -285,11 +298,21 @@ void ShooterSystem::setShooterVoltages(units::volt_t left_voltage, units::volt_t
     shooter_mode = ShooterMode::VOLTAGE;
 }
 
+void ShooterSystem::setShooterVoltagesLua(double left_voltage, double right_voltage)
+{
+    setShooterVoltages(units::volt_t{left_voltage}, units::volt_t{right_voltage});
+}
+
 void ShooterSystem::setShooterTargetVelocities(units::revolutions_per_minute_t left_velocity, units::revolutions_per_minute_t right_velocity)
 {
     right_shooter_target_velocity = left_velocity;
     left_shooter_target_velocity = right_velocity;
     shooter_mode = ShooterMode::SPEED;
+}
+
+void ShooterSystem::setShooterTargetVelocitiesLua(double left_velocity, double right_velocity)
+{
+    setShooterTargetVelocities(units::revolutions_per_minute_t{left_velocity}, units::revolutions_per_minute_t{right_velocity});
 }
 
 void ShooterSystem::doShooterSpeedControl()
@@ -303,9 +326,29 @@ void ShooterSystem::doShooterSpeedControl()
     right_shooter_motor->SetControl(shooter_velocity_request.WithVelocity(right_rps));
 }
 
+void ShooterSystem::doShooterAutoControl()
+{
+    //TODO: Implement
+}
+
 void ShooterSystem::setLoaderMode(LoaderMode mode)
 {
     loader_mode = mode;
+}
+
+void ShooterSystem::loaderStop()
+{
+    setLoaderMode(LoaderMode::STOP);
+}
+
+void ShooterSystem::loaderLoad()
+{
+    setLoaderMode(LoaderMode::LOAD);
+}
+
+void ShooterSystem::loaderUnload()
+{
+    setLoaderMode(LoaderMode::UNLOAD);
 }
 
 void ShooterSystem::doLoaderStop()
@@ -324,5 +367,21 @@ void ShooterSystem::doLoaderUnload()
 {
     hopper_motor->SetVoltage(-hopper_voltage);
     feed_motor->SetVoltage(-feed_voltage);
+}
+
+void ShooterSystem::addToLuaState(Keeko::ThreadedScript& script)
+{
+    luabridge::getGlobalNamespace(script)
+        .beginClass<ShooterSystem> ("ShooterSystem")
+            .addFunction("setShooterVoltages", &ShooterSystem::setShooterVoltagesLua)
+            .addFunction("setShooterTargetVelocities", &ShooterSystem::setShooterTargetVelocitiesLua)
+            .addFunction("stopShooter", &ShooterSystem::stopShooter)
+            .addFunction("autoShoot", &ShooterSystem::autoShoot)
+            .addFunction("loaderLoad", &ShooterSystem::loaderLoad)
+            .addFunction("loaderUnload", &ShooterSystem::loaderUnload)
+            .addFunction("loaderStop", &ShooterSystem::loaderStop)
+        .endClass();
+    script.addInstance("shooter_system", this);
+
 }
 
