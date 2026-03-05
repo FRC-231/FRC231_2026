@@ -291,6 +291,11 @@ units::revolutions_per_minute_t ShooterSystem::getRightShooterVelocity()
     return right_shooter_motor->GetVelocity().GetValue() / shooter_gear_ratio;
 }
 
+void ShooterSystem::setDistanceUpdateCallback(std::function<units::meter_t()> callback)
+{
+    distance_update_callback = callback;
+}
+
 void ShooterSystem::setShooterVoltages(units::volt_t left_voltage, units::volt_t right_voltage)
 {
     left_shooter_voltage = left_voltage;
@@ -328,7 +333,13 @@ void ShooterSystem::doShooterSpeedControl()
 
 void ShooterSystem::doShooterAutoControl()
 {
-    //TODO: Implement
+    if(!distance_update_callback)
+    {
+        std::cerr << "Error: ShooterSystem::doShooterAutoControl called but distance_update_callback is not set!" << std::endl;
+        return;
+    }
+    distance_to_target = distance_update_callback();
+    std::cout << "Distance to target: " << distance_to_target.value() << " m" << std::endl;
 }
 
 void ShooterSystem::setLoaderMode(LoaderMode mode)

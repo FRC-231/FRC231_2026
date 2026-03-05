@@ -4,6 +4,7 @@
 
 #include <frc2/command/SubsystemBase.h>
 #include <units/velocity.h>
+#include <units/length.h>
 #include <ctre/phoenix6/CANcoder.hpp>
 #include <ctre/phoenix6/TalonFX.hpp>
 #include <ctre/phoenix6/signals/SpnEnums.hpp>
@@ -51,6 +52,7 @@ public:
     void loaderUnload();
     units::revolutions_per_minute_t getLeftShooterVelocity();
     units::revolutions_per_minute_t getRightShooterVelocity();
+    void setDistanceUpdateCallback(std::function<units::meter_t()> callback);
 
     void Periodic() override;
     std::string loaderModeToString(LoaderMode mode);
@@ -93,6 +95,8 @@ private:
     units::volt_t max_shooter_voltage;
     units::volt_t min_shooter_voltage;
     int servo_pulse_width = 1500;
+    units::meter_t distance_to_target{0_m};
+    std::function<units::meter_t()> distance_update_callback;
 
     HighVoltage::NetworkTableValue<double> nt_hopper_voltage{SHOOTER_TABLE_NAME + "/" + "hopper_voltage", 0.0};
     HighVoltage::NetworkTableValue<double> nt_feed_voltage{SHOOTER_TABLE_NAME + "/" + "feed_voltage", 0.0};
