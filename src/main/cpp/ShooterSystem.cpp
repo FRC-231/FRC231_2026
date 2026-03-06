@@ -339,7 +339,6 @@ void ShooterSystem::doShooterAutoControl()
         return;
     }
     distance_to_target = distance_update_callback();
-    std::cout << "Distance to target: " << distance_to_target.value() << " m" << std::endl;
 }
 
 void ShooterSystem::setLoaderMode(LoaderMode mode)

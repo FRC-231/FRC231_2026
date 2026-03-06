@@ -8,9 +8,9 @@ namespace HighVoltage
 MK5NSwerveModule::MK5NSwerveModule(std::string name,
     MK5NSwerveModule::Mk5NConfig config) : SwerveModule{name}, config{config}
 {
-    drive_motor = std::make_shared<ctre::phoenix6::hardware::TalonFX>(config.drive_id);
-    rotate_motor =  std::make_shared<ctre::phoenix6::hardware::TalonFX>(config.rotate_id);
-    encoder = std::make_shared<ctre::phoenix6::hardware::CANcoder>(config.encoder_id);
+    drive_motor = std::make_shared<ctre::phoenix6::hardware::TalonFX>(config.drive_id, "Drivebase");
+    rotate_motor =  std::make_shared<ctre::phoenix6::hardware::TalonFX>(config.rotate_id, "Drivebase");
+    encoder = std::make_shared<ctre::phoenix6::hardware::CANcoder>(config.encoder_id, "Drivebase");
     offset = config.encoder_offset;
 
     rotate_feedforward = std::make_unique<frc::SimpleMotorFeedforward<units::meters>>(
