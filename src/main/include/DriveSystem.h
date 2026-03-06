@@ -78,6 +78,7 @@ public:
     units::degree_t getRobotAngleInDegrees();
     units::degree_t getRotationError();
     units::degree_t getAngleFromTargetPosition(frc::Pose2d target_point);
+    units::meter_t getDistanceFromTargetPosition(frc::Pose2d target_point);
     bool isLockedOn();
 
     // ---- Odometry ----

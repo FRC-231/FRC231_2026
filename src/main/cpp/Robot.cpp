@@ -21,6 +21,10 @@ Robot::Robot()
     drive_system = std::make_shared<DriveSystem>(context);
     intake_system = std::make_shared<IntakeSystem>(context);
     shooter_system = std::make_shared<ShooterSystem>(context);
+    shooter_system->setDistanceUpdateCallback([this]()
+    {
+        return drive_system->getDistanceFromTargetPosition(RobotContext::HUB_POSITION);
+    });
 
     context->setStartAngle(context->getPigeon().GetYaw().GetValue());
 
@@ -234,8 +238,7 @@ void Robot::TestInit()
 
 void Robot::TestPeriodic()
 {
-    shooter_system->setLoaderMode(ShooterSystem::LoaderMode::LOAD);
-    shooter_system->setShooterMode(ShooterSystem::ShooterMode::SPEED);
+    shooter_system->autoShoot();
 }
 
 void Robot::SimulationInit()

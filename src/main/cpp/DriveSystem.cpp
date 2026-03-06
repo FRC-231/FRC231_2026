@@ -251,6 +251,13 @@ units::degree_t DriveSystem::getAngleFromTargetPosition(frc::Pose2d target_point
     return units::degree_t{HighVoltage::get180Range(HighVoltage::toDegrees(angle_in_rad))};
 }
 
+units::meter_t DriveSystem::getDistanceFromTargetPosition(frc::Pose2d target_point)
+{
+    double delta_x = target_point.X().value() - current_pose.X().value();
+    double delta_y = target_point.Y().value() - current_pose.Y().value();
+    return units::meter_t{std::sqrt(delta_x * delta_x + delta_y * delta_y)};
+}
+
 bool DriveSystem::isLockedOn()
 {
     units::degree_t current_angle = getRobotAngleInDegrees();
