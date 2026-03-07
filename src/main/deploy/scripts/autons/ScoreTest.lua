@@ -1,5 +1,5 @@
 local math = require("math")
-print("BumpTest autonomous script loading")
+print("ScoreTest autonomous script loading")
 
 function waitUntilRotationError(angle)
     control:waitUntilTrue( function ()

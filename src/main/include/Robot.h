@@ -53,7 +53,8 @@ public:
         {"Test", Paths::TEST_AUTON},
         {"Dance", Paths::DANCE_AUTON},
         {"BumpTest", Paths::BUMP_TEST_AUTON},
-        {"ScoreTest", Paths::SCORE_TEST_AUTON}
+        {"ScoreTest", Paths::SCORE_TEST_AUTON},
+        {"QuickLoad", Paths::QUICK_LOAD_AUTON}
     };
 
 private:

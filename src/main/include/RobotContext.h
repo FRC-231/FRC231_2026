@@ -31,6 +31,7 @@ private:
     std::optional<RobotConfig::RobotConfig> config;
     frc::PS5Controller pilot_controller{0};
     ctre::phoenix6::hardware::Pigeon2 pigeon{30, "Drivebase"};
+    //ctre::phoenix6::hardware::Pigeon2 pigeon{30, "rio"};
     units::angle::degree_t start_angle{0.0};
     Vision vision{CAMERA_NAMES};
 };

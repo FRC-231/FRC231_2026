@@ -481,7 +481,6 @@ void DriveSystem::doManualDrive()
         {
             auto degrees_off = HighVoltage::get180Range(target_angle - current_angle);
             turn = angle_correction_pid->Calculate(degrees_off.value());
-            std::cout << degrees_off.value() << std::endl;
         }
         swerve_coordinator->setDrive(units::degree_t{stick_angle}, stick_magnitude, turn);
     }
@@ -508,7 +507,6 @@ void DriveSystem::doManualAA()
     units::degree_t angle_error = angle_to_hub - getRobotAngleInDegrees();
     angle_error = HighVoltage::get180Range(angle_error);
     angle_error *= -1;
-    std::cout << angle_error.value() << std::endl;
     if(std::abs(angle_error.value()) > 90)
     {
         angle_error -= 180_deg;
