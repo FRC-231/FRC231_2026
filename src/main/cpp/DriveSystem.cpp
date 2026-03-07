@@ -560,6 +560,9 @@ void DriveSystem::doDriveFF()
 void DriveSystem::doTurnFF()
 {
     std::shared_ptr<HighVoltage::MK5NSwerveModule> target_module = nullptr;
+    std::array<std::shared_ptr<HighVoltage::MK5NSwerveModule>, 4> all_modules = {
+        front_left_module, front_right_module, back_left_module, back_right_module
+    };
     switch(turn_ff_module_name)
     {
         case FRONT_LEFT:
@@ -582,6 +585,16 @@ void DriveSystem::doTurnFF()
             target_module = front_left_module;
             break;
     }
+    // Stop non-targeted modules
+    for(auto& module : all_modules)
+    {
+        if(module != target_module)
+        {
+            module->updateDriveMotorVoltage(0_V);
+            module->getRotateMotor()->SetVoltage(0_V);
+        }
+    }
+    // Apply FF voltage only to the targeted module's rotate motor
     target_module->getRotateMotor()->SetVoltage(ff_voltage);
     std::vector<double> ff_data =
     {
