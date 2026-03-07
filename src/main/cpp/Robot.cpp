@@ -11,7 +11,7 @@
 Robot::Robot()
 {
     context = std::make_shared<RobotContext>();
-    bool config_loaded = context->loadConfig(Paths::TEST_ROBOT_CONFIG);
+    bool config_loaded = context->loadConfig(Paths::BASE_ROBOT_CONFIG);
     if (!config_loaded)
     {
         std::cerr << "Failed to load config file" << std::endl;
@@ -233,14 +233,13 @@ void Robot::addToLuaState(Keeko::ThreadedScript& script)
 
 void Robot::TestInit()
 {
-    ff_voltage = 0_V;
+    ff_voltage = 7_V;
     drive_system->stopDrive();
 }
 
 void Robot::TestPeriodic()
 {
-    drive_system->setTurnFF(ff_voltage, DriveSystem::ModuleName::BACK_LEFT);
-    ff_voltage += 0.001_V;
+    drive_system->setDriveFF(ff_voltage);
 }
 
 void Robot::SimulationInit()

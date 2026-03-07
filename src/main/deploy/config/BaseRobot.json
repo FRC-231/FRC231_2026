@@ -30,8 +30,8 @@
             "encoder_offset":122.1680,
             "drive_turns_per_meter":0.05952,
             "rotate_feed_forward":{
-                "k_s":0.22,
-                "k_v":0.00694647141201765,
+                "k_s":0.24,
+                "k_v":0.00735294117,
                 "k_a":0.0
             },
             "rotate_velocity_pid":{
@@ -45,8 +45,8 @@
                 "k_d":0.0
             },
             "drive_feed_forward":{
-                "k_s":0.19,
-                "k_v":1.90986765035,
+                "k_s":0.181,
+                "k_v":1.92771084337,
                 "k_a":0.0
             }
         },
@@ -57,8 +57,8 @@
             "encoder_offset":-69.5215,
             "drive_turns_per_meter":0.05952,
             "rotate_feed_forward":{
-                "k_s":0.28,
-                "k_v":0.00694647141201765,
+                "k_s":0.24,
+                "k_v":0.00735294117,
                 "k_a":0.0
             },
             "rotate_velocity_pid":{
@@ -72,8 +72,8 @@
                 "k_d":0.0
             },
             "drive_feed_forward":{
-                "k_s":0.19,
-                "k_v":1.90986765035,
+                "k_s":0.181,
+                "k_v":1.92771084337,
                 "k_a":0.0
             }
         },
@@ -84,8 +84,8 @@
             "encoder_offset":99.8438,
             "drive_turns_per_meter":0.05952,
             "rotate_feed_forward":{
-                "k_s":0.22,
-                "k_v":0.00694647141201765,
+                "k_s":0.24,
+                "k_v":0.00735294117,
                 "k_a":0.0
             },
             "rotate_velocity_pid":{
@@ -99,8 +99,8 @@
                 "k_d":0.0
             },
             "drive_feed_forward":{
-                "k_s":0.19,
-                "k_v":1.90986765035,
+                "k_s":0.181,
+                "k_v":1.92771084337,
                 "k_a":0.0
             }
         },
@@ -111,8 +111,8 @@
             "encoder_offset":-137.2852,
             "drive_turns_per_meter":0.05952,
             "rotate_feed_forward":{
-                "k_s":0.22,
-                "k_v":0.00694647141201765,
+                "k_s":0.24,
+                "k_v":0.00735294117,
                 "k_a":0.0
             },
             "rotate_velocity_pid":{
@@ -126,8 +126,8 @@
                 "k_d":0.0
             },
             "drive_feed_forward":{
-                "k_s":0.19,
-                "k_v":1.90986765035,
+                "k_s":0.181,
+                "k_v":1.92771084337,
                 "k_a":0.0
             }
         },
