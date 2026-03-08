@@ -165,7 +165,7 @@ void IntakeSystem::pivotDown()
 
 units::degree_t IntakeSystem::getPivotAngle()
 {
-    units::degree_t current_angle = (pivot_encoder->GetAbsolutePosition().GetValue() * 360.0) - pivot_encoder_offset;
+    units::degree_t current_angle = HighVoltage::get360Range((pivot_encoder->GetAbsolutePosition().GetValue() * 360) - pivot_encoder_offset);
     return current_angle;
 }
 
@@ -267,7 +267,8 @@ void IntakeSystem::updateNetworkTable()
     nt_pivot_encoder_offset.setValue(pivot_encoder_offset.value());
     nt_pivot_down_angle.setValue(pivot_down_angle.value());
     nt_pivot_up_angle.setValue(pivot_up_angle.value());
-    nt_pivot_encoder_raw.setValue(HighVoltage::get360Range(pivot_encoder->GetAbsolutePosition().GetValueAsDouble() * 360 - 105));
+    nt_pivot_encoder_raw.setValue(HighVoltage::get360Range(pivot_encoder->GetAbsolutePosition().GetValueAsDouble() * 360 - 250));
+    nt_pivot_encoder_angle.setValue(getPivotAngle().value());
 }
 
 

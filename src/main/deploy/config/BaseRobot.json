@@ -150,7 +150,7 @@
         },
         "pivot_up_angle": 45,
         "pivot_down_angle": 20,
-        "pivot_encoder_offset": 0
+        "pivot_encoder_offset": 250
     },
     "shooter":{
         "hopper_motor_id":11,

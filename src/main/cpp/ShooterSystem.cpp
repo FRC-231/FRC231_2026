@@ -397,13 +397,13 @@ void ShooterSystem::doLoaderStop()
 
 void ShooterSystem::doLoaderLoad()
 {
-    hopper_motor->SetVoltage(hopper_voltage);
+    hopper_motor->SetVoltage(-hopper_voltage);
     feed_motor->SetVoltage(feed_voltage);
 }
 
 void ShooterSystem::doLoaderUnload()
 {
-    hopper_motor->SetVoltage(-hopper_voltage);
+    hopper_motor->SetVoltage(hopper_voltage);
     feed_motor->SetVoltage(-feed_voltage);
 }
 

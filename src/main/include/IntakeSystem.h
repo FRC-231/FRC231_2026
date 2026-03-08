@@ -110,5 +110,6 @@ private:
     HighVoltage::NetworkTableValue<double> nt_pivot_down_angle{INTAKE_TABLE_NAME + "/" + "pivot_down_angle", 0.0};
     HighVoltage::NetworkTableValue<double> nt_pivot_encoder_offset{INTAKE_TABLE_NAME + "/" + "pivot_encoder_offset", 0.0};
     HighVoltage::NetworkTableValue<double> nt_pivot_encoder_raw{INTAKE_TABLE_NAME + "/" + "pivot_encoder_raw", 0.0};
+    HighVoltage::NetworkTableValue<double> nt_pivot_encoder_angle{INTAKE_TABLE_NAME + "/" + "pivot_encoder_angle", 0.0};
 
 };

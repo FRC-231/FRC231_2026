@@ -153,7 +153,7 @@ void Robot::TeleopPeriodic()
     }
     if(do_shooter_voltage_control)
     {
-        shooter_system->setShooterMode(ShooterSystem::ShooterMode::VOLTAGE);
+        shooter_system->setShooterMode(ShooterSystem::ShooterMode::SPEED);
         shooter_system->setLoaderMode(ShooterSystem::LoaderMode::LOAD);
     }
     else
