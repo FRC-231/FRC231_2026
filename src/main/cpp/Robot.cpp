@@ -126,6 +126,7 @@ void Robot::TeleopPeriodic()
     bool auto_aim = context->getPilotController().GetR1Button();
     bool intake_up = context->getPilotController().GetCircleButtonPressed();
     bool intake_down = context->getPilotController().GetTriangleButtonPressed();
+    bool intake_balls = context->getPilotController().GetSquareButton();
     
     if(intake_up)
     {
@@ -134,6 +135,14 @@ void Robot::TeleopPeriodic()
     if(intake_down)
     {
         intake_system->pivotDown();
+    }
+    if(intake_balls)
+    {
+        intake_system->feedIntake();
+    }
+    else
+    {
+        intake_system->feedStop();
     }
 
     
