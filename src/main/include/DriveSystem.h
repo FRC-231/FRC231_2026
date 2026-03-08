@@ -139,6 +139,7 @@ private:
     double drive_to_proportional = 1.0;
     double rotate_to_proportional = 0.0115;
     units::degree_t angle_to_hub = 0.0_deg;
+    units::meter_t distance_to_hub = 0.0_m;
     double min_auto_percentage = 0.0;
 
     // ---- Odometry ----
@@ -161,5 +162,6 @@ private:
     HighVoltage::NetworkTableValue<double> nt_target_drive_y{ORIENTATION_TABLE_NAME + "/" + TARGET_Y_KEY, 0.0};
     HighVoltage::NetworkTableValue<double> nt_target_drive_angle{ORIENTATION_TABLE_NAME + "/" + TARGET_ANGLE_KEY, 0.0};
     HighVoltage::NetworkTableValue<double> nt_angle_to_hub{ORIENTATION_TABLE_NAME + "/" + "angle_to_hub", 0.0};
+    HighVoltage::NetworkTableValue<double> nt_distance_to_hub{ORIENTATION_TABLE_NAME + "/" + "distance_to_hub", 0.0};
     HighVoltage::NetworkTableValue<bool> nt_locked_on{"DriveSystem/locked_on",false};
 };

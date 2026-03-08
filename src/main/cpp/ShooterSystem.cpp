@@ -5,10 +5,10 @@ ShooterSystem::ShooterSystem(std::shared_ptr<RobotContext> context):
     context(context)
 {
     const auto& shooter_config = context->getConfig()->shooter_config;
-    hopper_motor = std::make_unique<ctre::phoenix6::hardware::TalonFX>(shooter_config.hopper_motor_id);
-    feed_motor = std::make_unique<ctre::phoenix6::hardware::TalonFX>(shooter_config.feed_motor_id);
-    left_shooter_motor = std::make_unique<ctre::phoenix6::hardware::TalonFX>(shooter_config.left_shooter_motor_id);
-    right_shooter_motor = std::make_unique<ctre::phoenix6::hardware::TalonFX>(shooter_config.right_shooter_motor_id);
+    hopper_motor = std::make_unique<ctre::phoenix6::hardware::TalonFX>(shooter_config.hopper_motor_id, "Drivebase");
+    feed_motor = std::make_unique<ctre::phoenix6::hardware::TalonFX>(shooter_config.feed_motor_id, "Drivebase");
+    left_shooter_motor = std::make_unique<ctre::phoenix6::hardware::TalonFX>(shooter_config.left_shooter_motor_id, "Drivebase");
+    right_shooter_motor = std::make_unique<ctre::phoenix6::hardware::TalonFX>(shooter_config.right_shooter_motor_id, "Drivebase");
     hopper_voltage = units::volt_t{shooter_config.hopper_voltage};
     feed_voltage = units::volt_t{shooter_config.feed_voltage};
     shooter_gear_ratio = shooter_config.shooter_gear_ratio;

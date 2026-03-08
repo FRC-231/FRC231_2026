@@ -7,12 +7,12 @@ IntakeSystem::IntakeSystem(std::shared_ptr<RobotContext> context):
     context(context)
 {
     const auto& intake_config = context->getConfig()->intake_config;
-    pivot_motor = std::make_unique<ctre::phoenix6::hardware::TalonFX>(intake_config.pivot_motor_id);
-    feed_motor = std::make_unique<ctre::phoenix6::hardware::TalonFX>(intake_config.feed_motor_id);
-    pivot_encoder = std::make_unique<ctre::phoenix6::hardware::CANcoder>(intake_config.pivot_encoder_id);
+    pivot_motor = std::make_unique<ctre::phoenix6::hardware::TalonFX>(intake_config.pivot_motor_id, "Drivebase");
+    feed_motor = std::make_unique<ctre::phoenix6::hardware::TalonFX>(intake_config.feed_motor_id, "Drivebase");
+    pivot_encoder = std::make_unique<ctre::phoenix6::hardware::CANcoder>(intake_config.pivot_encoder_id, "Drivebase");
     ctre::phoenix6::configs::CANcoderConfiguration encoder_config{};
-    encoder_config.MagnetSensor.AbsoluteSensorDiscontinuityPoint = 0.5_tr;
-    encoder_config.MagnetSensor.SensorDirection = ctre::phoenix6::signals::SensorDirectionValue::CounterClockwise_Positive;
+    encoder_config.MagnetSensor.AbsoluteSensorDiscontinuityPoint = 1.0_tr;
+    encoder_config.MagnetSensor.SensorDirection = ctre::phoenix6::signals::SensorDirectionValue::Clockwise_Positive;
     pivot_encoder->GetConfigurator().Apply(encoder_config);
     feed_intake_voltage = units::volt_t{intake_config.feed_intake_voltage};
     feed_outtake_voltage = units::volt_t{intake_config.feed_outtake_voltage};
@@ -89,7 +89,6 @@ IntakeSystem::IntakeSystem(std::shared_ptr<RobotContext> context):
 
 void IntakeSystem::Periodic()
 {
-    return;//remove
     switch(feed_mode)
     {
         case FeedMode::STOP:
@@ -268,7 +267,7 @@ void IntakeSystem::updateNetworkTable()
     nt_pivot_encoder_offset.setValue(pivot_encoder_offset.value());
     nt_pivot_down_angle.setValue(pivot_down_angle.value());
     nt_pivot_up_angle.setValue(pivot_up_angle.value());
-    nt_pivot_encoder_raw.setValue(pivot_encoder->GetAbsolutePosition().GetValueAsDouble() * 360);
+    nt_pivot_encoder_raw.setValue(HighVoltage::get360Range(pivot_encoder->GetAbsolutePosition().GetValueAsDouble() * 360 - 105));
 }
 
 

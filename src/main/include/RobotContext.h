@@ -11,9 +11,13 @@ class RobotContext
 public:
     // ── Camera configuration ──
     // Add or remove Limelight names here when cameras are added to the robot.
+    // inline static const std::vector<std::string> CAMERA_NAMES{
+    //     "limelight",
+    //     "limelight-front"
+    // };
+
     inline static const std::vector<std::string> CAMERA_NAMES{
         "limelight",
-        "limelight-front"
     };
 
     RobotContext();

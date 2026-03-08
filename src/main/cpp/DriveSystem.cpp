@@ -95,6 +95,7 @@ void DriveSystem::Periodic()
     current_pose = updateOdometry();
     swerve_coordinator->setFieldAngle(getRobotAngleInDegrees());
     angle_to_hub = getAngleFromTargetPosition(RobotContext::HUB_POSITION);
+    distance_to_hub = getDistanceFromTargetPosition(RobotContext::HUB_POSITION);
     switch(drive_mode)
     {
         case STOP:
@@ -683,5 +684,6 @@ void DriveSystem::updateNetworkTables()
     nt_target_drive_y.setValue(target_pose.Y().value());
     nt_target_drive_angle.setValue(target_pose.Rotation().Degrees().value());
     nt_angle_to_hub.setValue(angle_to_hub.value());
+    nt_distance_to_hub.setValue(distance_to_hub.value());
     nt_locked_on.setValue(isLockedOn());
 }
