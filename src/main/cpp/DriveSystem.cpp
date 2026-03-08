@@ -289,6 +289,21 @@ void DriveSystem::setOdometry(frc::Pose2d pose)
     );
 }
 
+void DriveSystem::setOdometryFromVision()
+{
+    frc::Pose2d vision_pose = context->getVision().getCameraPose();
+    if(vision_pose.X().value() == 0.0 && vision_pose.Y().value() == 0.0)
+    {
+        std::cout << "setOdometryFromVision: No valid vision data available" << std::endl;
+        return;
+    }
+    std::cout << "setOdometryFromVision: Setting odometry to ("
+              << vision_pose.X().value() << ", "
+              << vision_pose.Y().value() << ", "
+              << vision_pose.Rotation().Degrees().value() << ")" << std::endl;
+    setOdometry(vision_pose);
+}
+
 // ==== Enum Helpers ====
 
 std::string DriveSystem::driveModeToString(DriveMode mode)

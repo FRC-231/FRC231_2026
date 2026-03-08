@@ -83,6 +83,7 @@ public:
 
     // ---- Odometry ----
     void setOdometry(frc::Pose2d pose);
+    void setOdometryFromVision();
 
     // ---- Enum Helpers ----
     DriveMode getDriveMode() { return drive_mode; }
