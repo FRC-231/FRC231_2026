@@ -165,7 +165,7 @@ void IntakeSystem::pivotDown()
 
 units::degree_t IntakeSystem::getPivotAngle()
 {
-    units::degree_t current_angle = HighVoltage::get360Range((pivot_encoder->GetAbsolutePosition().GetValue() * 360) - pivot_encoder_offset);
+    units::degree_t current_angle = HighVoltage::get360Range(units::degree_t{pivot_encoder->GetAbsolutePosition().GetValueAsDouble() * 360.0} - pivot_encoder_offset);
     return current_angle;
 }
 
