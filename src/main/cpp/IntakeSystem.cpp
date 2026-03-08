@@ -8,6 +8,10 @@ IntakeSystem::IntakeSystem(std::shared_ptr<RobotContext> context):
 {
     const auto& intake_config = context->getConfig()->intake_config;
     pivot_motor = std::make_unique<ctre::phoenix6::hardware::TalonFX>(intake_config.pivot_motor_id, "Drivebase");
+    ctre::phoenix6::configs::TalonFXConfiguration pivot_config{};
+    pivot_config.MotorOutput.Inverted = ctre::phoenix6::signals::InvertedValue::CounterClockwise_Positive;
+    pivot_config.MotorOutput.NeutralMode = ctre::phoenix6::signals::NeutralModeValue::Brake;
+    pivot_motor->GetConfigurator().Apply(pivot_config);
     feed_motor = std::make_unique<ctre::phoenix6::hardware::TalonFX>(intake_config.feed_motor_id, "Drivebase");
     pivot_encoder = std::make_unique<ctre::phoenix6::hardware::CANcoder>(intake_config.pivot_encoder_id, "Drivebase");
     ctre::phoenix6::configs::CANcoderConfiguration encoder_config{};
@@ -89,6 +93,7 @@ IntakeSystem::IntakeSystem(std::shared_ptr<RobotContext> context):
 
 void IntakeSystem::Periodic()
 {
+    updateNetworkTable();
     switch(feed_mode)
     {
         case FeedMode::STOP:
@@ -124,7 +129,6 @@ void IntakeSystem::Periodic()
             doPivotMove();
         }break;
     }
-    updateNetworkTable();
 }
 
 // ==== Feed Commands ====

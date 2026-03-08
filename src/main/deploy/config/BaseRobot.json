@@ -139,17 +139,17 @@
         "pivot_encoder_id":24,
         "feed_intake_voltage":2,
         "feed_outtake_voltage":-2,
-        "pivot_max_voltage":2,
-        "pivot_min_voltage":-2,
-        "pivot_max_angle":0,
-        "pivot_min_angle":0,
+        "pivot_max_voltage":6,
+        "pivot_min_voltage":-6,
+        "pivot_max_angle":175,
+        "pivot_min_angle":40,
         "pivot_pid":{
-            "k_p":0.033,
+            "k_p":0.07,
             "k_i":0.0,
             "k_d":0.0
         },
-        "pivot_up_angle": 45,
-        "pivot_down_angle": 20,
+        "pivot_up_angle": 41,
+        "pivot_down_angle": 171,
         "pivot_encoder_offset": 250
     },
     "shooter":{

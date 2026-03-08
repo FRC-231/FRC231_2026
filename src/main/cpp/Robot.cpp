@@ -124,6 +124,17 @@ void Robot::TeleopPeriodic()
     double rotate = context->getPilotController().GetRightX();
     bool reset_field_orientation = context->getPilotController().GetR3Button();
     bool auto_aim = context->getPilotController().GetR1Button();
+    bool intake_up = context->getPilotController().GetCircleButtonPressed();
+    bool intake_down = context->getPilotController().GetTriangleButtonPressed();
+    
+    if(intake_up)
+    {
+        intake_system->pivotUp();
+    }
+    if(intake_down)
+    {
+        intake_system->pivotDown();
+    }
 
     
     
