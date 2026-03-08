@@ -10,6 +10,10 @@ IntakeSystem::IntakeSystem(std::shared_ptr<RobotContext> context):
     pivot_motor = std::make_unique<ctre::phoenix6::hardware::TalonFX>(intake_config.pivot_motor_id);
     feed_motor = std::make_unique<ctre::phoenix6::hardware::TalonFX>(intake_config.feed_motor_id);
     pivot_encoder = std::make_unique<ctre::phoenix6::hardware::CANcoder>(intake_config.pivot_encoder_id);
+    ctre::phoenix6::configs::CANcoderConfiguration encoder_config{};
+    encoder_config.MagnetSensor.AbsoluteSensorDiscontinuityPoint = 0.5_tr;
+    encoder_config.MagnetSensor.SensorDirection = ctre::phoenix6::signals::SensorDirectionValue::CounterClockwise_Positive;
+    pivot_encoder->GetConfigurator().Apply(encoder_config);
     feed_intake_voltage = units::volt_t{intake_config.feed_intake_voltage};
     feed_outtake_voltage = units::volt_t{intake_config.feed_outtake_voltage};
     pivot_max_voltage = units::volt_t{intake_config.pivot_max_voltage};
@@ -162,7 +166,8 @@ void IntakeSystem::pivotDown()
 
 units::degree_t IntakeSystem::getPivotAngle()
 {
-    units::degree_t current_angle = (pivot_encoder->GetPosition().GetValue() * 360.0) - pivot_encoder_offset;
+    units::degree_t current_angle = (pivot_encoder->GetAbsolutePosition().GetValue() * 360.0) - pivot_encoder_offset;
+    return current_angle;
 }
 
 // ==== Enum Helpers ====
@@ -263,6 +268,7 @@ void IntakeSystem::updateNetworkTable()
     nt_pivot_encoder_offset.setValue(pivot_encoder_offset.value());
     nt_pivot_down_angle.setValue(pivot_down_angle.value());
     nt_pivot_up_angle.setValue(pivot_up_angle.value());
+    nt_pivot_encoder_raw.setValue(pivot_encoder->GetAbsolutePosition().GetValueAsDouble() * 360);
 }
 
 

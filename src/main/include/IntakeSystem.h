@@ -6,6 +6,7 @@
 #include <ctre/phoenix6/CANcoder.hpp>
 #include <ctre/phoenix6/TalonFX.hpp>
 #include <ctre/phoenix6/signals/SpnEnums.hpp>
+#include "ctre/phoenix6/StatusSignal.hpp"
 #include "Keeko/ThreadedScript.h"
 
 #include "RobotConfig.h"
@@ -108,5 +109,6 @@ private:
     HighVoltage::NetworkTableValue<double> nt_pivot_up_angle{INTAKE_TABLE_NAME + "/" + "pivot_up_angle", 0.0};
     HighVoltage::NetworkTableValue<double> nt_pivot_down_angle{INTAKE_TABLE_NAME + "/" + "pivot_down_angle", 0.0};
     HighVoltage::NetworkTableValue<double> nt_pivot_encoder_offset{INTAKE_TABLE_NAME + "/" + "pivot_encoder_offset", 0.0};
+    HighVoltage::NetworkTableValue<double> nt_pivot_encoder_raw{INTAKE_TABLE_NAME + "/" + "pivot_encoder_raw", 0.0};
 
 };
