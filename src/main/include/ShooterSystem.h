@@ -97,6 +97,10 @@ private:
     int servo_pulse_width = 1500;
     units::meter_t distance_to_target{0_m};
     std::function<units::meter_t()> distance_update_callback;
+    units::revolutions_per_minute_t shooter_auto_adjustment{0_rpm};
+    units::revolutions_per_minute_t backspin_amount{0_rpm};
+    units::revolutions_per_minute_t backspin_adjustment{0_rpm};
+    double shooter_angle_adjustment{0.0};
 
     HighVoltage::NetworkTableValue<double> nt_hopper_voltage{SHOOTER_TABLE_NAME + "/" + "hopper_voltage", 0.0};
     HighVoltage::NetworkTableValue<double> nt_feed_voltage{SHOOTER_TABLE_NAME + "/" + "feed_voltage", 0.0};
@@ -111,6 +115,9 @@ private:
     HighVoltage::NetworkTableValue<double> nt_left_shooter_target_velocity{SHOOTER_TABLE_NAME + "/" + "left_shooter_target_velocity", 0.0};
     HighVoltage::NetworkTableValue<double> nt_right_shooter_target_velocity{SHOOTER_TABLE_NAME + "/" + "right_shooter_target_velocity", 0.0};
     HighVoltage::NetworkTableValue<int> nt_servo_pulse_width{SHOOTER_TABLE_NAME + "/" + "servo_pulse_width", 0};
+    HighVoltage::NetworkTableValue<double> nt_shooter_auto_adjustment{SHOOTER_TABLE_NAME + "/" + "shooter_auto_adjustment", 0.0};
+    HighVoltage::NetworkTableValue<double> nt_backspin_adjustment{SHOOTER_TABLE_NAME + "/" + "backspin_adjustment", 0.0};
+    HighVoltage::NetworkTableValue<double> nt_shooter_angle_adjustment{SHOOTER_TABLE_NAME + "/" + "shooter_angle_adjustment", 0.0};
 
     //PID network table values (used to live-tune the TalonFX closed-loop gains)
     HighVoltage::NetworkTableValue<double> nt_shooter_kP{SHOOTER_TABLE_NAME + "/" + "shooter_kP", 0.0};

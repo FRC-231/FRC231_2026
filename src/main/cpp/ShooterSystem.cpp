@@ -68,6 +68,7 @@ ShooterSystem::ShooterSystem(std::shared_ptr<RobotContext> context):
     shooter_feed_config.MotorOutput.Inverted = ctre::phoenix6::signals::InvertedValue::Clockwise_Positive;
     shooter_feed_config.MotorOutput.NeutralMode = ctre::phoenix6::signals::NeutralModeValue::Brake;
     feed_motor->GetConfigurator().Apply(shooter_feed_config);
+    backspin_amount = units::revolutions_per_minute_t{shooter_config.backspin_amount};
 
     nt_hopper_voltage.setOnUpdate([this](const double& value)
     {
@@ -129,6 +130,33 @@ ShooterSystem::ShooterSystem(std::shared_ptr<RobotContext> context):
         {
             std::cout << "Set servo_pulse_width to " << value << std::endl;
             servo_pulse_width = value;
+        }
+    });
+
+    nt_shooter_auto_adjustment.setOnUpdate([this](const double& value)
+    {
+        if(value != shooter_auto_adjustment.value())
+        {
+            std::cout << "Set shooter_auto_adjustment to " << value << std::endl;
+            shooter_auto_adjustment = units::revolutions_per_minute_t{value};
+        }
+    });
+
+    nt_backspin_adjustment.setOnUpdate([this](const double& value)
+    {
+        if(value != backspin_adjustment.value())
+        {
+            std::cout << "Set backspin_adjustment to " << value << std::endl;
+            backspin_adjustment = units::revolutions_per_minute_t{value};
+        }
+    });
+
+    nt_shooter_angle_adjustment.setOnUpdate([this](const double& value)
+    {
+        if(value != shooter_angle_adjustment)
+        {
+            std::cout << "Set shooter_angle_adjustment to " << value << std::endl;
+            shooter_angle_adjustment = value;
         }
     });
 

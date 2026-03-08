@@ -48,6 +48,7 @@ void from_json(const nlohmann::json &j, ShooterConfig &shooter)
     j.at(ShooterConfig::SHOOTER_GEAR_RATIO).get_to(shooter.shooter_gear_ratio);
     j.at(ShooterConfig::SHOOTER_MAX_VOLTAGE).get_to(shooter.shooter_max_voltage);
     j.at(ShooterConfig::SHOOTER_MIN_VOLTAGE).get_to(shooter.shooter_min_voltage);
+    j.at(ShooterConfig::BACKSPIN_AMOUNT).get_to(shooter.backspin_amount);
 }
 
 void from_json(const nlohmann::json &j, RobotConfig &robot)
