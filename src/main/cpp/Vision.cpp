@@ -84,7 +84,8 @@ void Vision::applyCameraData(LimelightCamera& camera, frc::SwerveDrivePoseEstima
 
         nlohmann::json limelight_info_json = nlohmann::json::parse(limelight_info);
 
-        auto& fiducials = limelight_info_json[JSON_APRIL_SECTION_NAME];
+        auto& results = limelight_info_json[JSON_ROOT_NAME];
+        auto& fiducials = results[JSON_APRIL_SECTION_NAME];
         int number_of_targets = fiducials.size();
         if (number_of_targets < 1)
         {
