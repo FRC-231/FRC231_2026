@@ -70,6 +70,12 @@ ShooterSystem::ShooterSystem(std::shared_ptr<RobotContext> context):
     feed_motor->GetConfigurator().Apply(shooter_feed_config);
     backspin_amount = units::revolutions_per_minute_t{shooter_config.backspin_amount};
 
+    //Load distance to velocity map
+    for(const auto& pair : shooter_config.distance_to_shooter_velocity)
+    {
+        distance_to_shooter_velocity[units::meter_t{pair.first}] = units::revolutions_per_minute_t{pair.second};
+    }
+
     nt_hopper_voltage.setOnUpdate([this](const double& value)
     {
         if(value != hopper_voltage.value())
@@ -367,6 +373,20 @@ void ShooterSystem::doShooterAutoControl()
         return;
     }
     distance_to_target = distance_update_callback();
+    auto shooter_velocity = HighVoltage::linearInterpolation<units::meter_t, units::revolutions_per_minute_t>(distance_to_shooter_velocity, distance_to_target);
+    shooter_velocity += shooter_auto_adjustment;
+    auto backspin_velocity = shooter_velocity - backspin_amount + backspin_adjustment;
+    if(servo_pulse_width >= servo_center_pulse_width)
+    {
+        left_shooter_motor->SetControl(shooter_velocity_request.WithVelocity(units::turns_per_second_t{shooter_velocity.value() / 60.0 * shooter_gear_ratio}));
+        right_shooter_motor->SetControl(shooter_velocity_request.WithVelocity(units::turns_per_second_t{backspin_velocity.value() / 60.0 * shooter_gear_ratio}));
+    }
+    else
+    {
+        left_shooter_motor->SetControl(shooter_velocity_request.WithVelocity(units::turns_per_second_t{backspin_velocity.value() / 60.0 * shooter_gear_ratio}));
+        right_shooter_motor->SetControl(shooter_velocity_request.WithVelocity(units::turns_per_second_t{shooter_velocity.value() / 60.0 * shooter_gear_ratio}));
+    }
+
 }
 
 void ShooterSystem::setLoaderMode(LoaderMode mode)

@@ -95,12 +95,14 @@ private:
     units::volt_t max_shooter_voltage;
     units::volt_t min_shooter_voltage;
     int servo_pulse_width = 1500;
+    int servo_center_pulse_width = 1500;
     units::meter_t distance_to_target{0_m};
     std::function<units::meter_t()> distance_update_callback;
     units::revolutions_per_minute_t shooter_auto_adjustment{0_rpm};
     units::revolutions_per_minute_t backspin_amount{0_rpm};
     units::revolutions_per_minute_t backspin_adjustment{0_rpm};
     double shooter_angle_adjustment{0.0};
+    std::map<units::meter_t, units::revolutions_per_minute_t> distance_to_shooter_velocity;
 
     HighVoltage::NetworkTableValue<double> nt_hopper_voltage{SHOOTER_TABLE_NAME + "/" + "hopper_voltage", 0.0};
     HighVoltage::NetworkTableValue<double> nt_feed_voltage{SHOOTER_TABLE_NAME + "/" + "feed_voltage", 0.0};
