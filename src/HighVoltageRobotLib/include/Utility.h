@@ -1,5 +1,6 @@
 #pragma once
 
+#include <map>
 #include <vector>
 #include <optional>
 #include <frc/DriverStation.h>
@@ -50,6 +51,23 @@ T deadZone(T input, T deadzone)
         return 0;
     }
     return input;
+}
+
+template<typename InputUnit, typename OutputUnit>
+OutputUnit linearInterpolation(const std::map<InputUnit, OutputUnit>& data, InputUnit input) {
+    if (data.empty()) return OutputUnit{0};
+
+    // Clamp to range
+    if (input <= data.begin()->first)  return data.begin()->second;
+    if (input >= data.rbegin()->first) return data.rbegin()->second;
+
+    // lower_bound gives us the first key >= input
+    auto high = data.lower_bound(input);
+    auto low  = std::prev(high);
+
+    double t = (input - low->first).value() /
+               (high->first - low->first).value();
+    return low->second + t * (high->second - low->second);
 }
 
 }
