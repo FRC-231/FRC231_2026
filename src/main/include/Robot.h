@@ -64,6 +64,7 @@ private:
     std::shared_ptr<IntakeSystem> intake_system;
     std::shared_ptr<ShooterSystem> shooter_system;
     units::volt_t ff_voltage = 0_V;
+    units::meter_t test_distance = 0_m;
 
     std::unique_ptr<NTSimulationData::NTSimulationData> nt_simulation_data;
 
@@ -77,5 +78,6 @@ private:
     std::unique_ptr<Keeko::ThreadedScript> auton_script;
     bool auton_script_loading = false;
     std::unique_ptr<HighVoltage::NetworkTable::StringSelector> nt_auto_selected;
+    HighVoltage::NetworkTableValue<std::vector<double>> nt_test_output{"TestOutput", {0.0, 0.0, 0.0}};
     
 };

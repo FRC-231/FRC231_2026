@@ -166,6 +166,15 @@ ShooterSystem::ShooterSystem(std::shared_ptr<RobotContext> context):
         }
     });
 
+        nt_shooter_manual_auto_speed.setOnUpdate([this](const double& value)
+        {
+            if(value != shooter_manual_auto_speed.value())
+            {
+                std::cout << "Set shooter_manual_auto_speed to " << value << std::endl;
+                shooter_manual_auto_speed = units::revolutions_per_minute_t{value};
+            }
+        });
+
 }
 
 void ShooterSystem::Periodic()
@@ -180,6 +189,9 @@ void ShooterSystem::Periodic()
             break;
         case ShooterMode::AUTO:
             doShooterAutoControl();
+            break;
+        case ShooterMode::MANUAL_AUTO:
+            doShooterManualAutoControl();
             break;
         default:
             doShooterStop();
@@ -373,7 +385,7 @@ void ShooterSystem::doShooterAutoControl()
         return;
     }
     distance_to_target = distance_update_callback();
-    auto shooter_velocity = HighVoltage::linearInterpolation<units::meter_t, units::revolutions_per_minute_t>(distance_to_shooter_velocity, distance_to_target);
+    auto shooter_velocity = HighVoltage::cubicHermiteInterpolation<units::meter_t, units::revolutions_per_minute_t>(distance_to_shooter_velocity, distance_to_target);
     shooter_velocity += shooter_auto_adjustment;
     auto backspin_velocity = shooter_velocity - backspin_amount + backspin_adjustment;
     if(servo_pulse_width >= servo_center_pulse_width)
@@ -387,6 +399,22 @@ void ShooterSystem::doShooterAutoControl()
         right_shooter_motor->SetControl(shooter_velocity_request.WithVelocity(units::turns_per_second_t{shooter_velocity.value() / 60.0 * shooter_gear_ratio}));
     }
 
+}
+
+void ShooterSystem::doShooterManualAutoControl()
+{
+    auto left_shooter_speed = shooter_manual_auto_speed + shooter_auto_adjustment;
+    auto right_shooter_speed = shooter_manual_auto_speed + shooter_auto_adjustment;
+    if(servo_pulse_width >= servo_center_pulse_width)
+    {
+        left_shooter_speed -= backspin_amount - backspin_adjustment;
+    }
+    else
+    {
+        right_shooter_speed -= backspin_amount - backspin_adjustment;
+    }
+    left_shooter_motor->SetControl(shooter_velocity_request.WithVelocity(units::turns_per_second_t{left_shooter_speed.value() / 60.0 * shooter_gear_ratio}));
+    right_shooter_motor->SetControl(shooter_velocity_request.WithVelocity(units::turns_per_second_t{right_shooter_speed.value() / 60.0 * shooter_gear_ratio}));
 }
 
 void ShooterSystem::setLoaderMode(LoaderMode mode)

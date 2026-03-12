@@ -253,13 +253,16 @@ void Robot::addToLuaState(Keeko::ThreadedScript& script)
 
 void Robot::TestInit()
 {
-    ff_voltage = 7_V;
-    drive_system->stopDrive();
+    test_distance = 0_m;
 }
 
 void Robot::TestPeriodic()
 {
-    drive_system->setDriveFF(ff_voltage);
+    auto shooter_distance_velocity_map = shooter_system->getDistanceToShooterVelocityMap();
+    auto cubic_interpolated_velocity = HighVoltage::cubicHermiteInterpolation(shooter_distance_velocity_map, test_distance);
+    auto linear_interpolated_velocity = HighVoltage::linearInterpolation(shooter_distance_velocity_map, test_distance);
+    nt_test_output.setValue({test_distance.value(), cubic_interpolated_velocity.value(), linear_interpolated_velocity.value()});
+    test_distance += 0.05_m;
 }
 
 void Robot::SimulationInit()
