@@ -18,6 +18,7 @@ public:
 
     inline static const std::vector<std::string> CAMERA_NAMES{
         "limelight",
+        //"limelight-right"
     };
 
     RobotContext();

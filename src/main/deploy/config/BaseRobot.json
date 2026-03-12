@@ -161,8 +161,8 @@
         "left_servo_id":2,
         "right_servo_id":3,
         "shooter_pid":{
-            "k_p":0.004,
-            "k_i":0.0016,
+            "k_p":0.006,
+            "k_i":0.0012,
             "k_d":0.0
         },
         "hopper_voltage":2,

@@ -7,13 +7,13 @@ IntakeSystem::IntakeSystem(std::shared_ptr<RobotContext> context):
     context(context)
 {
     const auto& intake_config = context->getConfig()->intake_config;
-    pivot_motor = std::make_unique<ctre::phoenix6::hardware::TalonFX>(intake_config.pivot_motor_id, "Drivebase");
+    pivot_motor = std::make_unique<ctre::phoenix6::hardware::TalonFX>(intake_config.pivot_motor_id, "secondary");
     ctre::phoenix6::configs::TalonFXConfiguration pivot_config{};
     pivot_config.MotorOutput.Inverted = ctre::phoenix6::signals::InvertedValue::CounterClockwise_Positive;
     pivot_config.MotorOutput.NeutralMode = ctre::phoenix6::signals::NeutralModeValue::Brake;
     pivot_motor->GetConfigurator().Apply(pivot_config);
-    feed_motor = std::make_unique<ctre::phoenix6::hardware::TalonFX>(intake_config.feed_motor_id, "Drivebase");
-    pivot_encoder = std::make_unique<ctre::phoenix6::hardware::CANcoder>(intake_config.pivot_encoder_id, "Drivebase");
+    feed_motor = std::make_unique<ctre::phoenix6::hardware::TalonFX>(intake_config.feed_motor_id, "secondary");
+    pivot_encoder = std::make_unique<ctre::phoenix6::hardware::CANcoder>(intake_config.pivot_encoder_id, "secondary");
     ctre::phoenix6::configs::CANcoderConfiguration encoder_config{};
     encoder_config.MagnetSensor.AbsoluteSensorDiscontinuityPoint = 1.0_tr;
     encoder_config.MagnetSensor.SensorDirection = ctre::phoenix6::signals::SensorDirectionValue::Clockwise_Positive;
