@@ -127,6 +127,8 @@ void Robot::TeleopPeriodic()
     bool intake_up = context->getPilotController().GetCircleButtonPressed();
     bool intake_down = context->getPilotController().GetTriangleButtonPressed();
     bool intake_balls = context->getPilotController().GetSquareButton();
+    //Left trigger for loading shooter
+    bool load_shooter = context->getPilotController().GetL2Axis() > 0.5;
     
     if(intake_up)
     {
@@ -165,20 +167,27 @@ void Robot::TeleopPeriodic()
     //Temp controls for setting shooter to voltage mode--------------------------
 
     bool do_shooter_voltage_control_toggle = context->getPilotController().GetCrossButtonPressed();
-    static bool do_shooter_voltage_control = false;
+    static bool do_shooter_auto_control = false;
     if(do_shooter_voltage_control_toggle)
     {
-        do_shooter_voltage_control = !do_shooter_voltage_control;
-        std::cout << "Toggled shooter voltage control to " << (do_shooter_voltage_control ? "ON" : "OFF") << std::endl;
+        do_shooter_auto_control = !do_shooter_auto_control;
+        std::cout << "Toggled shooter auto control to " << (do_shooter_auto_control ? "ON" : "OFF") << std::endl;
     }
-    if(do_shooter_voltage_control)
+    if(do_shooter_auto_control)
     {
-        shooter_system->setShooterMode(ShooterSystem::ShooterMode::SPEED);
-        shooter_system->setLoaderMode(ShooterSystem::LoaderMode::LOAD);
+        shooter_system->setShooterMode(ShooterSystem::ShooterMode::MANUAL_AUTO);
     }
     else
     {
         shooter_system->setShooterMode(ShooterSystem::ShooterMode::STOP);
+    }
+
+    if(load_shooter)
+    {
+        shooter_system->setLoaderMode(ShooterSystem::LoaderMode::LOAD);
+    }
+    else
+    {
         shooter_system->setLoaderMode(ShooterSystem::LoaderMode::STOP);
     }
 
