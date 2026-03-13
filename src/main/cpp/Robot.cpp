@@ -152,7 +152,7 @@ void Robot::TeleopPeriodic()
     if(reset_field_orientation)
     {
         context->setStartAngle(HighVoltage::get180Range(context->getPigeon().GetYaw().GetValue()));
-        drive_system->setOdometryFromVision();
+        //drive_system->setOdometryFromVision();
     }
 
     if(auto_aim)

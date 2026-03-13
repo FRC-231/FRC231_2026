@@ -161,9 +161,9 @@
         "left_servo_id":2,
         "right_servo_id":3,
         "shooter_pid":{
-            "k_p":0.006,
+            "k_p":0.005,
             "k_i":0.0012,
-            "k_d":0.0
+            "k_d":0.0000
         },
         "hopper_voltage":2,
         "feed_voltage":5,
@@ -175,7 +175,7 @@
         "shooter_gear_ratio":0.75,
         "shooter_max_voltage": 8.0,
         "shooter_min_voltage": -1.0,
-        "backspin_amount": 80,
+        "backspin_amount": 300,
         "distance_to_shooter_velocity":[
             [0.0, 500.0],
             [1.0, 1000.0],
