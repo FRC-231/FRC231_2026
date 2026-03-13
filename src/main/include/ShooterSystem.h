@@ -122,6 +122,7 @@ private:
     HighVoltage::NetworkTableValue<double> nt_right_shooter_target_velocity{SHOOTER_TABLE_NAME + "/" + "right_shooter_target_velocity", 0.0};
     HighVoltage::NetworkTableValue<int> nt_servo_pulse_width{SHOOTER_TABLE_NAME + "/" + "servo_pulse_width", 0};
     HighVoltage::NetworkTableValue<double> nt_shooter_auto_adjustment{SHOOTER_TABLE_NAME + "/" + "shooter_auto_adjustment", 0.0};
+    HighVoltage::NetworkTableValue<double> nt_backspin_amount{SHOOTER_TABLE_NAME + "/" + "backspin_amount", 0.0};
     HighVoltage::NetworkTableValue<double> nt_backspin_adjustment{SHOOTER_TABLE_NAME + "/" + "backspin_adjustment", 0.0};
     HighVoltage::NetworkTableValue<double> nt_shooter_angle_adjustment{SHOOTER_TABLE_NAME + "/" + "shooter_angle_adjustment", 0.0};
     HighVoltage::NetworkTableValue<double> nt_shooter_manual_auto_speed{SHOOTER_TABLE_NAME + "/" + "shooter_manual_auto_speed", 0.0};
