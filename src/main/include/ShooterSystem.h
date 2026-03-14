@@ -110,6 +110,8 @@ private:
     units::revolutions_per_minute_t backspin_adjustment{0_rpm};
     double shooter_angle_adjustment{0.0};
     std::map<units::meter_t, units::revolutions_per_minute_t> distance_to_shooter_velocity;
+    std::map<units::meter_t, double> distance_to_pulsewidth;
+    std::map<units::meter_t, units::revolutions_per_minute_t> distance_to_backspin;
     units::revolutions_per_minute_t shooter_manual_auto_speed{0_rpm};
 
     HighVoltage::NetworkTableValue<double> nt_hopper_voltage{SHOOTER_TABLE_NAME + "/" + "hopper_voltage", 0.0};

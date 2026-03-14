@@ -108,6 +108,16 @@ ShooterSystem::ShooterSystem(std::shared_ptr<RobotContext> context):
     {
         distance_to_shooter_velocity[units::meter_t{pair.first}] = units::revolutions_per_minute_t{pair.second};
     }
+    //Load distance to pulsewidth map
+    for(const auto& pair : shooter_config.distance_to_pulsewidth)
+    {
+        distance_to_pulsewidth[units::meter_t{pair.first}] = pair.second;
+    }
+    //Load distance to backspin map
+    for(const auto& pair : shooter_config.distance_to_backspin)
+    {
+        distance_to_backspin[units::meter_t{pair.first}] = units::revolutions_per_minute_t{pair.second};
+    }
 
     nt_hopper_voltage.setOnUpdate([this](const double& value)
     {
@@ -252,11 +262,6 @@ void ShooterSystem::Periodic()
             doLoaderStop();
             break;
     }
-
-    auto left_channel_id  = static_cast<rev::servohub::ServoChannel::ChannelId>(left_servo_id);
-    auto right_channel_id = static_cast<rev::servohub::ServoChannel::ChannelId>(right_servo_id);
-    servo_controller->GetServoChannel(left_channel_id).SetPulseWidth(servo_pulse_width);
-    servo_controller->GetServoChannel(right_channel_id).SetPulseWidth(servo_pulse_width);
 
     // Diagnostics: print servo status once every ~2 seconds (100 loops at 20ms)
     // Using a higher interval to avoid console I/O overhead
@@ -440,7 +445,14 @@ void ShooterSystem::doShooterAutoControl()
     auto shooter_velocity = HighVoltage::cubicHermiteInterpolation<units::meter_t, units::revolutions_per_minute_t>(distance_to_shooter_velocity, distance_to_target);
     auto left_shooter_speed = shooter_velocity + shooter_auto_adjustment;
     auto right_shooter_speed = shooter_velocity + shooter_auto_adjustment;
-    auto backspin_velocity = backspin_amount + backspin_adjustment;
+    auto backspin_velocity = HighVoltage::cubicHermiteInterpolation<units::meter_t, units::revolutions_per_minute_t>(distance_to_backspin, distance_to_target);
+    auto new_servo_pulse_width = HighVoltage::cubicHermiteInterpolation<units::meter_t, double>(distance_to_pulsewidth, distance_to_target);
+    //Set the servo pulse width directly from the interpolation with adjustment
+    servo_pulse_width = static_cast<int>(new_servo_pulse_width + shooter_angle_adjustment);
+    auto left_channel_id  = static_cast<rev::servohub::ServoChannel::ChannelId>(left_servo_id);
+    auto right_channel_id = static_cast<rev::servohub::ServoChannel::ChannelId>(right_servo_id);
+    servo_controller->GetServoChannel(left_channel_id).SetPulseWidth(servo_pulse_width);
+    servo_controller->GetServoChannel(right_channel_id).SetPulseWidth(servo_pulse_width);
     if(servo_pulse_width >= servo_center_pulse_width)
     {
         left_shooter_speed -= backspin_velocity/2;
@@ -472,6 +484,10 @@ void ShooterSystem::doShooterManualAutoControl()
     }
     left_shooter_motor->SetControl(shooter_velocity_request.WithVelocity(units::turns_per_second_t{left_shooter_speed.value() / 60.0 * shooter_gear_ratio}));
     right_shooter_motor->SetControl(shooter_velocity_request.WithVelocity(units::turns_per_second_t{right_shooter_speed.value() / 60.0 * shooter_gear_ratio}));
+    auto left_channel_id  = static_cast<rev::servohub::ServoChannel::ChannelId>(left_servo_id);
+    auto right_channel_id = static_cast<rev::servohub::ServoChannel::ChannelId>(right_servo_id);
+    servo_controller->GetServoChannel(left_channel_id).SetPulseWidth(servo_pulse_width);
+    servo_controller->GetServoChannel(right_channel_id).SetPulseWidth(servo_pulse_width);
 }
 
 void ShooterSystem::setLoaderMode(LoaderMode mode)

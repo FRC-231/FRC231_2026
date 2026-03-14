@@ -60,6 +60,28 @@ void from_json(const nlohmann::json &j, ShooterConfig &shooter)
         }
         shooter.distance_to_shooter_velocity[pair[0]] = pair[1];
     }
+    //Load the distance to backspin map
+    std::vector<std::vector<double>> distance_to_backspin_vec;
+    j.at(ShooterConfig::DISTANCE_TO_BACKSPIN).get_to(distance_to_backspin_vec);
+    for(const auto& pair : distance_to_backspin_vec)
+    {
+        if(pair.size() != 2)
+        {
+            throw std::runtime_error("Invalid distance to backspin pair in config");
+        }
+        shooter.distance_to_backspin[pair[0]] = pair[1];
+    }
+    //Load the distance to pulse width map
+    std::vector<std::vector<double>> distance_to_pulsewidth_vec;
+    j.at(ShooterConfig::DISTANCE_TO_PULSEWIDTH).get_to(distance_to_pulsewidth_vec);
+    for(const auto& pair : distance_to_pulsewidth_vec)
+    {
+        if(pair.size() != 2)
+        {
+            throw std::runtime_error("Invalid distance to pulse width pair in config");
+        }
+        shooter.distance_to_pulsewidth[pair[0]] = pair[1];
+    }
 }
 
 void from_json(const nlohmann::json &j, RobotConfig &robot)

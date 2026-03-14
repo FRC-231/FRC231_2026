@@ -3,6 +3,7 @@
 #include <map>
 #include <vector>
 #include <optional>
+#include <type_traits>
 #include <frc/DriverStation.h>
 #include <units/angle.h>
 #include <units/voltage.h>
@@ -11,6 +12,20 @@
 
 namespace HighVoltage
 {
+
+/// Extracts a raw double from either a WPILib unit type (via .value()) or a plain arithmetic type.
+template<typename T>
+inline double toDouble(const T& v)
+{
+    if constexpr (std::is_arithmetic_v<T>)
+    {
+        return static_cast<double>(v);
+    }
+    else
+    {
+        return v.value();
+    }
+}
 
 // Type aliases for feedforward unit types
 using VoltsPerMeterPerSecond = units::unit_t<units::compound_unit<units::volts, units::inverse<units::meters_per_second>>>;
@@ -66,8 +81,8 @@ OutputUnit linearInterpolation(const std::map<InputUnit, OutputUnit>& data, Inpu
     auto high = data.lower_bound(input);
     auto low  = std::prev(high);
 
-    double t = (input - low->first).value() /
-               (high->first - low->first).value();
+    double t = toDouble(input - low->first) /
+               toDouble(high->first - low->first);
     return low->second + t * (high->second - low->second);
 }
 
@@ -97,14 +112,14 @@ OutputUnit cubicHermiteInterpolation(const std::map<InputUnit, OutputUnit>& data
     if (p3 == data.end()) p3 = p2;
 
     // Normalized parameter t in [0, 1] across the [p1, p2] segment
-    double h = (p2->first - p1->first).value();
-    double t = (input - p1->first).value() / h;
+    double h = toDouble(p2->first - p1->first);
+    double t = toDouble(input - p1->first) / h;
 
     // Catmull-Rom tangents (scaled to the segment width)
-    double m1 = (p2->second - p0->second).value() /
-                (p2->first  - p0->first).value() * h;
-    double m2 = (p3->second - p1->second).value() /
-                (p3->first  - p1->first).value() * h;
+    double m1 = toDouble(p2->second - p0->second) /
+                toDouble(p2->first  - p0->first) * h;
+    double m2 = toDouble(p3->second - p1->second) /
+                toDouble(p3->first  - p1->first) * h;
 
     // Hermite basis functions
     double t2 = t * t;
@@ -115,9 +130,9 @@ OutputUnit cubicHermiteInterpolation(const std::map<InputUnit, OutputUnit>& data
     double h11 =    t3 -   t2;
 
     // Evaluate the spline
-    double result = h00 * p1->second.value()
+    double result = h00 * toDouble(p1->second)
                   + h10 * m1
-                  + h01 * p2->second.value()
+                  + h01 * toDouble(p2->second)
                   + h11 * m2;
 
     return OutputUnit{result};

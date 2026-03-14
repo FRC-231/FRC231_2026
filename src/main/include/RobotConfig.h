@@ -80,6 +80,8 @@ struct ShooterConfig
     static inline const std::string SHOOTER_MIN_VOLTAGE = "shooter_min_voltage";
     static inline const std::string BACKSPIN_AMOUNT = "backspin_amount";
     static inline const std::string DISTANCE_TO_SHOOTER_VELOCITY = "distance_to_shooter_velocity";
+    static inline const std::string DISTANCE_TO_BACKSPIN = "distance_to_backspin";
+    static inline const std::string DISTANCE_TO_PULSEWIDTH = "distance_to_pulsewidth";
 
 
     uint8_t hopper_motor_id;
@@ -98,6 +100,8 @@ struct ShooterConfig
     double shooter_min_voltage;
     double backspin_amount;
     std::map<double, double> distance_to_shooter_velocity;
+    std::map<double, double> distance_to_backspin;
+    std::map<double, double> distance_to_pulsewidth;
 
     friend void from_json(const nlohmann::json &j, ShooterConfig &shooter);
 };
