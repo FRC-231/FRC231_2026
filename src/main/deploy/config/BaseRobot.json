@@ -166,15 +166,15 @@
             "k_i":0.0012,
             "k_d":0.0000
         },
-        "hopper_voltage":2,
-        "feed_voltage":5,
+        "hopper_voltage":6.5,
+        "feed_voltage":6.5,
         "shooter_ff":{
             "k_s":0.185,
             "k_v":0.00142857142,
             "k_a":0.0
         },
         "shooter_gear_ratio":0.75,
-        "shooter_max_voltage": 8.0,
+        "shooter_max_voltage": 10.0,
         "shooter_min_voltage": -1.0,
         "backspin_amount": 300,
         "distance_to_shooter_velocity":[
@@ -196,5 +196,5 @@
             [4.0, 1150.0]
         ]
     },
-    "nt_throttle_interval": 1
+    "nt_throttle_interval": 4
 }
