@@ -195,6 +195,14 @@ double MK5NSwerveModule::getEncoderRawPosition()
 //Updates the network table values
 void MK5NSwerveModule::updateNetworkTables()
 {
+    // Throttle NT updates: 0 or 1 = every loop, N = every Nth loop
+    if (nt_throttle_interval_ > 1)
+    {
+        nt_update_counter_++;
+        if (nt_update_counter_ < nt_throttle_interval_) return;
+        nt_update_counter_ = 0;
+    }
+
     nt_target_angle->setValue(target_angle.value());
     nt_angle->setValue(getAngle().value());
     nt_raw_angle->setValue(getRawAngle().value());

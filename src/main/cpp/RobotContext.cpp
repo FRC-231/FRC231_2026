@@ -4,7 +4,16 @@
 
 RobotContext::RobotContext()
 {
-
+    // Allow live-toggling competition mode from the dashboard
+    nt_competition_mode.setOnUpdate([this](const bool& value)
+    {
+        competition_mode = value;
+    });
+    // Allow live-adjusting the NT throttle interval from the dashboard
+    nt_throttle_interval_value.setOnUpdate([this](const double& value)
+    {
+        nt_throttle_interval = static_cast<int>(value);
+    });
 }
 
 bool RobotContext::loadConfig(const std::filesystem::path& path)
@@ -31,6 +40,13 @@ bool RobotContext::loadConfig(const std::filesystem::path& path)
         return false;
     }
     std::cout << "config loaded" << std::endl;
+
+    // Initialize competition_mode and throttle interval from config and publish to NT
+    competition_mode = config->competition_mode;
+    nt_competition_mode.setValue(competition_mode);
+    nt_throttle_interval = config->nt_throttle_interval;
+    nt_throttle_interval_value.setValue(static_cast<double>(nt_throttle_interval));
+
     return true;
     
 }

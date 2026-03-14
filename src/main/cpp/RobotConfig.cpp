@@ -67,5 +67,15 @@ void from_json(const nlohmann::json &j, RobotConfig &robot)
     j.at(RobotConfig::DRIVE).get_to(robot.drive_config);
     j.at(RobotConfig::INTAKE).get_to(robot.intake_config);
     j.at(RobotConfig::SHOOTER).get_to(robot.shooter_config);
+    // Optional — defaults to false if missing from JSON
+    if (j.contains(RobotConfig::COMPETITION_MODE))
+    {
+        j.at(RobotConfig::COMPETITION_MODE).get_to(robot.competition_mode);
+    }
+    // Optional — defaults to 5 if missing from JSON
+    if (j.contains(RobotConfig::NT_THROTTLE_INTERVAL))
+    {
+        j.at(RobotConfig::NT_THROTTLE_INTERVAL).get_to(robot.nt_throttle_interval);
+    }
 }
 }

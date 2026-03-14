@@ -107,10 +107,14 @@ struct RobotConfig
     static inline const std::string DRIVE = "drive";
     static inline const std::string INTAKE = "intake";
     static inline const std::string SHOOTER = "shooter";
+    static inline const std::string COMPETITION_MODE = "competition_mode";
+    static inline const std::string NT_THROTTLE_INTERVAL = "nt_throttle_interval";
 
     DriveConfig drive_config;
     IntakeConfig intake_config;
     ShooterConfig shooter_config;
+    bool competition_mode = false;
+    int nt_throttle_interval = 5; // loops to skip when throttled (5 = ~10Hz at 50Hz loop)
     friend void from_json(const nlohmann::json &j, RobotConfig &robot);
 };
 }

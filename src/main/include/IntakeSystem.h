@@ -59,6 +59,10 @@ public:
     std::string feedModeToString(FeedMode mode);
     std::string pivotModeToString(PivotMode mode);
 
+    /// Sets the NT telemetry throttle interval.
+    /// 0 or 1 = publish every loop (~50Hz), N = publish every Nth loop.
+    void setNTThrottleInterval(int interval) { intake_nt_throttle_interval_ = interval; }
+
     void addToLuaState(Keeko::ThreadedScript& script);
 
 
@@ -112,4 +116,6 @@ private:
     HighVoltage::NetworkTableValue<double> nt_pivot_encoder_raw{INTAKE_TABLE_NAME + "/" + "pivot_encoder_raw", 0.0};
     HighVoltage::NetworkTableValue<double> nt_pivot_encoder_angle{INTAKE_TABLE_NAME + "/" + "pivot_encoder_angle", 0.0};
 
+    int intake_nt_counter_{0};
+    int intake_nt_throttle_interval_{0};
 };

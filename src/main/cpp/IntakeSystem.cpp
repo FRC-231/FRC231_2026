@@ -260,6 +260,14 @@ void IntakeSystem::doPivotMove()
 
 void IntakeSystem::updateNetworkTable()
 {
+    // Throttle NT updates: 0 or 1 = every loop, N = every Nth loop
+    if (intake_nt_throttle_interval_ > 1)
+    {
+        intake_nt_counter_++;
+        if (intake_nt_counter_ < intake_nt_throttle_interval_) return;
+        intake_nt_counter_ = 0;
+    }
+
     nt_feed_intake_voltage.setValue(feed_intake_voltage.value());
     nt_feed_outtake_voltage.setValue(feed_outtake_voltage.value());
     nt_pivot_max_voltage.setValue(pivot_max_voltage.value());

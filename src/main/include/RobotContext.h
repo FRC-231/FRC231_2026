@@ -2,6 +2,7 @@
 #include <filesystem>
 #include <optional>
 #include "RobotConfig.h"
+#include "NetworkTableValue.h"
 #include <frc/PS5Controller.h>
 #include <ctre/phoenix6/Pigeon2.hpp>
 #include <Vision.h>
@@ -29,6 +30,16 @@ public:
     void setStartAngle(units::angle::degree_t angle);
     units::angle::degree_t getStartAngle();
     Vision& getVision();
+
+    /// Returns true when NT telemetry should be throttled (competition mode).
+    /// Toggleable live via the "Robot/competition_mode" NT entry.
+    bool isCompetitionMode() const { return competition_mode; }
+
+    /// Returns the current NT throttle interval.
+    /// 0 or 1 = no throttle, N = publish every Nth loop.
+    /// In competition mode, returns the configured interval. Otherwise returns 0.
+    int getNTThrottleInterval() const { return competition_mode ? nt_throttle_interval : 0; }
+
     inline static const frc::Pose2d HUB_POSITION{units::inch_t{182.11}, units::inch_t{0.0}, frc::Rotation2d{units::degree_t{0.0}}};
 
 
@@ -39,4 +50,9 @@ private:
     //ctre::phoenix6::hardware::Pigeon2 pigeon{30, "rio"};
     units::angle::degree_t start_angle{0.0};
     Vision vision{CAMERA_NAMES};
+
+    bool competition_mode{false};
+    int nt_throttle_interval{5};
+    HighVoltage::NetworkTableValue<bool> nt_competition_mode{"Robot/competition_mode", false};
+    HighVoltage::NetworkTableValue<double> nt_throttle_interval_value{"Robot/nt_throttle_interval", 5};
 };

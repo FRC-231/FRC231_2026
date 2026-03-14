@@ -59,6 +59,10 @@ public:
     // ---- Subsystem Override ----
     void Periodic() override;
 
+    /// Sets the NT telemetry throttle interval for this subsystem and its swerve modules.
+    /// 0 or 1 = publish every loop (~50Hz), N = publish every Nth loop.
+    void setNTThrottleInterval(int interval);
+
     // ---- Drive Commands ----
     void setDrive(double x, double y, double rotate);
     void setManualAA(double x, double y);
@@ -165,4 +169,7 @@ private:
     HighVoltage::NetworkTableValue<double> nt_angle_to_hub{ORIENTATION_TABLE_NAME + "/" + "angle_to_hub", 0.0};
     HighVoltage::NetworkTableValue<double> nt_distance_to_hub{ORIENTATION_TABLE_NAME + "/" + "distance_to_hub", 0.0};
     HighVoltage::NetworkTableValue<bool> nt_locked_on{"DriveSystem/locked_on",false};
+
+    int drive_nt_counter_{0};
+    int drive_nt_throttle_interval_{0};
 };

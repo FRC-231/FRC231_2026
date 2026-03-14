@@ -98,6 +98,10 @@ public:
     void updateDriveMotorVoltage(units::volt_t voltage);
     void pointTurnMotor(units::angle::degree_t target_angle);
 
+    /// Sets the NT telemetry throttle interval.
+    /// 0 or 1 = publish every loop (~50Hz), N = publish every Nth loop.
+    void setNTThrottleInterval(int interval) { nt_throttle_interval_ = interval; }
+
     std::shared_ptr<ctre::phoenix6::hardware::TalonFX> getDriveMotor() { return drive_motor; }
     std::shared_ptr<ctre::phoenix6::hardware::TalonFX> getRotateMotor() { return rotate_motor; }
     std::shared_ptr<ctre::phoenix6::hardware::CANcoder> getEncoder() { return encoder; }
@@ -130,5 +134,8 @@ private:
     std::unique_ptr<HighVoltage::NetworkTableValue<double>> nt_rotate_ff_voltage;
     std::unique_ptr<HighVoltage::NetworkTableValue<double>> nt_encoder_position;
     std::unique_ptr<HighVoltage::NetworkTableValue<double>> nt_encoder_raw_position;
+
+    int nt_update_counter_ = 0;
+    int nt_throttle_interval_ = 0;
 };
 } // namespace HighVoltage

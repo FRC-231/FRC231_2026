@@ -60,6 +60,10 @@ public:
     std::string loaderModeToString(LoaderMode mode);
     std::string shooterModeToString(ShooterMode mode);
 
+    /// Sets the NT telemetry throttle interval.
+    /// 0 or 1 = publish every loop (~50Hz), N = publish every Nth loop.
+    void setNTThrottleInterval(int interval) { shooter_nt_throttle_interval_ = interval; }
+
     void addToLuaState(Keeko::ThreadedScript& script);
 
 private:
@@ -136,5 +140,7 @@ private:
     HighVoltage::NetworkTableValue<std::vector<double>> nt_shooter_velocities{SHOOTER_TABLE_NAME + "/" + "shooter_velocities", std::vector<double>{0,0,0,0}};
 
     int servo_diag_counter_{0};
+    int shooter_nt_counter_{0};
+    int shooter_nt_throttle_interval_{0};
 
 };

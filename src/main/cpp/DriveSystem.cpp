@@ -689,8 +689,25 @@ frc::Pose2d DriveSystem::updateOdometry()
     
 }
 
+void DriveSystem::setNTThrottleInterval(int interval)
+{
+    drive_nt_throttle_interval_ = interval;
+    front_left_module->setNTThrottleInterval(interval);
+    front_right_module->setNTThrottleInterval(interval);
+    back_left_module->setNTThrottleInterval(interval);
+    back_right_module->setNTThrottleInterval(interval);
+}
+
 void DriveSystem::updateNetworkTables()
 {
+    // Throttle NT updates: 0 or 1 = every loop, N = every Nth loop
+    if (drive_nt_throttle_interval_ > 1)
+    {
+        drive_nt_counter_++;
+        if (drive_nt_counter_ < drive_nt_throttle_interval_) return;
+        drive_nt_counter_ = 0;
+    }
+
     nt_drive_mode.setValue(driveModeToString(drive_mode));
     nt_drive_x.setValue(current_pose.X().value());
     nt_drive_y.setValue(current_pose.Y().value());

@@ -78,8 +78,30 @@ void Robot::setupAutonSelector()
 void Robot::RobotPeriodic()
 {
     frc2::CommandScheduler::GetInstance().Run();// Runs all subsystem's periodic functions
-    nt::NetworkTableInstance::GetDefault().Flush();
 
+    // Push the current NT throttle interval to all subsystems.
+    // getNTThrottleInterval() returns 0 when not in competition mode (= full rate),
+    // or the configured interval when in competition mode.
+    int throttle = context->getNTThrottleInterval();
+    drive_system->setNTThrottleInterval(throttle);
+    shooter_system->setNTThrottleInterval(throttle);
+    intake_system->setNTThrottleInterval(throttle);
+
+    // Throttle NT flush by the same interval in competition mode.
+    // In testing mode (interval <= 1), flush every loop for real-time telemetry.
+    if (throttle > 1)
+    {
+        static int flush_counter = 0;
+        if (++flush_counter >= throttle)
+        {
+            flush_counter = 0;
+            nt::NetworkTableInstance::GetDefault().Flush();
+        }
+    }
+    else
+    {
+        nt::NetworkTableInstance::GetDefault().Flush();
+    }
 }
 
 /**

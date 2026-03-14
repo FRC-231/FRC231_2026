@@ -258,9 +258,10 @@ void ShooterSystem::Periodic()
     servo_controller->GetServoChannel(left_channel_id).SetPulseWidth(servo_pulse_width);
     servo_controller->GetServoChannel(right_channel_id).SetPulseWidth(servo_pulse_width);
 
-    // Diagnostics: print servo status once per second (~50 loops at 20ms)
+    // Diagnostics: print servo status once every ~2 seconds (100 loops at 20ms)
+    // Using a higher interval to avoid console I/O overhead
     servo_diag_counter_++;
-    if (servo_diag_counter_ >= 50) {
+    if (servo_diag_counter_ >= 100) {
         servo_diag_counter_ = 0;
         auto s0 = servo_controller->GetPeriodicStatus0();
         auto s2 = servo_controller->GetPeriodicStatus2();
@@ -294,6 +295,14 @@ void ShooterSystem::Periodic()
 
 void ShooterSystem::updateNetworkTable()
 {
+    // Throttle NT updates: 0 or 1 = every loop, N = every Nth loop
+    if (shooter_nt_throttle_interval_ > 1)
+    {
+        shooter_nt_counter_++;
+        if (shooter_nt_counter_ < shooter_nt_throttle_interval_) return;
+        shooter_nt_counter_ = 0;
+    }
+
     nt_hopper_voltage.setValue(hopper_voltage.value());
     nt_feed_voltage.setValue(feed_voltage.value());
     nt_loader_mode.setValue(loaderModeToString(loader_mode));
