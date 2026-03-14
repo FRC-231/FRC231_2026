@@ -138,8 +138,8 @@
         "pivot_motor_id":9,
         "feed_motor_id":10,
         "pivot_encoder_id":24,
-        "feed_intake_voltage":-11,
-        "feed_outtake_voltage":11,
+        "feed_intake_voltage":-4,
+        "feed_outtake_voltage":4,
         "pivot_max_voltage":6,
         "pivot_min_voltage":-6,
         "pivot_max_angle":175,
@@ -170,7 +170,7 @@
         "feed_voltage":5,
         "shooter_ff":{
             "k_s":0.185,
-            "k_v":0.00145251396,
+            "k_v":0.00142857142,
             "k_a":0.0
         },
         "shooter_gear_ratio":0.75,
@@ -188,5 +188,5 @@
             [7.0, 3400.0]
         ]
     },
-    "nt_throttle_interval": 5
+    "nt_throttle_interval": 1
 }
