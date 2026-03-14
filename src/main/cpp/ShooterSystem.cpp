@@ -59,10 +59,43 @@ ShooterSystem::ShooterSystem(std::shared_ptr<RobotContext> context):
 
     // Bind NT updates: writing kP/kI/kD from a dashboard will immediately
     // re-apply the scaled gains to both shooter motors.
-    HighVoltage::bindPIDNetworkTableToTalonFXFromRPM(nt_shooter_kP, nt_shooter_kI, nt_shooter_kD,
-                                                      shooter_config.shooter_ff, *left_shooter_motor,  shooter_gear_ratio);
-    HighVoltage::bindPIDNetworkTableToTalonFXFromRPM(nt_shooter_kP, nt_shooter_kI, nt_shooter_kD,
-                                                      shooter_config.shooter_ff, *right_shooter_motor, shooter_gear_ratio);
+    // NOTE: We bind manually instead of calling bindPIDNetworkTableToTalonFXFromRPM
+    // twice, because setOnUpdate replaces the callback — a second call would
+    // overwrite the first, leaving one motor with stale gains.
+    auto* p_kP = &nt_shooter_kP;
+    auto* p_kI = &nt_shooter_kI;
+    auto* p_kD = &nt_shooter_kD;
+    auto* p_left  = left_shooter_motor.get();
+    auto* p_right = right_shooter_motor.get();
+    auto ff = shooter_config.shooter_ff;
+    double gr = shooter_gear_ratio;
+
+    auto reapplyBoth = [p_kP, p_kI, p_kD, ff, p_left, p_right, gr]()
+    {
+        HighVoltage::PIDConfig pid{
+            p_kP->getValue(0.0),
+            p_kI->getValue(0.0),
+            p_kD->getValue(0.0)
+        };
+        HighVoltage::applyMotionConfigToTalonFXFromRPM(pid, ff, *p_left,  gr);
+        HighVoltage::applyMotionConfigToTalonFXFromRPM(pid, ff, *p_right, gr);
+    };
+
+    nt_shooter_kP.setOnUpdate([reapplyBoth, key = nt_shooter_kP.getKey()](const double& value)
+    {
+        std::cout << key << " set to " << value << std::endl;
+        reapplyBoth();
+    });
+    nt_shooter_kI.setOnUpdate([reapplyBoth, key = nt_shooter_kI.getKey()](const double& value)
+    {
+        std::cout << key << " set to " << value << std::endl;
+        reapplyBoth();
+    });
+    nt_shooter_kD.setOnUpdate([reapplyBoth, key = nt_shooter_kD.getKey()](const double& value)
+    {
+        std::cout << key << " set to " << value << std::endl;
+        reapplyBoth();
+    });
 
     ctre::phoenix6::configs::TalonFXConfiguration shooter_feed_config{};
     shooter_feed_config.MotorOutput.Inverted = ctre::phoenix6::signals::InvertedValue::Clockwise_Positive;
