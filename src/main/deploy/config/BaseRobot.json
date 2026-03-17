@@ -177,6 +177,7 @@
         "shooter_max_voltage": 10.0,
         "shooter_min_voltage": -1.0,
         "backspin_amount": 300,
+        "at_speed_tolerance":50,
         "distance_to_shooter_velocity":[
             [1.5, 2675.0],
             [2.0, 2900.0],

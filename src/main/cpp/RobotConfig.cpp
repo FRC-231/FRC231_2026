@@ -49,6 +49,7 @@ void from_json(const nlohmann::json &j, ShooterConfig &shooter)
     j.at(ShooterConfig::SHOOTER_MAX_VOLTAGE).get_to(shooter.shooter_max_voltage);
     j.at(ShooterConfig::SHOOTER_MIN_VOLTAGE).get_to(shooter.shooter_min_voltage);
     j.at(ShooterConfig::BACKSPIN_AMOUNT).get_to(shooter.backspin_amount);
+    j.at(ShooterConfig::AT_SPEED_TOLERANCE).get_to(shooter.at_speed_tolerance);
     //Load the distance to shooter velocity map. Will be an array of arrays, where the inner arrays have 2 elements: distance and velocity
     std::vector<std::vector<double>> distance_to_velocity_vec;
     j.at(ShooterConfig::DISTANCE_TO_SHOOTER_VELOCITY).get_to(distance_to_velocity_vec);

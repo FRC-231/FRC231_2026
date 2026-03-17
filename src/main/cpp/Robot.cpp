@@ -280,6 +280,8 @@ void Robot::checkIfAutonScriptNeedsLoading()
 void Robot::addToLuaState(Keeko::ThreadedScript& script)
 {
     drive_system->addToLuaState(script);
+    intake_system->addToLuaState(script);
+    shooter_system->addToLuaState(script);
 }
 
 void Robot::TestInit()

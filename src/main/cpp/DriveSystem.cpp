@@ -37,7 +37,7 @@ DriveSystem::DriveSystem(std::shared_ptr<RobotContext> context):
         0.6096 //TODO: Use config values
     );
     swerve_coordinator->setMaxSpeed(5.0_mps);
-    swerve_coordinator->setFieldOriented(true);
+    swerve_coordinator->setFieldOriented(false);
 
     kinematics = std::make_shared<frc::SwerveDriveKinematics<4>>(
         frc::Translation2d{units::meter_t{context->getConfig()->drive_config.swerve_kinematics.front_left_position.x}, units::meter_t{context->getConfig()->drive_config.swerve_kinematics.front_left_position.y}},

@@ -17,6 +17,7 @@ ShooterSystem::ShooterSystem(std::shared_ptr<RobotContext> context):
     servo_controller = std::make_unique<rev::servohub::ServoHub>(shooter_config.servo_controller_id);
     left_servo_id = shooter_config.left_servo_id;
     right_servo_id = shooter_config.right_servo_id;
+    at_speed_tolerance = units::revolutions_per_minute_t{shooter_config.at_speed_tolerance};
 
     auto left_channel_id  = static_cast<rev::servohub::ServoChannel::ChannelId>(left_servo_id);
     auto right_channel_id = static_cast<rev::servohub::ServoChannel::ChannelId>(right_servo_id);
@@ -320,6 +321,7 @@ void ShooterSystem::updateNetworkTable()
     nt_right_shooter_voltage.setValue(right_shooter_voltage.value());
     nt_shooter_velocities.setValue({left_shooter_voltage.value(),right_shooter_voltage.value(),getLeftShooterVelocity().value(), getRightShooterVelocity().value()});
     nt_backspin_amount.setValue(backspin_amount.value());
+    nt_is_shooter_at_speed.setValue(isAtSpeed());
 }
 
 std::string ShooterSystem::loaderModeToString(LoaderMode mode)
@@ -465,6 +467,8 @@ void ShooterSystem::doShooterAutoControl()
     }
     left_shooter_motor->SetControl(shooter_velocity_request.WithVelocity(units::turns_per_second_t{left_shooter_speed.value() / 60.0 * shooter_gear_ratio}));
     right_shooter_motor->SetControl(shooter_velocity_request.WithVelocity(units::turns_per_second_t{right_shooter_speed.value() / 60.0 * shooter_gear_ratio}));
+    left_shooter_target_velocity = left_shooter_speed;
+    right_shooter_target_velocity = right_shooter_speed;
 
 }
 
@@ -488,6 +492,8 @@ void ShooterSystem::doShooterManualAutoControl()
     auto right_channel_id = static_cast<rev::servohub::ServoChannel::ChannelId>(right_servo_id);
     servo_controller->GetServoChannel(left_channel_id).SetPulseWidth(servo_pulse_width);
     servo_controller->GetServoChannel(right_channel_id).SetPulseWidth(servo_pulse_width);
+    left_shooter_target_velocity = left_shooter_speed;
+    right_shooter_target_velocity = right_shooter_speed;
 }
 
 void ShooterSystem::setLoaderMode(LoaderMode mode)
@@ -508,6 +514,31 @@ void ShooterSystem::loaderLoad()
 void ShooterSystem::loaderUnload()
 {
     setLoaderMode(LoaderMode::UNLOAD);
+}
+
+bool ShooterSystem::isAtSpeed()
+{
+    auto current_left = getLeftShooterVelocity();
+    auto current_right = getRightShooterVelocity();
+    auto left_difference = current_left - left_shooter_target_velocity;
+    if(left_difference < 0_rpm)
+    {
+        left_difference *= -1;
+    }
+    auto right_difference = current_right - right_shooter_target_velocity;
+    if(right_difference < 0_rpm)
+    {
+        right_difference *= -1;
+    }
+    if(left_difference > at_speed_tolerance)
+    {
+        return false;
+    }
+    if(right_difference > at_speed_tolerance)
+    {
+        return false;
+    }
+    return true;
 }
 
 void ShooterSystem::doLoaderStop()
@@ -539,6 +570,7 @@ void ShooterSystem::addToLuaState(Keeko::ThreadedScript& script)
             .addFunction("loaderLoad", &ShooterSystem::loaderLoad)
             .addFunction("loaderUnload", &ShooterSystem::loaderUnload)
             .addFunction("loaderStop", &ShooterSystem::loaderStop)
+            .addFunction("isAtSpeed", &ShooterSystem::isAtSpeed)
         .endClass();
     script.addInstance("shooter_system", this);
 

@@ -51,6 +51,7 @@ public:
     void loaderStop();
     void loaderLoad();
     void loaderUnload();
+    bool isAtSpeed();
     units::revolutions_per_minute_t getLeftShooterVelocity();
     units::revolutions_per_minute_t getRightShooterVelocity();
     void setDistanceUpdateCallback(std::function<units::meter_t()> callback);
@@ -113,6 +114,7 @@ private:
     std::map<units::meter_t, double> distance_to_pulsewidth;
     std::map<units::meter_t, units::revolutions_per_minute_t> distance_to_backspin;
     units::revolutions_per_minute_t shooter_manual_auto_speed{0_rpm};
+    units::revolutions_per_minute_t at_speed_tolerance{0_rpm};
 
     HighVoltage::NetworkTableValue<double> nt_hopper_voltage{SHOOTER_TABLE_NAME + "/" + "hopper_voltage", 0.0};
     HighVoltage::NetworkTableValue<double> nt_feed_voltage{SHOOTER_TABLE_NAME + "/" + "feed_voltage", 0.0};
@@ -132,6 +134,7 @@ private:
     HighVoltage::NetworkTableValue<double> nt_backspin_adjustment{SHOOTER_TABLE_NAME + "/" + "backspin_adjustment", 0.0};
     HighVoltage::NetworkTableValue<double> nt_shooter_angle_adjustment{SHOOTER_TABLE_NAME + "/" + "shooter_angle_adjustment", 0.0};
     HighVoltage::NetworkTableValue<double> nt_shooter_manual_auto_speed{SHOOTER_TABLE_NAME + "/" + "shooter_manual_auto_speed", 0.0};
+    HighVoltage::NetworkTableValue<bool> nt_is_shooter_at_speed{SHOOTER_TABLE_NAME + "/" + "is_shooter_at_speed", false};
 
     //PID network table values (used to live-tune the TalonFX closed-loop gains)
     HighVoltage::NetworkTableValue<double> nt_shooter_kP{SHOOTER_TABLE_NAME + "/" + "shooter_kP", 0.0};
