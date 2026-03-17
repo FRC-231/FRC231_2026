@@ -18,6 +18,7 @@ ShooterSystem::ShooterSystem(std::shared_ptr<RobotContext> context):
     left_servo_id = shooter_config.left_servo_id;
     right_servo_id = shooter_config.right_servo_id;
     at_speed_tolerance = units::revolutions_per_minute_t{shooter_config.at_speed_tolerance};
+    idle_mode_velocity = units::revolutions_per_minute_t{shooter_config.idle_mode_velocity};
 
     auto left_channel_id  = static_cast<rev::servohub::ServoChannel::ChannelId>(left_servo_id);
     auto right_channel_id = static_cast<rev::servohub::ServoChannel::ChannelId>(right_servo_id);
@@ -352,6 +353,15 @@ std::string ShooterSystem::shooterModeToString(ShooterMode mode)
 
         case ShooterMode::VOLTAGE:
             return "VOLTAGE";
+
+        case ShooterMode::AUTO:
+            return "AUTO";
+
+        case ShooterMode::MANUAL_AUTO:
+            return "MANUAL_AUTO";
+
+        case ShooterMode::IDLE:
+            return "IDLE";
     }
     return "UNKNOWN";
 }
@@ -494,6 +504,17 @@ void ShooterSystem::doShooterManualAutoControl()
     servo_controller->GetServoChannel(right_channel_id).SetPulseWidth(servo_pulse_width);
     left_shooter_target_velocity = left_shooter_speed;
     right_shooter_target_velocity = right_shooter_speed;
+}
+
+void ShooterSystem::doShooterIdleControl()
+{
+    //Set servos to servo_center_pulse_width
+    auto left_channel_id  = static_cast<rev::servohub::ServoChannel::ChannelId>(left_servo_id);
+    auto right_channel_id = static_cast<rev::servohub::ServoChannel::ChannelId>(right_servo_id);
+    servo_controller->GetServoChannel(left_channel_id).SetPulseWidth(servo_center_pulse_width);
+    servo_controller->GetServoChannel(right_channel_id).SetPulseWidth(servo_center_pulse_width);
+    left_shooter_motor->SetControl(shooter_velocity_request.WithVelocity(units::turns_per_second_t{idle_mode_velocity.value() / 60.0 * shooter_gear_ratio}));
+    right_shooter_motor->SetControl(shooter_velocity_request.WithVelocity(units::turns_per_second_t{idle_mode_velocity.value() / 60.0 * shooter_gear_ratio}));
 }
 
 void ShooterSystem::setLoaderMode(LoaderMode mode)

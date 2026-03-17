@@ -201,7 +201,7 @@ void Robot::TeleopPeriodic()
     }
     else
     {
-        shooter_system->setShooterMode(ShooterSystem::ShooterMode::STOP);
+        shooter_system->setShooterMode(ShooterSystem::ShooterMode::IDLE);
     }
 
     if(load_shooter)

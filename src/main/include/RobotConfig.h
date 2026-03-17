@@ -83,6 +83,7 @@ struct ShooterConfig
     static inline const std::string DISTANCE_TO_BACKSPIN = "distance_to_backspin";
     static inline const std::string DISTANCE_TO_PULSEWIDTH = "distance_to_pulsewidth";
     static inline const std::string AT_SPEED_TOLERANCE = "at_speed_tolerance";
+    static inline const std::string IDLE_MODE_VELOCITY = "idle_mode_velocity";
 
 
     uint8_t hopper_motor_id;
@@ -101,6 +102,7 @@ struct ShooterConfig
     double shooter_min_voltage;
     double backspin_amount;
     double at_speed_tolerance;
+    double idle_mode_velocity;
     std::map<double, double> distance_to_shooter_velocity;
     std::map<double, double> distance_to_backspin;
     std::map<double, double> distance_to_pulsewidth;
