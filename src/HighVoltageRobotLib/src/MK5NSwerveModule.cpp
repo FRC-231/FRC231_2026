@@ -74,16 +74,17 @@ void MK5NSwerveModule::updateTurnMotor(units::angle::degree_t degrees_off)
         units::voltage::volt_t turn_pid_voltage = units::voltage::volt_t{rotate_angle_pid->Calculate(degrees_off.value())};
         auto turn_feed = rotate_feedforward->Calculate(units::unit_t<units::compound_unit<units::meters, units::inverse<units::seconds>>>(velocity));
         rotate_motor->SetVoltage(turn_pid_voltage + turn_feed);
-        nt_rotate_ff_voltage->setValue(turn_feed.value());
-        nt_rotate_pid_voltage->setValue(turn_pid_voltage.value());
+        cached_rotate_ff_voltage_ = turn_feed.value();
+        cached_rotate_pid_voltage_ = turn_pid_voltage.value();
     }
     else
     {
         rotate_motor->SetVoltage(0_V);
-        nt_rotate_ff_voltage->setValue(0);
-        nt_rotate_pid_voltage->setValue(0);
+        cached_rotate_ff_voltage_ = 0;
+        cached_rotate_pid_voltage_ = 0;
     }
-    updateNetworkTables();
+    // NOTE: updateNetworkTables() is called by update() — don't call it here
+    // to avoid double-publishing every loop.
 }
 
 //updates the drive motor based on if the wheel is going forward or backward
@@ -207,6 +208,8 @@ void MK5NSwerveModule::updateNetworkTables()
     nt_angle->setValue(getAngle().value());
     nt_raw_angle->setValue(getRawAngle().value());
     nt_rotate_velocity->setValue(encoder->GetVelocity().GetValueAsDouble() * 360);
+    nt_rotate_ff_voltage->setValue(cached_rotate_ff_voltage_);
+    nt_rotate_pid_voltage->setValue(cached_rotate_pid_voltage_);
     nt_encoder_position->setValue(getEncoderPosition().value());
     nt_encoder_raw_position->setValue(getEncoderRawPosition());
 }

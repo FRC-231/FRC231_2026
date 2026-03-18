@@ -22,7 +22,8 @@ public:
     {
         STOP,
         INTAKE,
-        OUTTAKE
+        OUTTAKE,
+        SNOW_BLOWER
     };
 
     enum class PivotMode
@@ -46,7 +47,7 @@ public:
     void feedStop();
     void feedIntake();
     void feedOuttake();
-
+    void feedSnowBlower();
     // ---- Pivot Commands ----
     void pivotStop();
     void pivotUp();
@@ -73,6 +74,7 @@ private:
     void doFeedOuttake();
     void doPivotStop();
     void doPivotMove();
+    void doSnowBlower();
 
     // ---- Internal Helpers ----
     void updateNetworkTable();

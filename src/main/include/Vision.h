@@ -37,6 +37,7 @@ struct LimelightCamera
     std::string table_name;
     std::array<double, 3> last_reading{{0.0, 0.0, 0.0}};
     frc::Pose2d last_position;
+    int debug_counter{0};  // throttle SmartDashboard debug telemetry
 };
 
 class Vision

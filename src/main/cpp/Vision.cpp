@@ -75,62 +75,50 @@ void Vision::applyCameraData(LimelightCamera& camera, frc::SwerveDrivePoseEstima
     {
         auto table = nt::NetworkTableInstance::GetDefault().GetTable(camera.table_name);
 
-        // ── 1. Parse the JSON blob to get tag count & average tag distance ──
-        std::string limelight_info = table->GetString(JSON_ELEMENT_NAME, "");
-        if (limelight_info.empty())
+        // ── 1. Read the bot-pose array from the correct alliance key ──
+        // The Limelight botpose arrays contain more than 6 elements:
+        //   [0-2] = x, y, z   [3-5] = roll, pitch, yaw
+        //   [6]   = total latency (ms)
+        //   [7]   = tag count
+        //   [8]   = tag span (m)
+        //   [9]   = average tag distance from camera (m)
+        //   [10]  = average tag area (% of image)
+        // Using these avoids expensive JSON parsing every loop.
+        std::vector<double> raw_position;
+        if (current_alliance == frc::DriverStation::kBlue)
+        {
+            raw_position = table->GetNumberArray(BLUE_BOT_POSE_NAME, std::vector<double>{});
+        }
+        else
+        {
+            raw_position = table->GetNumberArray(RED_BOT_POSE_NAME, std::vector<double>{});
+        }
+
+        // Need at least 10 elements to get tag count and avg distance
+        if (raw_position.size() < 10)
         {
             return;
         }
 
-        nlohmann::json limelight_info_json = nlohmann::json::parse(limelight_info);
+        int number_of_targets = static_cast<int>(raw_position[7]);
+        double avg_tag_distance = raw_position[9];
 
-        auto& fiducials = limelight_info_json[JSON_APRIL_SECTION_NAME];
-        int number_of_targets = fiducials.size();
         if (number_of_targets < 1)
         {
             return;
         }
 
-        // Calculate the average distance from the camera to all visible tags.
-        // Each fiducial's "t6r_ts" array is [x, y, z, roll, pitch, yaw] of
-        // the robot in tag-space; the distance is sqrt(x^2 + y^2 + z^2).
-        double total_distance = 0.0;
-        for (const auto& tag : fiducials)
-        {
-            auto t6r = tag[TARGET_SPACE_ROBOT_POSE_NAME];
-            double dx = t6r[0].get<double>();
-            double dy = t6r[1].get<double>();
-            double dz = t6r[2].get<double>();
-            total_distance += std::sqrt(dx * dx + dy * dy + dz * dz);
-        }
-        double avg_tag_distance = total_distance / number_of_targets;
-
         // ── 2. Compute latency-corrected timestamp ──
-        double latency = (
-            table->GetNumber(PIPELINE_LATENCY_NAME, 0) +
-            table->GetNumber(CAPTURE_LATENCY_NAME, 0)
-        ) / 1000.0;
+        // Use the total latency from the botpose array (element [6]) which
+        // already combines pipeline + capture latency.
+        double latency = raw_position[6] / 1000.0;
 
-        // ── 3. Read the bot-pose from the correct alliance key ──
-        frc::Pose2d vision_position;
-        if (current_alliance == frc::DriverStation::kBlue)
-        {
-            auto raw_position = table->GetNumberArray(BLUE_BOT_POSE_NAME, std::vector<double>(6));
-            vision_position = frc::Pose2d(
-                units::meter_t{raw_position[0]},
-                units::meter_t{raw_position[1] - Y_OFFSET},
-                frc::Rotation2d(units::degree_t{raw_position[5]})
-            );
-        }
-        else
-        {
-            auto raw_position = table->GetNumberArray(RED_BOT_POSE_NAME, std::vector<double>(6));
-            vision_position = frc::Pose2d(
-                units::meter_t{raw_position[0]},
-                units::meter_t{raw_position[1] - Y_OFFSET},
-                frc::Rotation2d(units::degree_t{raw_position[5]})
-            );
-        }
+        // ── 3. Build the vision pose ──
+        frc::Pose2d vision_position(
+            units::meter_t{raw_position[0]},
+            units::meter_t{raw_position[1] - Y_OFFSET},
+            frc::Rotation2d(units::degree_t{raw_position[5]})
+        );
 
         // ── 4. Reject obviously bad data ──
         // Zero pose means the Limelight couldn't solve
@@ -222,12 +210,18 @@ void Vision::applyCameraData(LimelightCamera& camera, frc::SwerveDrivePoseEstima
             return;
         }
 
-        // ── 6. Publish telemetry for debugging ──
-        frc::SmartDashboard::PutNumber("Vision/" + camera.table_name + "/xy_std", xy_stds);
-        frc::SmartDashboard::PutNumber("Vision/" + camera.table_name + "/deg_std", deg_stds);
-        frc::SmartDashboard::PutNumber("Vision/" + camera.table_name + "/num_targets", number_of_targets);
-        frc::SmartDashboard::PutNumber("Vision/" + camera.table_name + "/avg_tag_dist", avg_tag_distance);
-        frc::SmartDashboard::PutString("Vision/mode", (mode == VisionMode::Auton) ? "Auton" : "Teleop");
+        // ── 6. Publish telemetry for debugging (throttled) ──
+        // Only update SmartDashboard every ~10 valid measurements to reduce overhead.
+        camera.debug_counter++;
+        if (camera.debug_counter >= 10)
+        {
+            camera.debug_counter = 0;
+            frc::SmartDashboard::PutNumber("Vision/" + camera.table_name + "/xy_std", xy_stds);
+            frc::SmartDashboard::PutNumber("Vision/" + camera.table_name + "/deg_std", deg_stds);
+            frc::SmartDashboard::PutNumber("Vision/" + camera.table_name + "/num_targets", number_of_targets);
+            frc::SmartDashboard::PutNumber("Vision/" + camera.table_name + "/avg_tag_dist", avg_tag_distance);
+            frc::SmartDashboard::PutString("Vision/mode", (mode == VisionMode::Auton) ? "Auton" : "Teleop");
+        }
 
         // ── 7. Feed the measurement into the Kalman filter ──
         estimator.SetVisionMeasurementStdDevs({xy_stds, xy_stds, HighVoltage::toRadians(deg_stds)});

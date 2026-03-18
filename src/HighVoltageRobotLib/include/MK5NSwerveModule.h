@@ -137,5 +137,9 @@ private:
 
     int nt_update_counter_ = 0;
     int nt_throttle_interval_ = 0;
+
+    // Cached values from updateTurnMotor so we don't write NT inside that function
+    double cached_rotate_ff_voltage_ = 0.0;
+    double cached_rotate_pid_voltage_ = 0.0;
 };
 } // namespace HighVoltage

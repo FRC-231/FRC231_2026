@@ -628,7 +628,6 @@ void DriveSystem::doDriveTo()
     units::degree_t current_angle = getRobotAngleInDegrees();
     units::degree_t angle_error = HighVoltage::get180Range(target_pose.Rotation().Degrees()-current_angle);
     double turn = angle_correction_pid->Calculate(angle_error.value(), 0);
-    std::cout << angle.value() << " " << distance.value() << " " << current_angle.value() << std::endl;
     swerve_coordinator->setDrive(HighVoltage::get180Range(angle + 180_deg + current_angle), speed, turn);
     //swerve_cordinator->setFieldAngle(getRobotAngleInDegrees());
     swerve_coordinator->update();
@@ -638,7 +637,6 @@ void DriveSystem::doRotateTo()
 {
     units::degree_t angle_error = target_angle - getRobotAngleInDegrees();
     angle_error *= -1;
-    std::cout << angle_error.value() << std::endl;
     double power = angle_error.value() * rotate_to_proportional;
     swerve_coordinator->setRotate(power);
     swerve_coordinator->update();
@@ -648,12 +646,22 @@ void DriveSystem::doRotateTo()
 
 frc::Pose2d DriveSystem::updateOdometry()
 {
-    double yaw = context->getPigeon().GetYaw().GetValue().to<double>();
-    double yaw_rate = context->getPigeon().GetAngularVelocityXDevice().GetValue().to<double>();
-    double pitch = context->getPigeon().GetPitch().GetValue().to<double>();
-    double pitch_rate = context->getPigeon().GetAngularVelocityYDevice().GetValue().to<double>();
-    double roll = context->getPigeon().GetRoll().GetValue().to<double>();
-    double roll_rate = context->getPigeon().GetAngularVelocityZDevice().GetValue().to<double>();
+    // Batch all 6 Pigeon signal reads into one CAN round-trip instead of 6 separate blocking calls
+    auto& pigeon = context->getPigeon();
+    auto sig_yaw       = pigeon.GetYaw();
+    auto sig_yaw_rate  = pigeon.GetAngularVelocityXDevice();
+    auto sig_pitch     = pigeon.GetPitch();
+    auto sig_pitch_rate= pigeon.GetAngularVelocityYDevice();
+    auto sig_roll      = pigeon.GetRoll();
+    auto sig_roll_rate = pigeon.GetAngularVelocityZDevice();
+    ctre::phoenix6::BaseStatusSignal::RefreshAll(sig_yaw, sig_yaw_rate, sig_pitch, sig_pitch_rate, sig_roll, sig_roll_rate);
+
+    double yaw       = sig_yaw.GetValue().to<double>();
+    double yaw_rate  = sig_yaw_rate.GetValue().to<double>();
+    double pitch     = sig_pitch.GetValue().to<double>();
+    double pitch_rate= sig_pitch_rate.GetValue().to<double>();
+    double roll      = sig_roll.GetValue().to<double>();
+    double roll_rate = sig_roll_rate.GetValue().to<double>();
     //If we are on the red alliance we need to flip the yaw
     yaw -= context->getStartAngle().value();
     //If we are on the red alliance we need to flip the yaw
