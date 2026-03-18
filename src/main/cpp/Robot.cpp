@@ -179,11 +179,11 @@ void Robot::TeleopPeriodic()
 
     if(auto_aim)
     {
-        drive_system->setManualAA(x, y);
+        drive_system->setManualAA(-x, -y);
     }
     else
     {
-        drive_system->setDrive(x, y, rotate);
+        drive_system->setDrive(-x, -y, rotate);
     }
 
     //Temp controls for setting shooter to voltage mode--------------------------
@@ -197,7 +197,7 @@ void Robot::TeleopPeriodic()
     }
     if(do_shooter_auto_control)
     {
-        shooter_system->setShooterMode(ShooterSystem::ShooterMode::MANUAL_AUTO);
+        shooter_system->setShooterMode(ShooterSystem::ShooterMode::AUTO);
     }
     else
     {
