@@ -158,6 +158,13 @@ void DriveSystem::setManualAA(double x, double y)
     manual_drive_y = y;
 }
 
+void DriveSystem::setAutoAA()
+{
+    drive_mode = DriveMode::MANUAL_AA;
+    manual_drive_x = 0.0;
+    manual_drive_y = 0.0;
+}
+
 void DriveSystem::setDriveToShootLocation()
 {
     drive_mode = DriveMode::DRIVE_TO_SHOOT_LOCATION;
@@ -421,6 +428,7 @@ void DriveSystem::addToLuaState(Keeko::ThreadedScript& script)
             .addFunction("getRotationError", &DriveSystem::getRotationErrorLua)
             .addFunction("setMaxSpeed", &DriveSystem::setMaxSpeedLua)
             .addFunction("setMinPercentage", &DriveSystem::setMinPercentage)
+            .addFunction("setAutoAA", &DriveSystem::setAutoAA)
         .endClass();
     script.addInstance("drive_system", this);
 }

@@ -66,6 +66,7 @@ public:
     // ---- Drive Commands ----
     void setDrive(double x, double y, double rotate);
     void setManualAA(double x, double y);
+    void setAutoAA();
     void setDriveToShootLocation();
     void stopDrive();
     void setDriveFF(units::volt_t voltage);
