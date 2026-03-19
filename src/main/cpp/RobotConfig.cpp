@@ -21,6 +21,7 @@ void from_json(const nlohmann::json &j, IntakeConfig &intake)
     j.at(IntakeConfig::PIVOT_ENCODER_ID).get_to(intake.pivot_encoder_id);
     j.at(IntakeConfig::FEED_INTAKE_VOLTAGE).get_to(intake.feed_intake_voltage);
     j.at(IntakeConfig::FEED_OUTTAKE_VOLTAGE).get_to(intake.feed_outtake_voltage);
+    j.at(IntakeConfig::FEED_SNOW_BLOWER_VOLTAGE).get_to(intake.feed_snow_blower_voltage);
     j.at(IntakeConfig::PIVOT_MAX_VOLTAGE).get_to(intake.pivot_max_voltage);
     j.at(IntakeConfig::PIVOT_MIN_VOLTAGE).get_to(intake.pivot_min_voltage);
     j.at(IntakeConfig::PIVOT_MAX_ANGLE).get_to(intake.pivot_max_angle);

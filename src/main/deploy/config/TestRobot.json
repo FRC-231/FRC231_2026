@@ -139,6 +139,7 @@
         "pivot_encoder_id":24,
         "feed_intake_voltage":2,
         "feed_outtake_voltage":-2,
+        "feed_snow_blower_voltage":11.0,
         "pivot_max_voltage":2,
         "pivot_min_voltage":-2,
         "pivot_max_angle":0,

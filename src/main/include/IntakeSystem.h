@@ -76,7 +76,7 @@ private:
     void doFeedOuttake();
     void doPivotStop();
     void doPivotMove();
-    void doSnowBlower();
+    void doFeedSnowBlower();
     void doHalfSpeed();
 
     // ---- Internal Helpers ----
@@ -95,6 +95,7 @@ private:
     // ---- Feed Config ----
     units::volt_t feed_intake_voltage;
     units::volt_t feed_outtake_voltage;
+    units::volt_t feed_snow_blower_voltage;
 
     // ---- Pivot Config ----
     units::volt_t pivot_max_voltage;
@@ -111,6 +112,7 @@ private:
     HighVoltage::NetworkTableValue<std::string> nt_pivot_mode{INTAKE_TABLE_NAME + "/" + "pivot_mode", "STOP"};
     HighVoltage::NetworkTableValue<double> nt_feed_intake_voltage{INTAKE_TABLE_NAME + "/" + "feed_intake_voltage", 0.0};
     HighVoltage::NetworkTableValue<double> nt_feed_outtake_voltage{INTAKE_TABLE_NAME + "/" + "feed_outtake_voltage", 0.0};
+    HighVoltage::NetworkTableValue<double> nt_feed_snow_blower_voltage{INTAKE_TABLE_NAME + "/" + "feed_snow_blower_voltage", 0.0};
     HighVoltage::NetworkTableValue<double> nt_pivot_max_voltage{INTAKE_TABLE_NAME + "/" + "pivot_max_voltage", 0.0};
     HighVoltage::NetworkTableValue<double> nt_pivot_min_voltage{INTAKE_TABLE_NAME + "/" + "pivot_min_voltage", 0.0};
     HighVoltage::NetworkTableValue<double> nt_pivot_max_angle{INTAKE_TABLE_NAME + "/" + "pivot_max_angle", 0.0};

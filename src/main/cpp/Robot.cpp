@@ -141,36 +141,36 @@ void Robot::TeleopInit()
 
 void Robot::TeleopPeriodic()
 {
+    //Control collection
     double x = context->getPilotController().GetLeftX();
     double y = context->getPilotController().GetLeftY();
     double rotate = context->getPilotController().GetRightX();
     bool reset_field_orientation = context->getPilotController().GetR3Button();
-    bool auto_aim = context->getPilotController().GetR1Button();
-    bool intake_up = context->getPilotController().GetCircleButtonPressed();
-    bool intake_down = context->getPilotController().GetTriangleButtonPressed();
-    bool intake_balls = context->getPilotController().GetSquareButton();
-    //Left trigger for loading shooter
-    bool load_shooter = context->getPilotController().GetL2Axis() > 0.5;
-    
-    if(intake_up)
-    {
-        intake_system->pivotUp();
-    }
-    if(intake_down)
-    {
-        intake_system->pivotDown();
-    }
-    if(intake_balls)
-    {
-        intake_system->feedIntake();
-    }
-    else
-    {
-        intake_system->feedStop();
-    }
+    bool auto_aim = context->getPilotController().GetL1Button();
 
+    bool load_shooter = context->getPilotController().GetL2Axis() > 0.5;
+    bool do_shooter_voltage_control_toggle = context->getPilotController().GetCrossButtonPressed();
+
+    static bool intake_pivot_up = false;
+    bool toggle_intake_pivot = context->getPilotController().GetR1ButtonPressed();
     
+    if(toggle_intake_pivot)
+    {
+        intake_pivot_up = !intake_pivot_up;
+    }
+    bool run_intake = context->getPilotController().GetR2Axis() > 0.5;
+    static bool use_snow_blower = false;
+    if(context->getPilotController().GetTriangleButtonPressed())
+    {
+        use_snow_blower = true;
+    }
+    if(context->getPilotController().GetCircleButtonPressed())
+    {
+        use_snow_blower = false;
+    }
+    nt_use_snow_blower.setValue(use_snow_blower);
     
+    //Drive
     if(reset_field_orientation)
     {
         context->setStartAngle(HighVoltage::get180Range(context->getPigeon().GetYaw().GetValue()));
@@ -185,10 +185,8 @@ void Robot::TeleopPeriodic()
     {
         drive_system->setDrive(-x, -y, rotate);
     }
-
-    //Temp controls for setting shooter to voltage mode--------------------------
-
-    bool do_shooter_voltage_control_toggle = context->getPilotController().GetCrossButtonPressed();
+    
+    //Shooting
     static bool do_shooter_auto_control = false;
     if(do_shooter_voltage_control_toggle)
     {
@@ -213,8 +211,35 @@ void Robot::TeleopPeriodic()
         shooter_system->setLoaderMode(ShooterSystem::LoaderMode::STOP);
     }
 
+    //Intake
+    if(run_intake)
+    {
+        if(do_shooter_auto_control)
+        {
+            intake_system->feedHalfSpeed();
+        }
+        else if(use_snow_blower)
+        {
+            intake_system->feedSnowBlower();
+        }
+        else
+        {
+            intake_system->feedIntake();
+        }
+    }
+    else
+    {
+        intake_system->feedStop();
+    }
 
-    //---------------------------------------------------------------------------
+    if(intake_pivot_up)
+    {
+        intake_system->pivotUp();
+    }
+    else
+    {
+        intake_system->pivotDown();
+    }
 
 }
     
