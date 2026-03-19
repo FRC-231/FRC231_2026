@@ -54,8 +54,8 @@ public:
         {"Dance", Paths::DANCE_AUTON},
         {"BumpTest", Paths::BUMP_TEST_AUTON},
         {"ScoreTest", Paths::SCORE_TEST_AUTON},
-        {"QuickLoad", Paths::QUICK_LOAD_AUTON},
-        {"QuickLoadRight", Paths::QUICK_LOAD_RIGHT_AUTON}
+        {"Depot", Paths::QUICK_LOAD_AUTON},
+        {"Lever", Paths::QUICK_LOAD_RIGHT_AUTON}
     };
 
 private:

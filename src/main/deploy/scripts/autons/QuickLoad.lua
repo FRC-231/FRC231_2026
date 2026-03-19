@@ -32,6 +32,7 @@ function autonomous()
     drive_system:setMinPercentage(0.0)
     drive_system:driveTo(7.56, 1.0, 90)--Drive across, collect fuel
     waitUntilDistance(0.0762)
+    drive_system:setMinPercentage(0.5)
     drive_system:setMaxSpeed(travel_speed)
     intake_system:feedHalfSpeed()
     drive_system:rotateTo(180)
@@ -41,6 +42,7 @@ function autonomous()
     waitUntilDistance(0.0762)
     drive_system:driveTo(5.77, 1.68, -135)--Drive infront bump
     waitUntilDistance(0.0762)
+    drive_system:setMinPercentage(0.0)
     drive_system:setMaxSpeed(bump_speed)
     shooter_system:autoShoot()--Start shooter wheels
     drive_system:driveTo(3.27, 1.68, -135)--Drive across bump
@@ -84,7 +86,7 @@ function autonomous()
     control:sleep(1.5)
     shooter_system:stopShooter()
     shooter_system:loaderStop()
-    drive_system:driveTo(3.50, 3.40, 180)
+    drive_system:driveTo(3.50, 3.40, 180)--Drive back to starting position for tele-op
     waitUntilDistance(0.0762)
     drive_system:stop()
 
