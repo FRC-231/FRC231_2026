@@ -551,11 +551,11 @@ void DriveSystem::doManualAA()
     units::degree_t angle_error = angle_to_hub - getRobotAngleInDegrees();
     angle_error = HighVoltage::get180Range(angle_error);
     angle_error *= -1;
-    if(std::abs(angle_error.value()) > 90)
-    {
-        angle_error -= 180_deg;
-        angle_error = HighVoltage::get180Range(angle_error);
-    }
+    // if(std::abs(angle_error.value()) > 90)
+    // {
+    //     angle_error -= 180_deg;
+    //     angle_error = HighVoltage::get180Range(angle_error);
+    // }
 
     if(stick_magnitude > DriveSystem::MANUAL_TRANSLATE_DEADZONE)
     {

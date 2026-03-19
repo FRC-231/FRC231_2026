@@ -165,6 +165,7 @@ void Robot::TeleopPeriodic()
         use_snow_blower = !use_snow_blower;
     }
     nt_use_snow_blower.setValue(use_snow_blower);
+    nt_shooter_on.setValue(do_shooter_voltage_control_toggle);
     
     //Drive
     if(reset_field_orientation)

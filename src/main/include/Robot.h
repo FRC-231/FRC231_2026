@@ -50,10 +50,6 @@ public:
     };
 
     std::vector<Auton> AUTONS = {
-        {"Test", Paths::TEST_AUTON},
-        {"Dance", Paths::DANCE_AUTON},
-        {"BumpTest", Paths::BUMP_TEST_AUTON},
-        {"ScoreTest", Paths::SCORE_TEST_AUTON},
         {"Depot", Paths::QUICK_LOAD_AUTON},
         {"Lever", Paths::QUICK_LOAD_RIGHT_AUTON}
     };
@@ -81,5 +77,6 @@ private:
     std::unique_ptr<HighVoltage::NetworkTable::StringSelector> nt_auto_selected;
     HighVoltage::NetworkTableValue<bool> nt_use_snow_blower{"Robot/use_snow_blower", false};
     HighVoltage::NetworkTableValue<std::vector<double>> nt_test_output{"TestOutput", {0.0, 0.0, 0.0}};
+    HighVoltage::NetworkTableValue<bool> nt_shooter_on{"Robot/shooter_on", false};
     
 };

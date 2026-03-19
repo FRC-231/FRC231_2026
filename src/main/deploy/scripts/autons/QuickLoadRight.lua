@@ -14,7 +14,7 @@ function waitUntilDistance(distance)
 end
 
 bump_speed = 2.0
-rotate_speed = 1.5
+rotate_speed = 2.0
 travel_speed = 3.5
 intake_speed = 2.0
 
@@ -36,8 +36,8 @@ function autonomous()
     intake_system:feedHalfSpeed()
     drive_system:setMaxSpeed(rotate_speed)
     drive_system:rotateTo(-180)
-    waitUntilRotationError(2)
-    control:sleep(0.25)
+    waitUntilRotationError(8)
+    control:sleep(0.1)
     drive_system:driveTo(7.86, -1.60, 135)--Drive back, align to bump
     waitUntilDistance(0.0762)
     drive_system:driveTo(5.77, -1.60, 135)--Drive infront bump
@@ -61,11 +61,21 @@ function autonomous()
     shooter_system:loaderStop()
     intake_system:pivotDown()
     --END OF COMMON
-    drive_system:driveTo(1.5, -3.40, 0.0)--drive to the lever
+    drive_system:setMaxSpeed(intake_speed)
+    drive_system:driveTo(1.5, -2.75, 45.0)--drive towards the lever to pick up fuel
     waitUntilDistance(0.0762)
-    drive_system:stop()
-    control:sleep(3)
-    drive_system:driveTo(2.0, -3.40, 0.0)--move forward to shoot
+    drive_system:driveTo(2.42, -1.88, 45.0)--move forward to shoot
+    waitUntilDistance(0.0762)
+    drive_system:setAutoAA()--Auto aim to hub
+    control:sleep(0.5)
+    shooter_system:loaderLoad()--Activate hopper
+    control:sleep(1.5)
+    intake_system:pivotUp()
+    control:sleep(1.5)
+    intake_system:pivotDown()
+    drive_system:driveTo(1.5, -2.75, 45.0)--drive towards the lever to pick up fuel
+    waitUntilDistance(0.0762)
+    drive_system:driveTo(2.42, -1.88, 45.0)--move forward to shoot
     waitUntilDistance(0.0762)
     drive_system:setAutoAA()--Auto aim to hub
     control:sleep(0.5)
