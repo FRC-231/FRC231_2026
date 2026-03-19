@@ -139,7 +139,6 @@
         "pivot_encoder_id":24,
         "feed_intake_voltage":2,
         "feed_outtake_voltage":-2,
-        "feed_snow_blower_voltage":11.0,
         "pivot_max_voltage":2,
         "pivot_min_voltage":-2,
         "pivot_max_angle":0,
@@ -176,6 +175,8 @@
         "shooter_gear_ratio":0.75,
         "shooter_max_voltage": 8.0,
         "shooter_min_voltage": -1.0,
-        "backspin_amount": 80
+        "backspin_amount": 80,
+        "snow_blow_target_rpm": 1000,
+        "snow_blow_pulse_width": 1250
     }
 }

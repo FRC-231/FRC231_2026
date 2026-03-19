@@ -42,7 +42,6 @@ struct IntakeConfig
     static inline const std::string PIVOT_UP_ANGLE = "pivot_up_angle";
     static inline const std::string PIVOT_DOWN_ANGLE = "pivot_down_angle";
     static inline const std::string PIVOT_ENCODER_OFFSET = "pivot_encoder_offset";
-    static inline const std::string FEED_SNOW_BLOWER_VOLTAGE = "feed_snow_blower_voltage";
 
 
 
@@ -51,7 +50,6 @@ struct IntakeConfig
     uint8_t pivot_encoder_id;
     double feed_intake_voltage;
     double feed_outtake_voltage;
-    double feed_snow_blower_voltage;
     double pivot_max_voltage;
     double pivot_min_voltage;
     double pivot_max_angle;
@@ -86,6 +84,8 @@ struct ShooterConfig
     static inline const std::string DISTANCE_TO_PULSEWIDTH = "distance_to_pulsewidth";
     static inline const std::string AT_SPEED_TOLERANCE = "at_speed_tolerance";
     static inline const std::string IDLE_MODE_VELOCITY = "idle_mode_velocity";
+    static inline const std::string SNOW_BLOW_TARGET_RPM = "snow_blow_target_rpm";
+    static inline const std::string SNOW_BLOW_PULSE_WIDTH = "snow_blow_pulse_width";
 
 
     uint8_t hopper_motor_id;
@@ -105,6 +105,8 @@ struct ShooterConfig
     double backspin_amount;
     double at_speed_tolerance;
     double idle_mode_velocity;
+    double snow_blow_target_rpm;
+    int snow_blow_pulse_width;
     std::map<double, double> distance_to_shooter_velocity;
     std::map<double, double> distance_to_backspin;
     std::map<double, double> distance_to_pulsewidth;

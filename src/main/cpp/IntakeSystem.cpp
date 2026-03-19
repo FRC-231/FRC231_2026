@@ -20,7 +20,6 @@ IntakeSystem::IntakeSystem(std::shared_ptr<RobotContext> context):
     pivot_encoder->GetConfigurator().Apply(encoder_config);
     feed_intake_voltage = units::volt_t{intake_config.feed_intake_voltage};
     feed_outtake_voltage = units::volt_t{intake_config.feed_outtake_voltage};
-    feed_snow_blower_voltage = units::volt_t{intake_config.feed_snow_blower_voltage};
     pivot_max_voltage = units::volt_t{intake_config.pivot_max_voltage};
     pivot_min_voltage = units::volt_t{intake_config.pivot_min_voltage};
     pivot_max_angle = units::degree_t{intake_config.pivot_max_angle};
@@ -50,15 +49,6 @@ IntakeSystem::IntakeSystem(std::shared_ptr<RobotContext> context):
         {
             std::cout << "Set feed_outtake_voltage to " << value << std::endl;
             feed_outtake_voltage = units::volt_t{value};
-        }
-    });
-
-    nt_feed_snow_blower_voltage.setOnUpdate([this](const double& value)
-    {
-        if(value != feed_snow_blower_voltage.value())
-        {
-            std::cout << "Set feed_snow_blower_voltage to " << value << std::endl;
-            feed_snow_blower_voltage = units::volt_t{value};
         }
     });
 
@@ -162,10 +152,6 @@ void IntakeSystem::feedOuttake()
 {
     feed_mode = FeedMode::OUTTAKE;
 }
-void IntakeSystem::feedSnowBlower()
-{
-    feed_mode = FeedMode::SNOW_BLOWER;
-}
 
 void IntakeSystem::feedHalfSpeed()
 {
@@ -254,11 +240,6 @@ void IntakeSystem::doPivotStop()
     pivot_motor->SetVoltage(0_V);
 }
 
-void IntakeSystem::doFeedSnowBlower()
-{
-    feed_motor->SetVoltage(feed_snow_blower_voltage);
-}
-
 void IntakeSystem::doHalfSpeed()
 {
     feed_motor->SetVoltage(feed_intake_voltage/2);
@@ -305,7 +286,6 @@ void IntakeSystem::updateNetworkTable()
 
     nt_feed_intake_voltage.setValue(feed_intake_voltage.value());
     nt_feed_outtake_voltage.setValue(feed_outtake_voltage.value());
-    nt_feed_snow_blower_voltage.setValue(feed_snow_blower_voltage.value());
     nt_pivot_max_voltage.setValue(pivot_max_voltage.value());
     nt_pivot_min_voltage.setValue(pivot_min_voltage.value());
     nt_pivot_max_angle.setValue(pivot_max_angle.value());

@@ -160,13 +160,9 @@ void Robot::TeleopPeriodic()
     }
     bool run_intake = context->getPilotController().GetR2Axis() > 0.5;
     static bool use_snow_blower = false;
-    if(context->getPilotController().GetTriangleButtonPressed())
-    {
-        use_snow_blower = true;
-    }
     if(context->getPilotController().GetCircleButtonPressed())
     {
-        use_snow_blower = false;
+        use_snow_blower = !use_snow_blower;
     }
     nt_use_snow_blower.setValue(use_snow_blower);
     
@@ -179,7 +175,14 @@ void Robot::TeleopPeriodic()
 
     if(auto_aim)
     {
-        drive_system->setManualAA(-x, -y);
+        if(use_snow_blower)
+        {
+            drive_system->setManualFaceBack(-x, -y);
+        }
+        else
+        {
+            drive_system->setManualAA(-x, -y);
+        }
     }
     else
     {
@@ -195,7 +198,14 @@ void Robot::TeleopPeriodic()
     }
     if(do_shooter_auto_control)
     {
-        shooter_system->setShooterMode(ShooterSystem::ShooterMode::AUTO);
+        if(use_snow_blower)
+        {
+            shooter_system->setShooterMode(ShooterSystem::ShooterMode::SNOW_BLOW);
+        }
+        else
+        {
+            shooter_system->setShooterMode(ShooterSystem::ShooterMode::AUTO);
+        }
     }
     else
     {
@@ -214,13 +224,9 @@ void Robot::TeleopPeriodic()
     //Intake
     if(run_intake)
     {
-        if(do_shooter_auto_control)
+        if(do_shooter_auto_control && !use_snow_blower)
         {
             intake_system->feedHalfSpeed();
-        }
-        else if(use_snow_blower)
-        {
-            intake_system->feedSnowBlower();
         }
         else
         {

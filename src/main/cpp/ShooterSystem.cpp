@@ -19,6 +19,8 @@ ShooterSystem::ShooterSystem(std::shared_ptr<RobotContext> context):
     right_servo_id = shooter_config.right_servo_id;
     at_speed_tolerance = units::revolutions_per_minute_t{shooter_config.at_speed_tolerance};
     idle_mode_velocity = units::revolutions_per_minute_t{shooter_config.idle_mode_velocity};
+    snow_blow_target_rpm = units::revolutions_per_minute_t{shooter_config.snow_blow_target_rpm};
+    snow_blow_pulse_width = shooter_config.snow_blow_pulse_width;
 
     auto left_channel_id  = static_cast<rev::servohub::ServoChannel::ChannelId>(left_servo_id);
     auto right_channel_id = static_cast<rev::servohub::ServoChannel::ChannelId>(right_servo_id);
@@ -229,6 +231,24 @@ ShooterSystem::ShooterSystem(std::shared_ptr<RobotContext> context):
         }
     });
 
+    nt_snow_blow_target_rpm.setOnUpdate([this](const double& value)
+    {
+        if(value != snow_blow_target_rpm.value())
+        {
+            std::cout << "Set snow_blow_target_rpm to " << value << std::endl;
+            snow_blow_target_rpm = units::revolutions_per_minute_t{value};
+        }
+    });
+
+    nt_snow_blow_pulse_width.setOnUpdate([this](const int& value)
+    {
+        if(value != snow_blow_pulse_width)
+        {
+            std::cout << "Set snow_blow_pulse_width to " << value << std::endl;
+            snow_blow_pulse_width = value;
+        }
+    });
+
 }
 
 void ShooterSystem::Periodic()
@@ -246,6 +266,9 @@ void ShooterSystem::Periodic()
             break;
         case ShooterMode::MANUAL_AUTO:
             doShooterManualAutoControl();
+            break;
+        case ShooterMode::SNOW_BLOW:
+            doShooterSnowBlowControl();
             break;
         default:
             doShooterStop();
@@ -323,6 +346,8 @@ void ShooterSystem::updateNetworkTable()
     nt_shooter_velocities.setValue({left_shooter_voltage.value(),right_shooter_voltage.value(),getLeftShooterVelocity().value(), getRightShooterVelocity().value()});
     nt_backspin_amount.setValue(backspin_amount.value());
     nt_is_shooter_at_speed.setValue(isAtSpeed());
+    nt_snow_blow_target_rpm.setValue(snow_blow_target_rpm.value());
+    nt_snow_blow_pulse_width.setValue(snow_blow_pulse_width);
 }
 
 std::string ShooterSystem::loaderModeToString(LoaderMode mode)
@@ -362,6 +387,9 @@ std::string ShooterSystem::shooterModeToString(ShooterMode mode)
 
         case ShooterMode::IDLE:
             return "IDLE";
+
+        case ShooterMode::SNOW_BLOW:
+            return "SNOW_BLOW";
     }
     return "UNKNOWN";
 }
@@ -379,6 +407,11 @@ void ShooterSystem::stopShooter()
 void ShooterSystem::autoShoot()
 {
     setShooterMode(ShooterMode::AUTO);
+}
+
+void ShooterSystem::snowBlow()
+{
+    setShooterMode(ShooterMode::SNOW_BLOW);
 }
 
 void ShooterSystem::doShooterVoltageControl()
@@ -517,6 +550,19 @@ void ShooterSystem::doShooterIdleControl()
     right_shooter_motor->SetControl(shooter_velocity_request.WithVelocity(units::turns_per_second_t{idle_mode_velocity.value() / 60.0 * shooter_gear_ratio}));
 }
 
+void ShooterSystem::doShooterSnowBlowControl()
+{
+    units::turns_per_second_t target_rps{snow_blow_target_rpm.value() / 60.0 * shooter_gear_ratio};
+    left_shooter_motor->SetControl(shooter_velocity_request.WithVelocity(target_rps));
+    right_shooter_motor->SetControl(shooter_velocity_request.WithVelocity(target_rps));
+    left_shooter_target_velocity = snow_blow_target_rpm;
+    right_shooter_target_velocity = snow_blow_target_rpm;
+    auto left_channel_id  = static_cast<rev::servohub::ServoChannel::ChannelId>(left_servo_id);
+    auto right_channel_id = static_cast<rev::servohub::ServoChannel::ChannelId>(right_servo_id);
+    servo_controller->GetServoChannel(left_channel_id).SetPulseWidth(snow_blow_pulse_width);
+    servo_controller->GetServoChannel(right_channel_id).SetPulseWidth(snow_blow_pulse_width);
+}
+
 void ShooterSystem::setLoaderMode(LoaderMode mode)
 {
     loader_mode = mode;
@@ -588,6 +634,7 @@ void ShooterSystem::addToLuaState(Keeko::ThreadedScript& script)
             .addFunction("setShooterTargetVelocities", &ShooterSystem::setShooterTargetVelocitiesLua)
             .addFunction("stopShooter", &ShooterSystem::stopShooter)
             .addFunction("autoShoot", &ShooterSystem::autoShoot)
+            .addFunction("snowBlow", &ShooterSystem::snowBlow)
             .addFunction("loaderLoad", &ShooterSystem::loaderLoad)
             .addFunction("loaderUnload", &ShooterSystem::loaderUnload)
             .addFunction("loaderStop", &ShooterSystem::loaderStop)

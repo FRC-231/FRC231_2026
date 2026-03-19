@@ -28,6 +28,7 @@ public:
         DRIVE_TO,
         ROTATE_TO,
         MANUAL_AA,
+        MANUAL_FACE_BACK,
         DRIVE_TO_SHOOT_LOCATION
     };
 
@@ -66,6 +67,7 @@ public:
     // ---- Drive Commands ----
     void setDrive(double x, double y, double rotate);
     void setManualAA(double x, double y);
+    void setManualFaceBack(double x, double y);
     void setAutoAA();
     void setDriveToShootLocation();
     void stopDrive();
@@ -113,6 +115,7 @@ private:
     void doStop();
     void doManualDrive();
     void doManualAA();
+    void doManualFaceBack();
     void doDriveFF();
     void doTurnFF();
     void doDriveTo();

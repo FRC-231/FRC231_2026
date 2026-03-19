@@ -113,6 +113,11 @@ void DriveSystem::Periodic()
             doManualAA();
         }break;
 
+        case MANUAL_FACE_BACK:
+        {
+            doManualFaceBack();
+        }break;
+
         case DRIVE_FF:
         {
             doDriveFF();
@@ -154,6 +159,13 @@ void DriveSystem::setDrive(double x, double y, double rotate)
 void DriveSystem::setManualAA(double x, double y)
 {
     drive_mode = DriveMode::MANUAL_AA;
+    manual_drive_x = x;
+    manual_drive_y = y;
+}
+
+void DriveSystem::setManualFaceBack(double x, double y)
+{
+    drive_mode = DriveMode::MANUAL_FACE_BACK;
     manual_drive_x = x;
     manual_drive_y = y;
 }
@@ -334,6 +346,9 @@ std::string DriveSystem::driveModeToString(DriveMode mode)
 
         case MANUAL_AA:
             return "MANUAL_AA";
+
+        case MANUAL_FACE_BACK:
+            return "MANUAL_FACE_BACK";
     }
     return "UNKNOWN";
 }
@@ -363,6 +378,10 @@ DriveSystem::DriveMode DriveSystem::stringToDriveMode(const std::string& mode_st
     else if(mode_str == "MANUAL_AA")
     {
         return MANUAL_AA;
+    }
+    else if(mode_str == "MANUAL_FACE_BACK")
+    {
+        return MANUAL_FACE_BACK;
     }
     else if(mode_str == "DRIVE_TO_SHOOT_LOCATION")
     {
@@ -429,6 +448,7 @@ void DriveSystem::addToLuaState(Keeko::ThreadedScript& script)
             .addFunction("setMaxSpeed", &DriveSystem::setMaxSpeedLua)
             .addFunction("setMinPercentage", &DriveSystem::setMinPercentage)
             .addFunction("setAutoAA", &DriveSystem::setAutoAA)
+            .addFunction("setManualFaceBack", &DriveSystem::setManualFaceBack)
         .endClass();
     script.addInstance("drive_system", this);
 }
@@ -556,6 +576,39 @@ void DriveSystem::doManualAA()
         }
     }
     target_angle = angle_to_hub;
+
+    swerve_coordinator->update();
+}
+
+void DriveSystem::doManualFaceBack()
+{
+    double stick_angle = HighVoltage::get180Range(HighVoltage::toDegrees(std::atan2(-manual_drive_y, manual_drive_x)) - 90.0);
+    double stick_magnitude = std::sqrt(manual_drive_x*manual_drive_x + manual_drive_y*manual_drive_y);
+    stick_magnitude = std::min(1.0, stick_magnitude);
+    units::degree_t current_angle = getRobotAngleInDegrees();
+    units::degree_t angle_error = 180.0_deg - current_angle;
+    angle_error = HighVoltage::get180Range(angle_error);
+    angle_error *= -1;
+
+    if(stick_magnitude > DriveSystem::MANUAL_TRANSLATE_DEADZONE)
+    {
+        angle_correction_pid->SetSetpoint(0.0);
+        double turn = -angle_correction_pid->Calculate(angle_error.value());
+        swerve_coordinator->setDrive(units::degree_t{stick_angle}, stick_magnitude, turn);
+    }
+    else
+    {
+        if(std::abs(angle_error.value()) > 0.25)
+        {
+            double power = angle_error.value() * rotate_to_proportional;
+            swerve_coordinator->setRotate(power);
+        }
+        else
+        {
+            swerve_coordinator->stopDrive();
+        }
+    }
+    target_angle = 180.0_deg;
 
     swerve_coordinator->update();
 }
