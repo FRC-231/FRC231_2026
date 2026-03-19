@@ -51,7 +51,8 @@ public:
 
     std::vector<Auton> AUTONS = {
         {"Depot", Paths::QUICK_LOAD_AUTON},
-        {"Lever", Paths::QUICK_LOAD_RIGHT_AUTON}
+        {"Lever", Paths::QUICK_LOAD_RIGHT_AUTON},
+        {"CenterDepot", Paths::CENTER_DEPOT_AUTON}
     };
 
 private:
