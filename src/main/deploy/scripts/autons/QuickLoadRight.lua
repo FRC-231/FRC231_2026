@@ -38,13 +38,13 @@ function autonomous()
     drive_system:rotateTo(-180)
     waitUntilRotationError(2)
     control:sleep(0.25)
-    drive_system:driveTo(7.86, -1.68, 135)--Drive back, align to bump
+    drive_system:driveTo(7.86, -1.60, 135)--Drive back, align to bump
     waitUntilDistance(0.0762)
-    drive_system:driveTo(5.77, -1.68, 135)--Drive infront bump
+    drive_system:driveTo(5.77, -1.60, 135)--Drive infront bump
     waitUntilDistance(0.0762)
     drive_system:setMaxSpeed(bump_speed)
     shooter_system:autoShoot()--Start shooter wheels
-    drive_system:driveTo(2.90, -1.68, 135)--Drive across bump
+    drive_system:driveTo(2.90, -1.60, 135)--Drive across bump
     waitUntilDistance(0.0762)
     drive_system:setMaxSpeed(travel_speed)
     drive_system:rotateTo(45)--Face the hub
@@ -61,7 +61,7 @@ function autonomous()
     shooter_system:loaderStop()
     intake_system:pivotDown()
     --END OF COMMON
-    drive_system:driveTo(1.5, -3.46, 0.0)--drive to the lever
+    drive_system:driveTo(1.5, -3.40, 0.0)--drive to the lever
     waitUntilDistance(0.0762)
     drive_system:stop()
     control:sleep(3)
