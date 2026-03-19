@@ -147,7 +147,7 @@ void Robot::TeleopPeriodic()
     double rotate = context->getPilotController().GetRightX();
     bool reset_field_orientation = context->getPilotController().GetR3Button();
     static bool auto_aim = false;
-    bool auto_aim_toggle = context->getPilotController().GetL1Button();
+    bool auto_aim_toggle = context->getPilotController().GetL1ButtonPressed();
     if(auto_aim_toggle)
     {
         auto_aim = !auto_aim;

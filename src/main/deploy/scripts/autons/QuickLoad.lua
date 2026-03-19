@@ -71,6 +71,7 @@ function autonomous()
     drive_system:driveTo(0.85, 1.93, -0.0)--Drive into depot
     waitUntilDistance(0.0762)
     intake_system:feedHalfSpeed()
+    intake_system:pivotUp()
     drive_system:setMaxSpeed(travel_speed)
     drive_system:driveTo(1.5, 1.93, -45.0)
     waitUntilDistance(0.0762)

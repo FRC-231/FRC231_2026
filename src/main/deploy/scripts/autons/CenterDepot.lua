@@ -14,14 +14,16 @@ function waitUntilDistance(distance)
 end
 
 bump_speed = 2.0
-rotate_speed = 3.5
+rotate_speed = 2.0
 travel_speed = 3.5
-intake_speed = 2.0
+intake_speed = 1.0
 
 function autonomous()
     drive_system:setMaxSpeed(travel_speed)
     drive_system:setMinPercentage(0.5)
     drive_system:setOdometry(3.52, 0, 0)--Starting position at trench
+    drive_system:driveTo(3.3, 1.93, -0.0)--Drive back
+    waitUntilDistance(0.0762)
     drive_system:driveTo(1.14, 1.93, -0.0)--Drive in front of fuel depot
     waitUntilDistance(0.0762)
     intake_system:pivotDown()
@@ -29,7 +31,17 @@ function autonomous()
     drive_system:setMaxSpeed(intake_speed)
     drive_system:driveTo(0.85, 1.93, -0.0)--Drive into depot
     waitUntilDistance(0.0762)
+    drive_system:setMaxSpeed(rotate_speed)
+    drive_system:rotateTo(20)
+    waitUntilRotationError(2)
+    drive_system:rotateTo(-20)
+    waitUntilRotationError(2)
+    drive_system:rotateTo(20)
+    waitUntilRotationError(2)
+    drive_system:stop()
+    control:sleep(1)
     intake_system:feedHalfSpeed()
+    intake_system:pivotUp()
     drive_system:setMaxSpeed(travel_speed)
     drive_system:driveTo(1.5, 1.93, -45.0)
     waitUntilDistance(0.0762)
@@ -45,7 +57,5 @@ function autonomous()
     control:sleep(1.5)
     shooter_system:stopShooter()
     shooter_system:loaderStop()
-    drive_system:driveTo(3.50, 3.40, 180)--Drive back to starting position for tele-op
-    waitUntilDistance(0.0762)
     drive_system:stop()
 end
