@@ -138,8 +138,8 @@
         "pivot_motor_id":9,
         "feed_motor_id":10,
         "pivot_encoder_id":24,
-        "feed_intake_voltage":-4.5,
-        "feed_outtake_voltage":4.5,
+        "feed_intake_voltage":-6.5,
+        "feed_outtake_voltage":6.5,
         "pivot_max_voltage":6,
         "pivot_min_voltage":-6,
         "pivot_max_angle":175,
@@ -149,7 +149,7 @@
             "k_i":0.0,
             "k_d":0.0
         },
-        "pivot_up_angle": 22,
+        "pivot_up_angle": 100,
         "pivot_down_angle": 151,
         "pivot_encoder_offset": 250
     },

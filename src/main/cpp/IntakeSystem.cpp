@@ -111,6 +111,11 @@ void IntakeSystem::Periodic()
             doFeedOuttake();
         }break;
 
+        case FeedMode::HALF_SPEED:
+        {
+            doHalfSpeed();
+        }break;
+
         default:
         {
             doFeedStop();
@@ -147,6 +152,12 @@ void IntakeSystem::feedOuttake()
 {
     feed_mode = FeedMode::OUTTAKE;
 }
+
+void IntakeSystem::feedHalfSpeed()
+{
+    feed_mode = FeedMode::HALF_SPEED;
+}
+
 
 // ==== Pivot Commands ====
 
@@ -229,6 +240,11 @@ void IntakeSystem::doPivotStop()
     pivot_motor->SetVoltage(0_V);
 }
 
+void IntakeSystem::doHalfSpeed()
+{
+    feed_motor->SetVoltage(feed_intake_voltage/2);
+}
+
 void IntakeSystem::doPivotMove()
 {
     units::degree_t current_angle = getPivotAngle();
@@ -294,6 +310,7 @@ void IntakeSystem::addToLuaState(Keeko::ThreadedScript& script)
         .addFunction("pivotStop", &IntakeSystem::pivotStop)
         .addFunction("pivotUp", &IntakeSystem::pivotUp)
         .addFunction("pivotDown", &IntakeSystem::pivotDown)
+        .addFunction("feedHalfSpeed", &IntakeSystem::feedHalfSpeed)
     .endClass();
     script.addInstance("intake_system", this);
 }
