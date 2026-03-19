@@ -146,7 +146,12 @@ void Robot::TeleopPeriodic()
     double y = context->getPilotController().GetLeftY();
     double rotate = context->getPilotController().GetRightX();
     bool reset_field_orientation = context->getPilotController().GetR3Button();
-    bool auto_aim = context->getPilotController().GetL1Button();
+    static bool auto_aim = false;
+    bool auto_aim_toggle = context->getPilotController().GetL1Button();
+    if(auto_aim_toggle)
+    {
+        auto_aim = !auto_aim;
+    }
 
     bool load_shooter = context->getPilotController().GetL2Axis() > 0.5;
     bool do_shooter_voltage_control_toggle = context->getPilotController().GetCrossButtonPressed();
