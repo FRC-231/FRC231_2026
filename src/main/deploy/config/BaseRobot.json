@@ -1,8 +1,8 @@
 {
-    "competition_mode": false,
+    "competition_mode": true,
     "drive":{
         "angle_correction_pid":{
-            "k_p":0.05,
+            "k_p":0.04,
             "k_i":0.0,
             "k_d":0.0
         },
@@ -177,7 +177,7 @@
         "shooter_max_voltage": 10.0,
         "shooter_min_voltage": -1.0,
         "backspin_amount": 300,
-        "at_speed_tolerance":50,
+        "at_speed_tolerance":90,
         "idle_mode_velocity":2600,
         "snow_blow_target_rpm":3000,
         "snow_blow_pulse_width":1150,
