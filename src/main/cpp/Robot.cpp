@@ -152,6 +152,7 @@ void Robot::TeleopPeriodic()
     {
         auto_aim = !auto_aim;
     }
+    bool half_speed = context->getPilotController().GetTriangleButton();
 
     bool load_shooter = context->getPilotController().GetL2Axis() > 0.5;
     bool do_shooter_voltage_control_toggle = context->getPilotController().GetCrossButtonPressed();
@@ -179,6 +180,13 @@ void Robot::TeleopPeriodic()
         //drive_system->setOdometryFromVision();
     }
 
+
+    if(half_speed)
+    {
+        x *= 0.5;
+        y *= 0.5;
+        rotate *= 0.5;
+    }
     if(auto_aim)
     {
         if(use_snow_blower)
