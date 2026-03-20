@@ -13,7 +13,7 @@ function waitUntilDistance(distance)
         end)
 end
 
-bump_speed = 2.0
+bump_speed = 2.7
 rotate_speed = 2.0
 travel_speed = 3.5
 intake_speed = 2.0

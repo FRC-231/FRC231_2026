@@ -141,6 +141,7 @@ void Robot::TeleopInit()
 
 void Robot::TeleopPeriodic()
 {
+    drive_system->setMaxSpeed(5.0_mps);
     //Control collection
     double x = context->getPilotController().GetLeftX();
     double y = context->getPilotController().GetLeftY();
