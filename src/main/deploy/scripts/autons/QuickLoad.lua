@@ -38,9 +38,9 @@ function autonomous()
     drive_system:rotateTo(180)
     waitUntilRotationError(2)
     control:sleep(0.25)
-    drive_system:driveTo(7.86, 1.45, -135)--Drive back, align to bump
+    drive_system:driveTo(7.86, 1.68, -135)--Drive back, align to bump
     waitUntilDistance(0.0762)
-    drive_system:driveTo(5.77, 1.45, -135)--Drive infront bump
+    drive_system:driveTo(5.77, 1.68, -135)--Drive infront bump
     waitUntilDistance(0.0762)
     drive_system:setMinPercentage(0.0)
     drive_system:setMaxSpeed(bump_speed)

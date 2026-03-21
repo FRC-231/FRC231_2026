@@ -6,10 +6,12 @@
 
 #include <frc/smartdashboard/SmartDashboard.h>
 #include <iostream>
+#include <frc/RobotController.h>
 
 
 Robot::Robot()
-{
+{   
+    frc::RobotController::SetBrownoutVoltage(4.6_V);
     context = std::make_shared<RobotContext>();
     bool config_loaded = context->loadConfig(Paths::BASE_ROBOT_CONFIG);
     if (!config_loaded)
