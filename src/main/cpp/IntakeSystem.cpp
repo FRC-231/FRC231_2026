@@ -11,8 +11,16 @@ IntakeSystem::IntakeSystem(std::shared_ptr<RobotContext> context):
     ctre::phoenix6::configs::TalonFXConfiguration pivot_config{};
     pivot_config.MotorOutput.Inverted = ctre::phoenix6::signals::InvertedValue::CounterClockwise_Positive;
     pivot_config.MotorOutput.NeutralMode = ctre::phoenix6::signals::NeutralModeValue::Brake;
+    // Limit supply current to prevent brownouts
+    pivot_config.CurrentLimits.SupplyCurrentLimitEnable = true;
+    pivot_config.CurrentLimits.SupplyCurrentLimit = 30_A;
     pivot_motor->GetConfigurator().Apply(pivot_config);
     feed_motor = std::make_unique<ctre::phoenix6::hardware::TalonFX>(intake_config.feed_motor_id, "secondary");
+    // Apply current limits to the feed motor as well
+    ctre::phoenix6::configs::TalonFXConfiguration feed_config{};
+    feed_config.CurrentLimits.SupplyCurrentLimitEnable = true;
+    feed_config.CurrentLimits.SupplyCurrentLimit = 30_A;
+    feed_motor->GetConfigurator().Apply(feed_config);
     pivot_encoder = std::make_unique<ctre::phoenix6::hardware::CANcoder>(intake_config.pivot_encoder_id, "secondary");
     ctre::phoenix6::configs::CANcoderConfiguration encoder_config{};
     encoder_config.MagnetSensor.AbsoluteSensorDiscontinuityPoint = 1.0_tr;

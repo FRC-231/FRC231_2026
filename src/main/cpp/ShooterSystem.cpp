@@ -9,6 +9,18 @@ ShooterSystem::ShooterSystem(std::shared_ptr<RobotContext> context):
     feed_motor = std::make_unique<ctre::phoenix6::hardware::TalonFX>(shooter_config.feed_motor_id, "rio");
     left_shooter_motor = std::make_unique<ctre::phoenix6::hardware::TalonFX>(shooter_config.left_shooter_motor_id, "rio");
     right_shooter_motor = std::make_unique<ctre::phoenix6::hardware::TalonFX>(shooter_config.right_shooter_motor_id, "rio");
+
+    // Apply current limits to hopper and feed motors to prevent brownouts
+    ctre::phoenix6::configs::TalonFXConfiguration hopper_config{};
+    hopper_config.CurrentLimits.SupplyCurrentLimitEnable = true;
+    hopper_config.CurrentLimits.SupplyCurrentLimit = 30_A;
+    hopper_motor->GetConfigurator().Apply(hopper_config);
+
+    ctre::phoenix6::configs::TalonFXConfiguration feed_motor_config{};
+    feed_motor_config.CurrentLimits.SupplyCurrentLimitEnable = true;
+    feed_motor_config.CurrentLimits.SupplyCurrentLimit = 30_A;
+    feed_motor->GetConfigurator().Apply(feed_motor_config);
+
     hopper_voltage = units::volt_t{shooter_config.hopper_voltage};
     feed_voltage = units::volt_t{shooter_config.feed_voltage};
     shooter_gear_ratio = shooter_config.shooter_gear_ratio;
@@ -46,11 +58,17 @@ ShooterSystem::ShooterSystem(std::shared_ptr<RobotContext> context):
     ctre::phoenix6::configs::TalonFXConfiguration shooter_left_config{};
     shooter_left_config.MotorOutput.Inverted = ctre::phoenix6::signals::InvertedValue::Clockwise_Positive;
     shooter_left_config.MotorOutput.NeutralMode = ctre::phoenix6::signals::NeutralModeValue::Coast;
+    // Limit supply current to prevent brownouts
+    shooter_left_config.CurrentLimits.SupplyCurrentLimitEnable = true;
+    shooter_left_config.CurrentLimits.SupplyCurrentLimit = 40_A;
     left_shooter_motor->GetConfigurator().Apply(shooter_left_config);
 
     ctre::phoenix6::configs::TalonFXConfiguration shooter_right_config{};
     shooter_right_config.MotorOutput.Inverted = ctre::phoenix6::signals::InvertedValue::Clockwise_Positive;
     shooter_right_config.MotorOutput.NeutralMode = ctre::phoenix6::signals::NeutralModeValue::Coast;
+    // Limit supply current to prevent brownouts
+    shooter_right_config.CurrentLimits.SupplyCurrentLimitEnable = true;
+    shooter_right_config.CurrentLimits.SupplyCurrentLimit = 40_A;
     right_shooter_motor->GetConfigurator().Apply(shooter_right_config);
 
     HighVoltage::applyMotionConfigToTalonFXFromRPM(shooter_config.shooter_pid, shooter_config.shooter_ff, *left_shooter_motor,  shooter_gear_ratio);
