@@ -2,7 +2,7 @@
     "competition_mode": true,
     "drive":{
         "angle_correction_pid":{
-            "k_p":0.04,
+            "k_p":0.02,
             "k_i":0.0,
             "k_d":0.0
         },
@@ -149,7 +149,7 @@
             "k_i":0.0,
             "k_d":0.0
         },
-        "pivot_up_angle": 100,
+        "pivot_up_angle": 95,
         "pivot_down_angle": 151,
         "pivot_encoder_offset": 250
     },
