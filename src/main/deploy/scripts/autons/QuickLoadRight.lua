@@ -26,11 +26,11 @@ function autonomous()
     waitUntilDistance(0.0762)
     intake_system:feedIntake()
     intake_system:pivotDown()
-    drive_system:driveTo(7.56, -3.36, -90)--Drive towards the fuel
+    drive_system:driveTo(7.77, -3.36, -90)--Drive towards the fuel
     waitUntilDistance(0.0762)
     drive_system:setMaxSpeed(intake_speed)
     drive_system:setMinPercentage(0.0)
-    drive_system:driveTo(7.56, -1.0, -90)--Drive across, collect fuel
+    drive_system:driveTo(7.77, -1.0, -90)--Drive across, collect fuel
     waitUntilDistance(0.0762)
     drive_system:setMaxSpeed(travel_speed)
     intake_system:feedHalfSpeed()
@@ -38,13 +38,13 @@ function autonomous()
     drive_system:rotateTo(-180)
     waitUntilRotationError(8)
     control:sleep(0.1)
-    drive_system:driveTo(7.86, -1.60, 135)--Drive back, align to bump
+    drive_system:driveTo(7.53, -1.60, 135)--Drive back, align to bump
     waitUntilDistance(0.0762)
     drive_system:driveTo(5.77, -1.60, 135)--Drive infront bump
     waitUntilDistance(0.0762)
     drive_system:setMaxSpeed(bump_speed)
     shooter_system:autoShoot()--Start shooter wheels
-    drive_system:driveTo(2.90, -1.60, 135)--Drive across bump
+    drive_system:driveTo(2.75, -1.60, 135)--Drive across bump
     waitUntilDistance(0.0762)
     drive_system:setMaxSpeed(travel_speed)
     drive_system:rotateTo(45)--Face the hub
