@@ -174,7 +174,6 @@ void Robot::TeleopPeriodic()
         use_snow_blower = !use_snow_blower;
     }
     nt_use_snow_blower.setValue(use_snow_blower);
-    nt_shooter_on.setValue(do_shooter_voltage_control_toggle);
     bool is_shooter_at_speed = shooter_system->isAtSpeed();
     
     //Drive
@@ -214,11 +213,16 @@ void Robot::TeleopPeriodic()
         do_shooter_auto_control = !do_shooter_auto_control;
         std::cout << "Toggled shooter auto control to " << (do_shooter_auto_control ? "ON" : "OFF") << std::endl;
     }
+    nt_shooter_on.setValue(do_shooter_auto_control);
     if(do_shooter_auto_control)
     {
         if(is_shooter_at_speed)
         {
-            context->getPilotController().SetRumble(frc::GenericHID::RumbleType::kBothRumble, 0.5);
+            context->getPilotController().SetRumble(frc::GenericHID::RumbleType::kBothRumble, 1.0);
+        }
+        else
+        {
+            context->getPilotController().SetRumble(frc::GenericHID::RumbleType::kBothRumble, 0.0);
         }
         
         if(use_snow_blower)
