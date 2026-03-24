@@ -145,12 +145,12 @@
         "pivot_max_angle":175,
         "pivot_min_angle":18,
         "pivot_pid":{
-            "k_p":0.07,
+            "k_p":0.12,
             "k_i":0.0,
             "k_d":0.0
         },
         "pivot_up_angle": 95,
-        "pivot_down_angle": 151,
+        "pivot_down_angle": 142,
         "pivot_encoder_offset": 250
     },
     "shooter":{

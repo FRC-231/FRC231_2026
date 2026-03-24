@@ -175,6 +175,7 @@ void Robot::TeleopPeriodic()
     }
     nt_use_snow_blower.setValue(use_snow_blower);
     nt_shooter_on.setValue(do_shooter_voltage_control_toggle);
+    bool is_shooter_at_speed = shooter_system->isAtSpeed();
     
     //Drive
     if(reset_field_orientation)
@@ -215,6 +216,11 @@ void Robot::TeleopPeriodic()
     }
     if(do_shooter_auto_control)
     {
+        if(is_shooter_at_speed)
+        {
+            context->getPilotController().SetRumble(frc::GenericHID::RumbleType::kBothRumble, 0.5);
+        }
+        
         if(use_snow_blower)
         {
             shooter_system->setShooterMode(ShooterSystem::ShooterMode::SNOW_BLOW);
@@ -226,6 +232,7 @@ void Robot::TeleopPeriodic()
     }
     else
     {
+        context->getPilotController().SetRumble(frc::GenericHID::RumbleType::kBothRumble, 0.0);
         shooter_system->setShooterMode(ShooterSystem::ShooterMode::IDLE);
     }
 
