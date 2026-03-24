@@ -218,11 +218,11 @@ void Robot::TeleopPeriodic()
     {
         if(is_shooter_at_speed)
         {
-            context->getPilotController().SetRumble(frc::GenericHID::RumbleType::kBothRumble, 1.0);
+            context->getPilotXboxController().SetRumble(frc::GenericHID::RumbleType::kBothRumble, 1.0);
         }
         else
         {
-            context->getPilotController().SetRumble(frc::GenericHID::RumbleType::kBothRumble, 0.0);
+            context->getPilotXboxController().SetRumble(frc::GenericHID::RumbleType::kBothRumble, 0.0);
         }
         
         if(use_snow_blower)
@@ -236,7 +236,7 @@ void Robot::TeleopPeriodic()
     }
     else
     {
-        context->getPilotController().SetRumble(frc::GenericHID::RumbleType::kBothRumble, 0.0);
+        context->getPilotXboxController().SetRumble(frc::GenericHID::RumbleType::kBothRumble, 0.0);
         shooter_system->setShooterMode(ShooterSystem::ShooterMode::IDLE);
     }
 

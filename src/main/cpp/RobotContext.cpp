@@ -60,6 +60,12 @@ frc::PS5Controller& RobotContext::getPilotController()
 {
     return pilot_controller;
 }
+
+frc::XboxController& RobotContext::getPilotXboxController()
+{
+    return pilot_as_xbox_controller;
+}
+
 void RobotContext::setStartAngle(units::angle::degree_t angle)
 {
     start_angle = angle;

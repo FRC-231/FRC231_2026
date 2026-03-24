@@ -4,6 +4,7 @@
 #include "RobotConfig.h"
 #include "NetworkTableValue.h"
 #include <frc/PS5Controller.h>
+#include <frc/XboxController.h>
 #include <ctre/phoenix6/Pigeon2.hpp>
 #include <Vision.h>
 
@@ -27,6 +28,7 @@ public:
     bool loadConfig(const std::filesystem::path& path);
     const std::optional<RobotConfig::RobotConfig>& getConfig() const;
     frc::PS5Controller& getPilotController();
+    frc::XboxController& getPilotXboxController();
     ctre::phoenix6::hardware::Pigeon2& getPigeon();
     void setStartAngle(units::angle::degree_t angle);
     units::angle::degree_t getStartAngle();
@@ -47,6 +49,7 @@ public:
 private:
     std::optional<RobotConfig::RobotConfig> config;
     frc::PS5Controller pilot_controller{0};
+    frc::XboxController pilot_as_xbox_controller{3};
     ctre::phoenix6::hardware::Pigeon2 pigeon{30, "Drivebase"};
     //ctre::phoenix6::hardware::Pigeon2 pigeon{30, "rio"};
     units::angle::degree_t start_angle{0.0};
