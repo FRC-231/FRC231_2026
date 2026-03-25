@@ -34,6 +34,9 @@ IntakeSystem::IntakeSystem(std::shared_ptr<RobotContext> context):
     pivot_min_angle = units::degree_t{intake_config.pivot_min_angle};
     pivot_up_angle = units::degree_t{intake_config.pivot_up_angle};
     pivot_down_angle = units::degree_t{intake_config.pivot_down_angle};
+    pivot_wiggle_up_angle = units::degree_t{intake_config.pivot_wiggle_up_angle};
+    pivot_wiggle_down_angle = units::degree_t{intake_config.pivot_wiggle_down_angle};
+    pivot_wiggle_period = intake_config.pivot_wiggle_period;
     pivot_pid = std::make_unique<frc::PIDController>(
         intake_config.pivot_pid.k_p,
         intake_config.pivot_pid.k_i,
@@ -137,6 +140,11 @@ void IntakeSystem::Periodic()
             doPivotStop();
         }break;
 
+        case PivotMode::WIGGLE:
+        {
+            doPivotWiggle();
+        }break;
+
         default:
         {
             doPivotMove();
@@ -184,6 +192,11 @@ void IntakeSystem::pivotDown()
     pivot_mode = PivotMode::DOWN;
 }
 
+void IntakeSystem::pivotWiggle()
+{
+    pivot_mode = PivotMode::WIGGLE;
+}
+
 // ==== Getters ====
 
 units::degree_t IntakeSystem::getPivotAngle()
@@ -222,6 +235,9 @@ std::string IntakeSystem::pivotModeToString(PivotMode mode)
 
         case PivotMode::DOWN:
             return "DOWN";
+
+        case PivotMode::WIGGLE:
+            return "WIGGLE";
     }
     return "UNKNOWN";
 }
@@ -246,6 +262,17 @@ void IntakeSystem::doFeedOuttake()
 void IntakeSystem::doPivotStop()
 {
     pivot_motor->SetVoltage(0_V);
+}
+
+void IntakeSystem::doPivotWiggle()
+{
+    double current_time = frc::Timer::GetFPGATimestamp().value();
+    bool wiggle_up = std::fmod(current_time, pivot_wiggle_period) < (pivot_wiggle_period / 2);
+    units::degree_t target_angle = wiggle_up ? pivot_wiggle_up_angle : pivot_wiggle_down_angle;
+    pivot_pid->SetSetpoint(target_angle.value());
+    units::volt_t power = units::volt_t{pivot_pid->Calculate(getPivotAngle().value())};
+    power = HighVoltage::clamp(pivot_min_voltage, pivot_max_voltage, power);
+    pivot_motor->SetVoltage(power);
 }
 
 void IntakeSystem::doHalfSpeed()
@@ -318,6 +345,7 @@ void IntakeSystem::addToLuaState(Keeko::ThreadedScript& script)
         .addFunction("pivotStop", &IntakeSystem::pivotStop)
         .addFunction("pivotUp", &IntakeSystem::pivotUp)
         .addFunction("pivotDown", &IntakeSystem::pivotDown)
+        .addFunction("pivotWiggle", &IntakeSystem::pivotWiggle)
         .addFunction("feedHalfSpeed", &IntakeSystem::feedHalfSpeed)
     .endClass();
     script.addInstance("intake_system", this);

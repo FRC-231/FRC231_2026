@@ -30,7 +30,8 @@ public:
     {
         STOP,
         UP,
-        DOWN
+        DOWN,
+        WIGGLE
     };
 
     // ---- Constants ----
@@ -52,6 +53,7 @@ public:
     void pivotStop();
     void pivotUp();
     void pivotDown();
+    void pivotWiggle();
 
     // ---- Getters ----
     units::degree_t getPivotAngle();
@@ -74,6 +76,7 @@ private:
     void doFeedOuttake();
     void doPivotStop();
     void doPivotMove();
+    void doPivotWiggle();
     void doHalfSpeed();
 
     // ---- Internal Helpers ----
@@ -100,6 +103,9 @@ private:
     units::degree_t pivot_min_angle;
     units::degree_t pivot_up_angle;
     units::degree_t pivot_down_angle;
+    units::degree_t pivot_wiggle_up_angle;
+    units::degree_t pivot_wiggle_down_angle;
+    double pivot_wiggle_period;
     units::degree_t pivot_encoder_offset;
     std::unique_ptr<frc::PIDController> pivot_pid;
 

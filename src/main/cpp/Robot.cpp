@@ -168,6 +168,7 @@ void Robot::TeleopPeriodic()
         intake_pivot_up = !intake_pivot_up;
     }
     bool run_intake = context->getPilotController().GetR2Axis() > 0.5;
+    bool reverse_intake = context->getPilotController().GetSquareButton();
     static bool use_snow_blower = false;
     if(context->getPilotController().GetCircleButtonPressed())
     {
@@ -243,14 +244,24 @@ void Robot::TeleopPeriodic()
     if(load_shooter)
     {
         shooter_system->setLoaderMode(ShooterSystem::LoaderMode::LOAD);
+        intake_system->pivotWiggle();
+        intake_system->feedHalfSpeed();
     }
     else
     {
         shooter_system->setLoaderMode(ShooterSystem::LoaderMode::STOP);
+        if(intake_pivot_up)
+        {
+            intake_system->pivotUp();
+        }
+        else
+        {
+            intake_system->pivotDown();
+        }
     }
 
     //Intake
-    if(run_intake)
+    if(run_intake && !load_shooter)
     {
         if(do_shooter_auto_control && !use_snow_blower)
         {
@@ -261,18 +272,13 @@ void Robot::TeleopPeriodic()
             intake_system->feedIntake();
         }
     }
+    else if (reverse_intake)
+    {
+        intake_system->feedOuttake();
+    }
     else
     {
         intake_system->feedStop();
-    }
-
-    if(intake_pivot_up)
-    {
-        intake_system->pivotUp();
-    }
-    else
-    {
-        intake_system->pivotDown();
     }
 
 }
