@@ -149,11 +149,11 @@
             "k_i":0.0,
             "k_d":0.0
         },
-        "pivot_up_angle": 95,
+        "pivot_up_angle": 80,
         "pivot_down_angle": 142,
-        "pivot_wiggle_up_angle": 95,
-        "pivot_wiggle_down_angle": 105,
-        "pivot_wiggle_period": 0.5,
+        "pivot_wiggle_up_angle": 80,
+        "pivot_wiggle_down_angle": 110,
+        "pivot_wiggle_period": 0.4,
         "pivot_encoder_offset": 250
     },
     "shooter":{

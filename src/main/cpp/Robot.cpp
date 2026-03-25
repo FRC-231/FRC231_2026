@@ -245,7 +245,7 @@ void Robot::TeleopPeriodic()
     {
         shooter_system->setLoaderMode(ShooterSystem::LoaderMode::LOAD);
         intake_system->pivotWiggle();
-        intake_system->feedHalfSpeed();
+        intake_system->feedIntake();
     }
     else
     {
