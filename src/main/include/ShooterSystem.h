@@ -99,6 +99,8 @@ private:
 
     ctre::phoenix6::controls::VelocityVoltage shooter_velocity_request{0_tps};
     units::volt_t hopper_voltage;
+    units::volt_t hopper_wiggle_low_voltage;
+    double hopper_wiggle_period;
     units::volt_t feed_voltage;
     units::volt_t left_shooter_voltage{0_V};
     units::volt_t right_shooter_voltage{0_V};

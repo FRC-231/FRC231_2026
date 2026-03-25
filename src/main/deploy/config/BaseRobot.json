@@ -152,7 +152,7 @@
         "pivot_up_angle": 95,
         "pivot_down_angle": 142,
         "pivot_wiggle_up_angle": 95,
-        "pivot_wiggle_down_angle": 110,
+        "pivot_wiggle_down_angle": 105,
         "pivot_wiggle_period": 0.5,
         "pivot_encoder_offset": 250
     },
@@ -170,6 +170,8 @@
             "k_d":0.0000
         },
         "hopper_voltage":6.5,
+        "hopper_wiggle_low_voltage":3.5,
+        "hopper_wiggle_period":0.3,
         "feed_voltage":6.5,
         "shooter_ff":{
             "k_s":0.185,

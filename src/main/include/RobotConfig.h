@@ -79,6 +79,8 @@ struct ShooterConfig
     static inline const std::string RIGHT_SERVO_ID = "right_servo_id";
     static inline const std::string SHOOTER_PID = "shooter_pid";
     static inline const std::string HOPPER_VOLTAGE = "hopper_voltage";
+    static inline const std::string HOPPER_WIGGLE_LOW_VOLTAGE = "hopper_wiggle_low_voltage";
+    static inline const std::string HOPPER_WIGGLE_PERIOD = "hopper_wiggle_period";
     static inline const std::string FEED_VOLTAGE = "feed_voltage";
     static inline const std::string SHOOTER_FF = "shooter_ff";
     static inline const std::string SHOOTER_GEAR_RATIO = "shooter_gear_ratio";
@@ -104,6 +106,8 @@ struct ShooterConfig
     HighVoltage::PIDConfig shooter_pid;
     HighVoltage::FeedForwardConfig shooter_ff;
     double hopper_voltage;
+    double hopper_wiggle_low_voltage;
+    double hopper_wiggle_period;
     double feed_voltage;
     double shooter_gear_ratio;
     double shooter_max_voltage;

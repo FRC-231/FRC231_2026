@@ -22,6 +22,8 @@ ShooterSystem::ShooterSystem(std::shared_ptr<RobotContext> context):
     feed_motor->GetConfigurator().Apply(feed_motor_config);
 
     hopper_voltage = units::volt_t{shooter_config.hopper_voltage};
+    hopper_wiggle_low_voltage = units::volt_t{shooter_config.hopper_wiggle_low_voltage};
+    hopper_wiggle_period = shooter_config.hopper_wiggle_period;
     feed_voltage = units::volt_t{shooter_config.feed_voltage};
     shooter_gear_ratio = shooter_config.shooter_gear_ratio;
     max_shooter_voltage = units::volt_t{shooter_config.shooter_max_voltage};
@@ -634,7 +636,10 @@ void ShooterSystem::doLoaderStop()
 
 void ShooterSystem::doLoaderLoad()
 {
-    hopper_motor->SetVoltage(-hopper_voltage);
+    double current_time = frc::Timer::GetFPGATimestamp().value();
+    bool wiggle_down = fmod(current_time, hopper_wiggle_period) < (hopper_wiggle_period / 2);
+    units::volt_t current_hopper_voltage = wiggle_down ? hopper_voltage : hopper_wiggle_low_voltage;
+    hopper_motor->SetVoltage(-current_hopper_voltage);
     feed_motor->SetVoltage(feed_voltage);
 }
 
