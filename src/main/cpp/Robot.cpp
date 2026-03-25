@@ -261,24 +261,27 @@ void Robot::TeleopPeriodic()
     }
 
     //Intake
-    if(run_intake && !load_shooter)
+    if(!load_shooter)
     {
-        if(do_shooter_auto_control && !use_snow_blower)
+        if(run_intake)
         {
-            intake_system->feedHalfSpeed();
+            if(do_shooter_auto_control && !use_snow_blower)
+            {
+                intake_system->feedHalfSpeed();
+            }
+            else
+            {
+                intake_system->feedIntake();
+            }
+        }
+        else if (reverse_intake)
+        {
+            intake_system->feedOuttake();
         }
         else
         {
-            intake_system->feedIntake();
+            intake_system->feedStop();
         }
-    }
-    else if (reverse_intake)
-    {
-        intake_system->feedOuttake();
-    }
-    else
-    {
-        intake_system->feedStop();
     }
 
 }
