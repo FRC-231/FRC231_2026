@@ -290,6 +290,9 @@ void ShooterSystem::Periodic()
         case ShooterMode::SNOW_BLOW:
             doShooterSnowBlowControl();
             break;
+        case ShooterMode::IDLE:
+            doShooterIdleControl();
+            break;
         default:
             doShooterStop();
             break;
