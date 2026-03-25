@@ -56,8 +56,9 @@ function autonomous()
         return shooter_system:isAtSpeed()--Waiting until shooter is at right speed
     end)
     shooter_system:loaderLoad()--Activate hopper
+    intake_system:pivotWiggle()
     control:sleep(1.5)
-    intake_system:pivotUp()
+    -- intake_system:pivotUp()
     control:sleep(1.5)
     shooter_system:loaderStop()
     --END OF COMMON
@@ -82,8 +83,9 @@ function autonomous()
         return shooter_system:isAtSpeed()--Waiting until shooter is at right speed
     end)
     shooter_system:loaderLoad()
+    intake_system:pivotWiggle()
     control:sleep(1.5)
-    intake_system:pivotUp()
+    --intake_system:pivotUp()
     control:sleep(1.5)
     shooter_system:stopShooter()
     shooter_system:loaderStop()

@@ -15,4 +15,5 @@ namespace Paths
     inline const std::filesystem::path QUICK_LOAD_AUTON = AUTON_DIRECTORY/"QuickLoad.lua";
     inline const std::filesystem::path QUICK_LOAD_RIGHT_AUTON = AUTON_DIRECTORY/"QuickLoadRight.lua";
     inline const std::filesystem::path CENTER_DEPOT_AUTON = AUTON_DIRECTORY/"CenterDepot.lua";
+    inline const std::filesystem::path DOUBLE_TAKE_LEFT_AUTON = AUTON_DIRECTORY/"DoubleTakeLeft.lua";
 }
