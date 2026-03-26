@@ -156,6 +156,12 @@ private:
     std::shared_ptr<frc::SwerveDrivePoseEstimator<4>> odometry;
     frc::Pose2d current_pose;
 
+    // ---- Cached Pigeon State (refreshed once per Periodic()) ----
+    units::degree_t cached_robot_angle_{0_deg};
+
+    // ---- Tuning variables ----
+    units::degree_t auto_aim_offset{0_deg};
+
     // ---- Feed Forward State ----
     units::volt_t ff_voltage{0.0_V};
     ModuleName turn_ff_module_name{FRONT_LEFT};
@@ -173,6 +179,7 @@ private:
     HighVoltage::NetworkTableValue<double> nt_angle_to_hub{ORIENTATION_TABLE_NAME + "/" + "angle_to_hub", 0.0};
     HighVoltage::NetworkTableValue<double> nt_distance_to_hub{ORIENTATION_TABLE_NAME + "/" + "distance_to_hub", 0.0};
     HighVoltage::NetworkTableValue<bool> nt_locked_on{"DriveSystem/locked_on",false};
+    HighVoltage::NetworkTableValue<double> nt_auto_aim_offset{"DriveSystem/auto_aim_offset", 0.0};
 
     int drive_nt_counter_{0};
     int drive_nt_throttle_interval_{0};

@@ -132,7 +132,8 @@
                 "k_a":0.0
             }
         },
-        "drive_to_proportional":2.0
+        "drive_to_proportional":2.0,
+        "auto_aim_offset":5.0
     },
     "intake":{
         "pivot_motor_id":9,

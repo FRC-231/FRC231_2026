@@ -63,6 +63,7 @@ DriveSystem::DriveSystem(std::shared_ptr<RobotContext> context):
         }
     );
     drive_to_proportional = drive_config.drive_to_proportional;
+    auto_aim_offset = units::degree_t{drive_config.auto_aim_offset};
 
 
     nt_drive_mode.setOnUpdate([this](const std::string& mode_str)
@@ -84,6 +85,12 @@ DriveSystem::DriveSystem(std::shared_ptr<RobotContext> context):
         }
         this->turn_ff_module_name = stringToModuleName(module_str);
         std::cout << "Turn FF module set to " << moduleNameToString(this->turn_ff_module_name) << std::endl;
+    });
+    nt_auto_aim_offset.setOnUpdate([this](double offset)
+    {
+        std::cout << "Auto aim offset update received: " << offset << std::endl;
+        this->auto_aim_offset = units::degree_t{offset};
+        std::cout << "Auto aim offset set to " << this->auto_aim_offset.value() << " degrees" << std::endl;
     });
 
 }
@@ -248,7 +255,7 @@ units::meter_t DriveSystem::getDistanceFromTarget()
 
 units::degree_t DriveSystem::getRobotAngleInDegrees()
 {
-    return HighVoltage::get180Range(context->getPigeon().GetYaw().GetValue() - context->getStartAngle());
+    return cached_robot_angle_;
 }
 
 units::degree_t DriveSystem::getRotationError()
@@ -548,7 +555,7 @@ void DriveSystem::doManualAA()
     double stick_magnitude = std::sqrt(manual_drive_x*manual_drive_x + manual_drive_y*manual_drive_y);//std::pow is slow relative to multiplication, just multiply by itself to square
     stick_magnitude = std::min(1.0, stick_magnitude);
     units::degree_t current_angle = getRobotAngleInDegrees();
-    units::degree_t angle_error = angle_to_hub - getRobotAngleInDegrees();
+    units::degree_t angle_error = angle_to_hub - getRobotAngleInDegrees() + auto_aim_offset;
     angle_error = HighVoltage::get180Range(angle_error);
     angle_error *= -1;
     // if(std::abs(angle_error.value()) > 90)
@@ -723,6 +730,11 @@ frc::Pose2d DriveSystem::updateOdometry()
     double pitch_rate= sig_pitch_rate.GetValue().to<double>();
     double roll      = sig_roll.GetValue().to<double>();
     double roll_rate = sig_roll_rate.GetValue().to<double>();
+
+    // Cache the robot angle from the batch-read yaw so getRobotAngleInDegrees()
+    // does not trigger additional CAN reads for the rest of this iteration.
+    cached_robot_angle_ = HighVoltage::get180Range(units::degree_t{yaw} - context->getStartAngle());
+
     //If we are on the red alliance we need to flip the yaw
     yaw -= context->getStartAngle().value();
     //If we are on the red alliance we need to flip the yaw
