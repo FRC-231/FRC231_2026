@@ -92,6 +92,7 @@ DriveSystem::DriveSystem(std::shared_ptr<RobotContext> context):
         this->auto_aim_offset = units::degree_t{offset};
         std::cout << "Auto aim offset set to " << this->auto_aim_offset.value() << " degrees" << std::endl;
     });
+    nt_auto_aim_offset.setValue(drive_config.auto_aim_offset);
 
 }
 
