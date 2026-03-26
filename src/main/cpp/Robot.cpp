@@ -277,6 +277,7 @@ void Robot::TeleopPeriodic()
         else if (reverse_intake)
         {
             intake_system->feedOuttake();
+            shooter_system->loaderUnload();
         }
         else
         {
@@ -300,6 +301,7 @@ void Robot::DisabledPeriodic()
         auton_script->stop();
     }
     checkIfAutonScriptNeedsLoading();
+    context->getPilotXboxController().SetRumble(frc::GenericHID::RumbleType::kBothRumble, 0.0);
 }
 
 void Robot::checkIfAutonScriptNeedsLoading()

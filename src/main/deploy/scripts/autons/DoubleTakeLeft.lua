@@ -69,21 +69,21 @@ function autonomous()
     drive_system:driveTo(6.0, 1.55, 135)--Drive across bump
     waitUntilDistance(0.0762)
     drive_system:setMaxSpeed(travel_speed)
-    drive_system:driveTo(7.8, 3.16, 90)--Drive to side of field to do a sweep
+    drive_system:driveTo(6.21, 3.16, 90)--Drive to side of field to do a sweep
     waitUntilDistance(0.0762)
     intake_system:pivotDown()
     drive_system:rotateTo(90)
     waitUntilRotationError(2)
     drive_system:setMaxSpeed(intake_speed)
-    drive_system:driveTo(7.8, -1.75, 90)--Sweep across the center, intake fuel
+    drive_system:driveTo(6.21, 0.16, 90)--Sweep across the center, intake fuel
     waitUntilDistance(0.0762)
     drive_system:setMaxSpeed(travel_speed)
-    drive_system:driveTo(5.9, -1.75, 45.0)--Drive in front of bump while rotating
+    drive_system:driveTo(6.21, 1.91, 45.0)--Drive in front of bump while rotating
     waitUntilDistance(0.0762)
     drive_system:rotateTo(45)--Ensure angle
     waitUntilRotationError(2)
     drive_system:setMaxSpeed(bump_speed)
-    drive_system:driveTo(3.0, -1.75, 45.0)--Drive back across bump
+    drive_system:driveTo(3.21, 1.91, 45.0)--Drive back across bump
     -- drive_system:setAutoAA()--Auto aim to hub
     -- control:sleep(0.25)--This is to make sure it gets the right angle
     -- control:waitUntilTrue( function ()
