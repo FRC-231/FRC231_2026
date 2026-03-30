@@ -59,6 +59,7 @@ void from_json(const nlohmann::json &j, ShooterConfig &shooter)
     j.at(ShooterConfig::IDLE_MODE_VELOCITY).get_to(shooter.idle_mode_velocity);
     j.at(ShooterConfig::SNOW_BLOW_TARGET_RPM).get_to(shooter.snow_blow_target_rpm);
     j.at(ShooterConfig::SNOW_BLOW_PULSE_WIDTH).get_to(shooter.snow_blow_pulse_width);
+    j.at(ShooterConfig::MANUAL_SHOOTER_ADJUSTMENT_MULTIPLIER).get_to(shooter.manual_shooter_adjustment_multiplier);
     //Load the distance to shooter velocity map. Will be an array of arrays, where the inner arrays have 2 elements: distance and velocity
     std::vector<std::vector<double>> distance_to_velocity_vec;
     j.at(ShooterConfig::DISTANCE_TO_SHOOTER_VELOCITY).get_to(distance_to_velocity_vec);

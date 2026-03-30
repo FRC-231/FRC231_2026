@@ -178,6 +178,7 @@
         "shooter_min_voltage": -1.0,
         "backspin_amount": 80,
         "snow_blow_target_rpm": 1000,
-        "snow_blow_pulse_width": 1250
+        "snow_blow_pulse_width": 1250,
+        "manual_shooter_adjustment_multiplier": 1.0
     }
 }

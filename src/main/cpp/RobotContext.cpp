@@ -61,6 +61,11 @@ frc::PS5Controller& RobotContext::getPilotController()
     return pilot_controller;
 }
 
+frc::PS5Controller& RobotContext::getCopilotController()
+{
+    return copilot_controller;
+}
+
 frc::XboxController& RobotContext::getPilotXboxController()
 {
     return pilot_as_xbox_controller;

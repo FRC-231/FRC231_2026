@@ -96,6 +96,7 @@ struct ShooterConfig
     static inline const std::string IDLE_MODE_VELOCITY = "idle_mode_velocity";
     static inline const std::string SNOW_BLOW_TARGET_RPM = "snow_blow_target_rpm";
     static inline const std::string SNOW_BLOW_PULSE_WIDTH = "snow_blow_pulse_width";
+    static inline const std::string MANUAL_SHOOTER_ADJUSTMENT_MULTIPLIER = "manual_shooter_adjustment_multiplier";
 
 
     uint8_t hopper_motor_id;
@@ -119,6 +120,7 @@ struct ShooterConfig
     double idle_mode_velocity;
     double snow_blow_target_rpm;
     int snow_blow_pulse_width;
+    double manual_shooter_adjustment_multiplier;
     std::map<double, double> distance_to_shooter_velocity;
     std::map<double, double> distance_to_backspin;
     std::map<double, double> distance_to_pulsewidth;

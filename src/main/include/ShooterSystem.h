@@ -55,6 +55,7 @@ public:
     void loaderLoad();
     void loaderUnload();
     bool isAtSpeed();
+    void setManualShooterAdjustmentValue(double adjustment);
     units::revolutions_per_minute_t getLeftShooterVelocity();
     units::revolutions_per_minute_t getRightShooterVelocity();
     void setDistanceUpdateCallback(std::function<units::meter_t()> callback);
@@ -125,6 +126,8 @@ private:
     units::revolutions_per_minute_t idle_mode_velocity{0_rpm};
     units::revolutions_per_minute_t snow_blow_target_rpm{0_rpm};
     int snow_blow_pulse_width{1500};
+    units::revolutions_per_minute_t manual_shooter_adjustment_multiplier{0.0};
+    units::revolutions_per_minute_t manual_shooter_adjustment{0.0};
 
     HighVoltage::NetworkTableValue<double> nt_hopper_voltage{SHOOTER_TABLE_NAME + "/" + "hopper_voltage", 0.0};
     HighVoltage::NetworkTableValue<double> nt_feed_voltage{SHOOTER_TABLE_NAME + "/" + "feed_voltage", 0.0};

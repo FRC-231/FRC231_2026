@@ -35,6 +35,7 @@ ShooterSystem::ShooterSystem(std::shared_ptr<RobotContext> context):
     idle_mode_velocity = units::revolutions_per_minute_t{shooter_config.idle_mode_velocity};
     snow_blow_target_rpm = units::revolutions_per_minute_t{shooter_config.snow_blow_target_rpm};
     snow_blow_pulse_width = shooter_config.snow_blow_pulse_width;
+    manual_shooter_adjustment_multiplier = units::revolutions_per_minute_t{shooter_config.manual_shooter_adjustment_multiplier};
 
     auto left_channel_id  = static_cast<rev::servohub::ServoChannel::ChannelId>(left_servo_id);
     auto right_channel_id = static_cast<rev::servohub::ServoChannel::ChannelId>(right_servo_id);
@@ -533,9 +534,8 @@ void ShooterSystem::doShooterAutoControl()
     }
     left_shooter_motor->SetControl(shooter_velocity_request.WithVelocity(units::turns_per_second_t{left_shooter_speed.value() / 60.0 * shooter_gear_ratio}));
     right_shooter_motor->SetControl(shooter_velocity_request.WithVelocity(units::turns_per_second_t{right_shooter_speed.value() / 60.0 * shooter_gear_ratio}));
-    left_shooter_target_velocity = left_shooter_speed;
-    right_shooter_target_velocity = right_shooter_speed;
-
+    left_shooter_target_velocity = left_shooter_speed + manual_shooter_adjustment;
+    right_shooter_target_velocity = right_shooter_speed + manual_shooter_adjustment;
 }
 
 void ShooterSystem::doShooterManualAutoControl()
@@ -558,8 +558,8 @@ void ShooterSystem::doShooterManualAutoControl()
     auto right_channel_id = static_cast<rev::servohub::ServoChannel::ChannelId>(right_servo_id);
     servo_controller->GetServoChannel(left_channel_id).SetPulseWidth(servo_pulse_width);
     servo_controller->GetServoChannel(right_channel_id).SetPulseWidth(servo_pulse_width);
-    left_shooter_target_velocity = left_shooter_speed;
-    right_shooter_target_velocity = right_shooter_speed;
+    left_shooter_target_velocity = left_shooter_speed + manual_shooter_adjustment;
+    right_shooter_target_velocity = right_shooter_speed + manual_shooter_adjustment;
 }
 
 void ShooterSystem::doShooterIdleControl()
@@ -629,6 +629,11 @@ bool ShooterSystem::isAtSpeed()
         return false;
     }
     return true;
+}
+
+void ShooterSystem::setManualShooterAdjustmentValue(double adjustment)
+{
+    manual_shooter_adjustment = units::revolutions_per_minute_t{adjustment * manual_shooter_adjustment_multiplier.value()};
 }
 
 void ShooterSystem::doLoaderStop()

@@ -120,6 +120,7 @@ void Robot::RobotPeriodic()
 void Robot::AutonomousInit()
 {
     std::lock_guard<std::mutex> lock(mutex);
+    shooter_system->setManualShooterAdjustmentValue(0.0);
     context->getVision().setMode(VisionMode::Auton);
     if(auton_script && !auton_script_loading)
     {
@@ -145,37 +146,55 @@ void Robot::TeleopPeriodic()
 {
     drive_system->setMaxSpeed(5.0_mps);
     //Control collection
-    double x = context->getPilotController().GetLeftX();
-    double y = context->getPilotController().GetLeftY();
-    double rotate = context->getPilotController().GetRightX();
-    bool reset_field_orientation = context->getPilotController().GetR3Button();
+    auto& pilot = context->getPilotController();
+    auto& pilotXbox = context->getPilotXboxController();
+    auto& copilot = context->getCopilotController();
+
+    double x = pilot.GetLeftX();
+    double y = pilot.GetLeftY();
+    double rotate = pilot.GetRightX();
+    bool reset_field_orientation = pilot.GetR3Button();
     static bool auto_aim = false;
-    bool auto_aim_toggle = context->getPilotController().GetL1ButtonPressed();
+    bool auto_aim_toggle = pilot.GetL1ButtonPressed();
     if(auto_aim_toggle)
     {
         auto_aim = !auto_aim;
     }
-    bool half_speed = context->getPilotController().GetTriangleButton();
+    bool half_speed = pilot.GetTriangleButton();
 
-    bool load_shooter = context->getPilotController().GetL2Axis() > 0.5;
-    bool do_shooter_voltage_control_toggle = context->getPilotController().GetCrossButtonPressed();
+    bool load_shooter = pilot.GetL2Axis() > 0.5;
+    bool do_shooter_voltage_control_toggle = pilot.GetCrossButtonPressed();
 
     static bool intake_pivot_up = false;
-    bool toggle_intake_pivot = context->getPilotController().GetR1ButtonPressed();
+    bool toggle_intake_pivot = pilot.GetR1ButtonPressed();
+    bool copilot_intake_up = copilot.GetPOV() == 0;
+    bool copilot_intake_down = copilot.GetPOV() == 180;
     
     if(toggle_intake_pivot)
     {
         intake_pivot_up = !intake_pivot_up;
     }
-    bool run_intake = context->getPilotController().GetR2Axis() > 0.5;
-    bool reverse_intake = context->getPilotController().GetSquareButton();
+    else if(copilot_intake_up)
+    {
+        intake_pivot_up = true;
+    }
+    else if(copilot_intake_down)
+    {
+        intake_pivot_up = false;
+    }
+    bool run_intake = pilot.GetR2Axis() > 0.5;
+    bool reverse_intake = pilot.GetSquareButton();
     static bool use_snow_blower = false;
-    if(context->getPilotController().GetCircleButtonPressed())
+    if(pilot.GetCircleButtonPressed())
     {
         use_snow_blower = !use_snow_blower;
     }
     nt_use_snow_blower.setValue(use_snow_blower);
     bool is_shooter_at_speed = shooter_system->isAtSpeed();
+
+    double shooter_adjustment = copilot.GetL2Axis() - copilot.GetR2Axis();
+    double climb_control = copilot.GetRightY();
+    
     
     //Drive
     if(reset_field_orientation)
@@ -219,11 +238,11 @@ void Robot::TeleopPeriodic()
     {
         if(is_shooter_at_speed)
         {
-            context->getPilotXboxController().SetRumble(frc::GenericHID::RumbleType::kBothRumble, 1.0);
+            pilotXbox.SetRumble(frc::GenericHID::RumbleType::kBothRumble, 1.0);
         }
         else
         {
-            context->getPilotXboxController().SetRumble(frc::GenericHID::RumbleType::kBothRumble, 0.0);
+            pilotXbox.SetRumble(frc::GenericHID::RumbleType::kBothRumble, 0.0);
         }
         
         if(use_snow_blower)
@@ -237,7 +256,7 @@ void Robot::TeleopPeriodic()
     }
     else
     {
-        context->getPilotXboxController().SetRumble(frc::GenericHID::RumbleType::kBothRumble, 0.0);
+        pilotXbox.SetRumble(frc::GenericHID::RumbleType::kBothRumble, 0.0);
         shooter_system->setShooterMode(ShooterSystem::ShooterMode::IDLE);
     }
 
@@ -259,6 +278,7 @@ void Robot::TeleopPeriodic()
             intake_system->pivotDown();
         }
     }
+    shooter_system->setManualShooterAdjustmentValue(shooter_adjustment);
 
     //Intake
     if(!load_shooter)
