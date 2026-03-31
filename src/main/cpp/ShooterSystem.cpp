@@ -644,10 +644,10 @@ void ShooterSystem::doLoaderStop()
 
 void ShooterSystem::doLoaderLoad()
 {
-    double current_time = frc::Timer::GetFPGATimestamp().value();
-    bool wiggle_down = fmod(current_time, hopper_wiggle_period) < (hopper_wiggle_period / 2);
-    units::volt_t current_hopper_voltage = wiggle_down ? hopper_voltage : hopper_wiggle_low_voltage;
-    hopper_motor->SetVoltage(-current_hopper_voltage);
+    // double current_time = frc::Timer::GetFPGATimestamp().value();
+    // bool wiggle_down = fmod(current_time, hopper_wiggle_period) < (hopper_wiggle_period / 2);
+    // units::volt_t current_hopper_voltage = wiggle_down ? hopper_voltage : hopper_wiggle_low_voltage;
+    hopper_motor->SetVoltage(-hopper_voltage);
     feed_motor->SetVoltage(feed_voltage);
 }
 
