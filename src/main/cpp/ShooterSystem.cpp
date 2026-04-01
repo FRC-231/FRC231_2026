@@ -35,6 +35,7 @@ ShooterSystem::ShooterSystem(std::shared_ptr<RobotContext> context):
     idle_mode_velocity = units::revolutions_per_minute_t{shooter_config.idle_mode_velocity};
     snow_blow_target_rpm = units::revolutions_per_minute_t{shooter_config.snow_blow_target_rpm};
     snow_blow_pulse_width = shooter_config.snow_blow_pulse_width;
+    snow_blow_proportional = shooter_config.snow_blow_proportional;
     manual_shooter_adjustment_multiplier = units::revolutions_per_minute_t{shooter_config.manual_shooter_adjustment_multiplier};
 
     auto left_channel_id  = static_cast<rev::servohub::ServoChannel::ChannelId>(left_servo_id);
@@ -468,6 +469,11 @@ void ShooterSystem::setDistanceUpdateCallback(std::function<units::meter_t()> ca
     distance_update_callback = callback;
 }
 
+void ShooterSystem::setDistanceToWallUpdateCallback(std::function<units::meter_t()> callback)
+{
+    distance_to_wall_update_callback = callback;
+}
+
 void ShooterSystem::setShooterVoltages(units::volt_t left_voltage, units::volt_t right_voltage)
 {
     left_shooter_voltage = left_voltage;
@@ -512,8 +518,8 @@ void ShooterSystem::doShooterAutoControl()
     }
     distance_to_target = distance_update_callback();
     auto shooter_velocity = HighVoltage::cubicHermiteInterpolation<units::meter_t, units::revolutions_per_minute_t>(distance_to_shooter_velocity, distance_to_target);
-    auto left_shooter_speed = shooter_velocity + shooter_auto_adjustment;
-    auto right_shooter_speed = shooter_velocity + shooter_auto_adjustment;
+    auto left_shooter_speed = shooter_velocity + shooter_auto_adjustment + manual_shooter_adjustment;
+    auto right_shooter_speed = shooter_velocity + shooter_auto_adjustment + manual_shooter_adjustment;
     auto backspin_velocity = HighVoltage::cubicHermiteInterpolation<units::meter_t, units::revolutions_per_minute_t>(distance_to_backspin, distance_to_target);
     auto new_servo_pulse_width = HighVoltage::cubicHermiteInterpolation<units::meter_t, double>(distance_to_pulsewidth, distance_to_target);
     //Set the servo pulse width directly from the interpolation with adjustment
@@ -575,11 +581,20 @@ void ShooterSystem::doShooterIdleControl()
 
 void ShooterSystem::doShooterSnowBlowControl()
 {
-    units::turns_per_second_t target_rps{snow_blow_target_rpm.value() / 60.0 * shooter_gear_ratio};
+    if(distance_to_wall_update_callback)
+    {
+        distance_to_wall = distance_to_wall_update_callback();
+    }
+
+    units::meter_t hub_x_position = RobotContext::HUB_POSITION.X();
+    auto snow_blow_velocity = snow_blow_target_rpm
+        + units::revolutions_per_minute_t{(distance_to_wall.value() - hub_x_position.value()) * snow_blow_proportional}
+        + manual_shooter_adjustment;
+    units::turns_per_second_t target_rps{snow_blow_velocity.value() / 60.0 * shooter_gear_ratio};
     left_shooter_motor->SetControl(shooter_velocity_request.WithVelocity(target_rps));
     right_shooter_motor->SetControl(shooter_velocity_request.WithVelocity(target_rps));
-    left_shooter_target_velocity = snow_blow_target_rpm;
-    right_shooter_target_velocity = snow_blow_target_rpm;
+    left_shooter_target_velocity = snow_blow_velocity;
+    right_shooter_target_velocity = snow_blow_velocity;
     auto left_channel_id  = static_cast<rev::servohub::ServoChannel::ChannelId>(left_servo_id);
     auto right_channel_id = static_cast<rev::servohub::ServoChannel::ChannelId>(right_servo_id);
     servo_controller->GetServoChannel(left_channel_id).SetPulseWidth(snow_blow_pulse_width);

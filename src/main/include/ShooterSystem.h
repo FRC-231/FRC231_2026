@@ -59,6 +59,7 @@ public:
     units::revolutions_per_minute_t getLeftShooterVelocity();
     units::revolutions_per_minute_t getRightShooterVelocity();
     void setDistanceUpdateCallback(std::function<units::meter_t()> callback);
+    void setDistanceToWallUpdateCallback(std::function<units::meter_t()> callback);
     std::map<units::meter_t, units::revolutions_per_minute_t> getDistanceToShooterVelocityMap(){return distance_to_shooter_velocity;};
 
     void Periodic() override;
@@ -113,7 +114,9 @@ private:
     int servo_pulse_width = 1500;
     int servo_center_pulse_width = 1500;
     units::meter_t distance_to_target{0_m};
+    units::meter_t distance_to_wall{0_m};
     std::function<units::meter_t()> distance_update_callback;
+    std::function<units::meter_t()> distance_to_wall_update_callback;
     units::revolutions_per_minute_t shooter_auto_adjustment{0_rpm};
     units::revolutions_per_minute_t backspin_amount{0_rpm};
     units::revolutions_per_minute_t backspin_adjustment{0_rpm};
@@ -126,6 +129,7 @@ private:
     units::revolutions_per_minute_t idle_mode_velocity{0_rpm};
     units::revolutions_per_minute_t snow_blow_target_rpm{0_rpm};
     int snow_blow_pulse_width{1500};
+    double snow_blow_proportional{0.0};
     units::revolutions_per_minute_t manual_shooter_adjustment_multiplier{0.0};
     units::revolutions_per_minute_t manual_shooter_adjustment{0.0};
 
