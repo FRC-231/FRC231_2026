@@ -45,7 +45,7 @@ function autonomous()
     drive_system:setMinPercentage(0.0)
     drive_system:setMaxSpeed(bump_speed)
     shooter_system:autoShoot()--Start shooter wheels
-    drive_system:driveTo(3.27, 1.68, -135)--Drive across bump
+    drive_system:driveTo(2.20, 1.65, -135)--Drive across bump
     waitUntilDistance(0.0762)
     drive_system:setMaxSpeed(travel_speed)
     drive_system:rotateTo(-45)--Face the hub

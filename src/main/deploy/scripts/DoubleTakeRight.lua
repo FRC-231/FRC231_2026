@@ -21,16 +21,16 @@ intake_speed = 2.0
 function autonomous()
     drive_system:setMaxSpeed(travel_speed)
     drive_system:setMinPercentage(0.5)
-    drive_system:setOdometry(4.4, 3.40, 180)--Starting position at trench
-    drive_system:driveTo(6.39, 3.36, 180)--Drive thru trench
+    drive_system:setOdometry(4.4, -3.40, 180)--Starting position at trench
+    drive_system:driveTo(6.39, -3.36, 180)--Drive thru trench
     waitUntilDistance(0.0762)
     intake_system:feedIntake()
     intake_system:pivotDown()
-    drive_system:driveTo(7.56, 3.36, 90)--Drive towards the fuel
+    drive_system:driveTo(7.56, -3.36, -90)--Drive towards the fuel
     waitUntilDistance(0.0762)
     drive_system:setMaxSpeed(intake_speed)
     drive_system:setMinPercentage(0.0)
-    drive_system:driveTo(7.56, 1.0, 90)--Drive across, collect fuel
+    drive_system:driveTo(7.56, -1.0, -90)--Drive across, collect fuel
     waitUntilDistance(0.0762)
     drive_system:setMinPercentage(0.5)
     drive_system:setMaxSpeed(travel_speed)
@@ -38,17 +38,17 @@ function autonomous()
     drive_system:rotateTo(180)
     waitUntilRotationError(2)
     control:sleep(0.25)
-    drive_system:driveTo(7.86, 1.68, -135)--Drive back, align to bump
+    drive_system:driveTo(7.86, -1.68, 135)--Drive back, align to bump
     waitUntilDistance(0.0762)
-    drive_system:driveTo(5.77, 1.68, -135)--Drive infront bump
+    drive_system:driveTo(5.77, -1.68, 135)--Drive infront bump
     waitUntilDistance(0.0762)
     drive_system:setMinPercentage(0.0)
     drive_system:setMaxSpeed(bump_speed)
     shooter_system:autoShoot()--Start shooter wheels
-    drive_system:driveTo(3.27, 1.68, -135)--Drive across bump
+    drive_system:driveTo(2.20, -1.65, 135)--Drive across bump
     waitUntilDistance(0.0762)
     drive_system:setMaxSpeed(travel_speed)
-    drive_system:rotateTo(-45)--Face the hub
+    drive_system:rotateTo(35)--Face the hub
     waitUntilRotationError(2)
     drive_system:setAutoAA()--Auto aim to hub
     control:sleep(0.25)--This is to make sure it gets the right angle
@@ -62,3 +62,27 @@ function autonomous()
     control:sleep(1.5)
     shooter_system:loaderStop()
     --END OF COMMON
+    intake_system:pivotUp()
+    drive_system:rotateTo(-135)--Make the intake face the middle
+    waitUntilRotationError(2)
+    drive_system:setMaxSpeed(bump_speed)
+    drive_system:driveTo(6.0, -1.55, -135)--Drive across bump
+    waitUntilDistance(0.0762)
+    drive_system:setMaxSpeed(travel_speed)
+    drive_system:driveTo(6.21, -3.16, -90)--Drive to side of field to do a sweep
+    waitUntilDistance(0.0762)
+    intake_system:pivotDown()
+    drive_system:rotateTo(90)
+    waitUntilRotationError(2)
+    drive_system:setMaxSpeed(intake_speed)
+    drive_system:driveTo(6.21, -0.16, -90)--Sweep across the center, intake fuel
+    waitUntilDistance(0.0762)
+    drive_system:setMaxSpeed(travel_speed)
+    drive_system:driveTo(6.21, -1.91, -45.0)--Drive in front of bump while rotating
+    waitUntilDistance(0.0762)
+    drive_system:rotateTo(45)--Ensure angle
+    waitUntilRotationError(2)
+    drive_system:setMaxSpeed(bump_speed)
+    drive_system:driveTo(3.21, -1.91, -45.0)--Drive back across bump
+    waitUntilDistance(0.0762)
+    drive_system:stop()
