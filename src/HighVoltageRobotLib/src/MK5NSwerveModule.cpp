@@ -42,7 +42,7 @@ MK5NSwerveModule::MK5NSwerveModule(std::string name,
     rotate_config.MotorOutput.NeutralMode = ctre::phoenix6::signals::NeutralModeValue::Brake;
     // Limit supply current to prevent brownouts
     rotate_config.CurrentLimits.SupplyCurrentLimitEnable = true;
-    rotate_config.CurrentLimits.SupplyCurrentLimit = 30_A;
+    rotate_config.CurrentLimits.SupplyCurrentLimit = 35_A;
     rotate_motor->GetConfigurator().Apply(rotate_config);
 
     ctre::phoenix6::configs::TalonFXConfiguration drive_config{};
@@ -50,7 +50,7 @@ MK5NSwerveModule::MK5NSwerveModule(std::string name,
     drive_config.MotorOutput.NeutralMode = ctre::phoenix6::signals::NeutralModeValue::Brake;
     // Limit supply current to prevent brownouts
     drive_config.CurrentLimits.SupplyCurrentLimitEnable = true;
-    drive_config.CurrentLimits.SupplyCurrentLimit = 40_A;
+    drive_config.CurrentLimits.SupplyCurrentLimit = 55_A;
     drive_motor->GetConfigurator().Apply(drive_config);
 
     drive_turns_per_meter = config.drive_turns_per_meter;

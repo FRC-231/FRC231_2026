@@ -330,7 +330,7 @@ void IntakeSystem::updateNetworkTable()
     nt_pivot_encoder_offset.setValue(pivot_encoder_offset.value());
     nt_pivot_down_angle.setValue(pivot_down_angle.value());
     nt_pivot_up_angle.setValue(pivot_up_angle.value());
-    nt_pivot_encoder_raw.setValue(HighVoltage::get360Range(pivot_encoder->GetAbsolutePosition().GetValueAsDouble() * 360 - 250));
+    nt_pivot_encoder_raw.setValue(HighVoltage::get360Range(pivot_encoder->GetAbsolutePosition().GetValueAsDouble() * 360));
     nt_pivot_encoder_angle.setValue(getPivotAngle().value());
 }
 

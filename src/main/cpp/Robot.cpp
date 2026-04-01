@@ -144,7 +144,7 @@ void Robot::TeleopInit()
 
 void Robot::TeleopPeriodic()
 {
-    drive_system->setMaxSpeed(5.0_mps);
+    drive_system->setMaxSpeed(6.7_mps);
     //Control collection
     auto& pilot = context->getPilotController();
     auto& pilotXbox = context->getPilotXboxController();
@@ -251,7 +251,7 @@ void Robot::TeleopPeriodic()
         }
         else
         {
-            shooter_system->setShooterMode(ShooterSystem::ShooterMode::MANUAL_AUTO);
+            shooter_system->setShooterMode(ShooterSystem::ShooterMode::AUTO);
         }
     }
     else
