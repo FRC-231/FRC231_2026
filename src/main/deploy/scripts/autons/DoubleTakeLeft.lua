@@ -15,7 +15,7 @@ end
 
 bump_speed = 2.5
 rotate_speed = 3.5
-travel_speed = 5.0
+travel_speed = 4.0
 intake_speed = 3.0
 
 function autonomous()
@@ -48,14 +48,16 @@ function autonomous()
     drive_system:setMaxSpeed(travel_speed)
     drive_system:rotateTo(-35)--Face the hub
     waitUntilRotationError(2)
+    drive_system:driveTo(2.20, 1.60, -35)--Go to shooting spot
+    waitUntilDistance(0.0762)
     drive_system:setAutoAA()--Auto aim to hub
-    control:sleep(0.20)--This is to make sure it gets the right angle
+    control:sleep(0.75)--This is to make sure it gets the right angle
     control:waitUntilTrue( function ()
         return shooter_system:isAtSpeed()--Waiting until shooter is at right speed
     end)
     shooter_system:loaderLoad()--Activate hopper
     intake_system:pivotWiggle()
-    control:sleep(1.5)
+    control:sleep(2.0)
     -- intake_system:pivotUp()
     shooter_system:loaderStop()
     --END OF COMMON
@@ -63,7 +65,7 @@ function autonomous()
     drive_system:rotateTo(-45)--Make the intake face the middle
     waitUntilRotationError(2)
     drive_system:setMaxSpeed(bump_speed)
-    drive_system:driveTo(6.0, 1.70, -45)--Drive across bump
+    drive_system:driveTo(6.0, 1.60, -45)--Drive across bump
     waitUntilDistance(0.0762)
     drive_system:rotateTo(90)
     waitUntilRotationError(2)
@@ -77,12 +79,12 @@ function autonomous()
     drive_system:driveTo(6.21, 0.16, 90)--Sweep across the center, intake fuel
     waitUntilDistance(0.0762)
     drive_system:setMaxSpeed(travel_speed)
-    drive_system:rotateTo(60)--Ensure angle
+    drive_system:rotateTo(-120)--Ensure angle
     waitUntilRotationError(2)
-    drive_system:driveTo(6.21, 1.70, 60.0)--Drive in front of bump while rotating
+    drive_system:driveTo(6.21, 1.70, -120.0)--Drive in front of bump while rotating
     waitUntilDistance(0.0762)
     drive_system:setMaxSpeed(bump_speed)
-    drive_system:driveTo(3.21, 1.70, 45.0)--Drive back across bump
+    drive_system:driveTo(3.21, 1.70, -120.0)--Drive back across bump
     waitUntilDistance(0.0762)
      drive_system:setAutoAA()--Auto aim to hub
     control:sleep(0.20)--This is to make sure it gets the right angle
