@@ -149,6 +149,7 @@ private:
     HighVoltage::NetworkTableValue<double> nt_shooter_auto_adjustment{SHOOTER_TABLE_NAME + "/" + "shooter_auto_adjustment", 0.0};
     HighVoltage::NetworkTableValue<double> nt_backspin_amount{SHOOTER_TABLE_NAME + "/" + "backspin_amount", 0.0};
     HighVoltage::NetworkTableValue<double> nt_backspin_adjustment{SHOOTER_TABLE_NAME + "/" + "backspin_adjustment", 0.0};
+    HighVoltage::NetworkTableValue<double> nt_manual_shooter_adjustment{SHOOTER_TABLE_NAME + "/" + "manual_shooter_adjustment", 0.0};
     HighVoltage::NetworkTableValue<double> nt_shooter_angle_adjustment{SHOOTER_TABLE_NAME + "/" + "shooter_angle_adjustment", 0.0};
     HighVoltage::NetworkTableValue<double> nt_shooter_manual_auto_speed{SHOOTER_TABLE_NAME + "/" + "shooter_manual_auto_speed", 0.0};
     HighVoltage::NetworkTableValue<bool> nt_is_shooter_at_speed{SHOOTER_TABLE_NAME + "/" + "is_shooter_at_speed", false};
