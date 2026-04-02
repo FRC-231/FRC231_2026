@@ -81,6 +81,7 @@ function autonomous()
     drive_system:setMaxSpeed(travel_speed)
     drive_system:rotateTo(120)--Ensure angle
     waitUntilRotationError(2)
+    control:sleep(0.25)
     drive_system:driveTo(6.21, -1.70, 120.0)--Drive in front of bump while rotating
     waitUntilDistance(0.0762)
     drive_system:setMaxSpeed(bump_speed)
