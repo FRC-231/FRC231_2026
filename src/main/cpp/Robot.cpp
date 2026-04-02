@@ -185,7 +185,7 @@ void Robot::TeleopPeriodic()
     bool run_intake = pilot.GetR2Axis() > 0.5;
     bool reverse_intake = pilot.GetSquareButton();
     static bool use_snow_blower = false;
-    if(pilot.GetCircleButtonPressed())
+    if(pilot.GetCircleButtonPressed() || copilot.GetCrossButtonPressed())
     {
         use_snow_blower = !use_snow_blower;
     }
