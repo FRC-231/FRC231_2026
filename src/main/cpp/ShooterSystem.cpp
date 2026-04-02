@@ -345,6 +345,7 @@ void ShooterSystem::updateNetworkTable()
     nt_is_shooter_at_speed.setValue(isAtSpeed());
     nt_snow_blow_target_rpm.setValue(snow_blow_target_rpm.value());
     nt_snow_blow_pulse_width.setValue(snow_blow_pulse_width);
+    nt_manual_shooter_adjustment.setValue(manual_shooter_adjustment.value());
 }
 
 std::string ShooterSystem::loaderModeToString(LoaderMode mode)
