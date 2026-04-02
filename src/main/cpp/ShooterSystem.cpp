@@ -315,35 +315,7 @@ void ShooterSystem::Periodic()
 
     // Diagnostics: print servo status once every ~2 seconds (100 loops at 20ms)
     // Using a higher interval to avoid console I/O overhead
-    servo_diag_counter_++;
-    if (servo_diag_counter_ >= 100) {
-        servo_diag_counter_ = 0;
-        auto s0 = servo_controller->GetPeriodicStatus0();
-        auto s2 = servo_controller->GetPeriodicStatus2();
-        auto s3 = servo_controller->GetPeriodicStatus3();
-        std::cout << "[ServoHub] systemEnabled=" << (int)s0.systemEnabled
-                  << " primaryHeartbeatLock=" << (int)s0.primaryHeartbeatLock
-                  << " commMode=" << (int)s0.communicationMode
-                  << " servoVoltage=" << s0.servoVoltage
-                  << " deviceVoltage=" << s0.voltage
-                  << " | ch" << (int)left_servo_id
-                  << ": enabled=" << s2.channel2Enabled
-                  << " pulseWidth=" << s2.channel2PulseWidth
-                  << " outOfRange=" << s2.channel2OutOfRange
-                  << " | ch" << (int)right_servo_id
-                  << ": enabled=" << s3.channel3Enabled
-                  << " pulseWidth=" << s3.channel3PulseWidth
-                  << " outOfRange=" << s3.channel3OutOfRange
-                  << std::endl;
-        if (servo_controller->HasActiveFault()) {
-            auto faults = servo_controller->GetFaults();
-            std::cout << "[ServoHub] FAULTS: regulatorPowerGood=" << faults.regulatorPowerGood
-                      << " hardware=" << faults.hardware
-                      << " firmware=" << faults.firmware
-                      << " lowBattery=" << faults.lowBattery
-                      << " rawBits=0x" << std::hex << faults.rawBits << std::dec << std::endl;
-        }
-    }
+
 
     updateNetworkTable();
 }

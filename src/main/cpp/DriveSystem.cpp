@@ -262,6 +262,7 @@ units::degree_t DriveSystem::getRobotAngleInDegrees()
 units::degree_t DriveSystem::getRotationError()
 {
     units::degree_t angle_error = target_angle - getRobotAngleInDegrees();
+    angle_error = HighVoltage::get180Range(angle_error);
     angle_error *= -1;
     return angle_error;
 }
@@ -705,6 +706,7 @@ void DriveSystem::doDriveTo()
 void DriveSystem::doRotateTo()
 {
     units::degree_t angle_error = target_angle - getRobotAngleInDegrees();
+    angle_error = HighVoltage::get180Range(angle_error);
     angle_error *= -1;
     double power = angle_error.value() * rotate_to_proportional;
     swerve_coordinator->setRotate(power);
