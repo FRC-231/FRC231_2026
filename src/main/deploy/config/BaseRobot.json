@@ -150,7 +150,7 @@
             "k_i":0.0,
             "k_d":0.0
         },
-        "pivot_up_angle": 100,
+        "pivot_up_angle": 95,
         "pivot_down_angle": 130,
         "pivot_wiggle_up_angle": 100,
         "pivot_wiggle_down_angle": 120,
