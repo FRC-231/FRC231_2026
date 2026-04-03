@@ -86,6 +86,7 @@ private:
     std::shared_ptr<RobotContext> context;
     FeedMode feed_mode{FeedMode::STOP};
     PivotMode pivot_mode{PivotMode::STOP};
+    double pivot_wiggle_start_time{0.0};
 
     // ---- Hardware ----
     std::unique_ptr<ctre::phoenix6::hardware::TalonFX> pivot_motor;
