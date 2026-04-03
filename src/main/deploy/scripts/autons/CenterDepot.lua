@@ -13,18 +13,18 @@ function waitUntilDistance(distance)
         end)
 end
 
-bump_speed = 2.0
-rotate_speed = 2.0
-travel_speed = 3.5
-intake_speed = 1.0
+bump_speed = 2.5
+rotate_speed = 3.5
+travel_speed = 4.0
+intake_speed = 3.0
 
 function autonomous()
     drive_system:setMaxSpeed(travel_speed)
     drive_system:setMinPercentage(0.5)
     drive_system:setOdometry(3.52, 0, 0)--Starting position at trench
-    drive_system:driveTo(3.3, 1.93, -0.0)--Drive back
+    drive_system:driveTo(3.3, 1.93, 0.0)--Drive back
     waitUntilDistance(0.0762)
-    drive_system:driveTo(1.14, 1.93, -0.0)--Drive in front of fuel depot
+    drive_system:driveTo(1.14, 1.93, 0.0)--Drive in front of fuel depot
     waitUntilDistance(0.0762)
     intake_system:pivotDown()
     intake_system:feedIntake()
