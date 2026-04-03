@@ -195,6 +195,7 @@ void IntakeSystem::pivotDown()
 void IntakeSystem::pivotWiggle()
 {
     pivot_mode = PivotMode::WIGGLE;
+    pivot_wiggle_start_time = frc::Timer::GetFPGATimestamp().value();
 }
 
 // ==== Getters ====
@@ -267,9 +268,10 @@ void IntakeSystem::doPivotStop()
 void IntakeSystem::doPivotWiggle()
 {
     double current_time = frc::Timer::GetFPGATimestamp().value();
-    bool wiggle_up = std::fmod(current_time, pivot_wiggle_period) < (pivot_wiggle_period / 2);
-    units::degree_t target_angle = wiggle_up ? pivot_wiggle_up_angle : pivot_wiggle_down_angle;
-    pivot_pid->SetSetpoint(target_angle.value());
+    double elapsed = current_time - pivot_wiggle_start_time;
+    double t = std::min(elapsed / pivot_wiggle_period, 1.0);
+    units::degree_t setpoint = pivot_wiggle_down_angle + (pivot_wiggle_up_angle - pivot_wiggle_down_angle) * t;
+    pivot_pid->SetSetpoint(setpoint.value());
     units::volt_t power = units::volt_t{pivot_pid->Calculate(getPivotAngle().value())};
     power = HighVoltage::clamp(pivot_min_voltage, pivot_max_voltage, power);
     pivot_motor->SetVoltage(power);
