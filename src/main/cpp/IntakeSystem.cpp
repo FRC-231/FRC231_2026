@@ -195,7 +195,6 @@ void IntakeSystem::pivotDown()
 void IntakeSystem::pivotWiggle()
 {
     pivot_mode = PivotMode::WIGGLE;
-    pivot_wiggle_start_time = frc::Timer::GetFPGATimestamp().value();
 }
 
 // ==== Getters ====
@@ -290,9 +289,13 @@ void IntakeSystem::doPivotMove()
     {
         target_angle = pivot_up_angle;
     }
-    else
+    else if(pivot_mode == PivotMode::DOWN)
     {
         target_angle = pivot_down_angle;
+    }
+    else if(pivot_mode == PivotMode::WIGGLE)
+    {
+        target_angle = pivot_wiggle_up_angle;
     }
     pivot_pid->SetSetpoint(target_angle.value());
     units::volt_t power = units::volt_t{pivot_pid->Calculate(current_angle.value())};
