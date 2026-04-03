@@ -57,7 +57,7 @@ function autonomous()
     end)
     shooter_system:loaderLoad()--Activate hopper
     -- intake_system:pivotWiggle()
-    control:sleep(2.0)
+    control:sleep(6.0)
     -- intake_system:pivotUp()
     shooter_system:loaderStop()
     --END OF COMMON
