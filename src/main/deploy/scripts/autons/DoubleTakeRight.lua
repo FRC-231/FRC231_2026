@@ -82,10 +82,10 @@ function autonomous()
     drive_system:rotateTo(120)--Ensure angle
     waitUntilRotationError(2)
     control:sleep(0.25)
-    drive_system:driveTo(6.21, -1.60, 120.0)--Drive in front of bump
+    drive_system:driveTo(6.21, -1.55, 120.0)--Drive in front of bump
     waitUntilDistance(0.0762)
     drive_system:setMaxSpeed(bump_speed)
-    drive_system:driveTo(3.21, -1.60, 120.0)--Drive back across bump
+    drive_system:driveTo(3.21, -1.55, 120.0)--Drive back across bump
     waitUntilDistance(0.0762)
      drive_system:setAutoAA()--Auto aim to hub
     control:sleep(0.20)--This is to make sure it gets the right angle

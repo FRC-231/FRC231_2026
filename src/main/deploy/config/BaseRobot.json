@@ -133,7 +133,7 @@
             }
         },
         "drive_to_proportional":2.0,
-        "auto_aim_offset":5.0
+        "auto_aim_offset":-3.0
     },
     "intake":{
         "pivot_motor_id":9,
@@ -187,7 +187,7 @@
         "idle_mode_velocity":2600,
         "snow_blow_target_rpm":3000,
         "snow_blow_pulse_width":1150,
-        "snow_blow_proportional":400.0,
+        "snow_blow_proportional":450.0,
         "manual_shooter_adjustment_multiplier":300.0,
         "distance_to_shooter_velocity":[
             [1.6, 2555.0],
