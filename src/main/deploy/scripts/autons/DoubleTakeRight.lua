@@ -22,7 +22,7 @@ function autonomous()
     drive_system:setMaxSpeed(travel_speed)
     drive_system:setMinPercentage(0.5)
     drive_system:setOdometry(4.4, -3.40, 180)--Starting position at trench
-    drive_system:driveTo(6.39, -3.36, 180)--Drive thru trench
+    drive_system:driveTo(6.40, -3.40, 180)--Drive thru trench
     waitUntilDistance(0.0762)
     intake_system:feedIntake()
     intake_system:pivotDown()
@@ -57,7 +57,7 @@ function autonomous()
     end)
     shooter_system:loaderLoad()--Activate hopper
     -- intake_system:pivotWiggle()
-    control:sleep(6.0)
+    control:sleep(4.0)
     -- intake_system:pivotUp()
     shooter_system:loaderStop()
     --END OF COMMON
