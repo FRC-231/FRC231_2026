@@ -561,7 +561,7 @@ void ShooterSystem::doShooterSnowBlowControl()
 
     units::meter_t hub_x_position = RobotContext::HUB_POSITION.X();
     auto snow_blow_velocity = snow_blow_target_rpm
-        + units::revolutions_per_minute_t{(distance_to_wall.value() - hub_x_position.value()) * snow_blow_proportional}
+        + units::revolutions_per_minute_t{(distance_to_wall.value()) * snow_blow_proportional}
         + manual_shooter_adjustment;
     units::turns_per_second_t target_rps{snow_blow_velocity.value() / 60.0 * shooter_gear_ratio};
     left_shooter_motor->SetControl(shooter_velocity_request.WithVelocity(target_rps));
