@@ -888,63 +888,42 @@ void DriveSystem::doFollowTrajectory()
     // Sample the desired state at the current time
     auto desired_state = current_trajectory.Sample(elapsed);
 
-    // Calculate the chassis speeds needed to follow the trajectory
+    // Calculate the chassis speeds needed to follow the trajectory.
+    // The holonomic controller outputs field-relative ChassisSpeeds.
     auto target_speeds = holonomic_controller->Calculate(
         current_pose,
         desired_state,
         trajectory_end_rotation
     );
 
-    // Convert ChassisSpeeds (vx, vy, omega) into the coordinator's format:
-    //   angle (degrees), magnitude (0-1), turn (-1 to 1)
-    double vx = target_speeds.vx.value();  // m/s
-    double vy = target_speeds.vy.value();  // m/s
-    double omega = target_speeds.omega.value();  // rad/s
+    // Use WPILib kinematics to convert ChassisSpeeds directly into
+    // individual swerve module states. This avoids the angle convention
+    // issues with the coordinator's setDrive() API.
+    auto module_states = kinematics->ToSwerveModuleStates(target_speeds);
+    frc::SwerveDriveKinematics<4>::DesaturateWheelSpeeds(
+        &module_states, swerve_coordinator->getMaxSpeed());
 
-    // Calculate the direction and speed magnitude
-    double speed_mps = std::sqrt(vx * vx + vy * vy);
-    double max_speed_mps = swerve_coordinator->getMaxSpeed().value();
-
-    if(speed_mps > 0.01)
+    // Helper: apply an optimized module state to a swerve module.
+    // The module's update() handles encoder offsets internally.
+    auto applyModuleState = [](std::shared_ptr<HighVoltage::MK5NSwerveModule>& module,
+                               const frc::SwerveModuleState& state)
     {
-        // Direction of travel in degrees (field-relative).
-        // atan2(vy, vx) gives angle from +X axis. The coordinator expects angle
-        // from +Y axis (heading convention), so subtract 90.
-        double drive_angle = HighVoltage::get180Range(HighVoltage::toDegrees(std::atan2(vy, vx)) - 90.0);
+        auto optimized = frc::SwerveModuleState::Optimize(state, module->getAngle());
+        module->setTargetAngle(optimized.angle.Degrees());
+        module->setSpeed(optimized.speed);
+    };
 
-        // Magnitude as a fraction of max speed, clamped to [0, 1]
-        double magnitude = std::min(1.0, speed_mps / max_speed_mps);
+    applyModuleState(front_left_module, module_states[0]);
+    applyModuleState(front_right_module, module_states[1]);
+    applyModuleState(back_left_module, module_states[2]);
+    applyModuleState(back_right_module, module_states[3]);
 
-        // Turn as a fraction: omega mapped to [-1, 1] range.
-        // The coordinator maps turn=1.0 to a 45-degree turn offset,
-        // so we scale omega relative to a reasonable max angular velocity.
-        double max_omega = 3.14;  // ~180 deg/s, reasonable max for swerve
-        double turn = std::clamp(omega / max_omega, -1.0, 1.0);
-
-        // The coordinator applies field-oriented correction internally,
-        // but ChassisSpeeds from the holonomic controller are already
-        // field-relative. We need to add back the current robot angle
-        // since the coordinator will subtract it.
-        drive_angle = HighVoltage::get180Range(drive_angle + 180.0 + getRobotAngleInDegrees().value());
-
-        swerve_coordinator->setDrive(units::degree_t{drive_angle}, magnitude, turn);
-    }
-    else
-    {
-        // No translation, just rotation if needed
-        double max_omega = 3.14;
-        double turn = std::clamp(omega / max_omega, -1.0, 1.0);
-        if(std::abs(turn) > 0.01)
-        {
-            swerve_coordinator->setRotate(turn);
-        }
-        else
-        {
-            swerve_coordinator->stopDrive();
-        }
-    }
-
-    swerve_coordinator->update();
+    // Run each module's control loop (PID + feedforward for drive and turn motors).
+    // Encoder offsets are applied inside each module's update().
+    front_left_module->update(std::chrono::milliseconds{20});
+    front_right_module->update(std::chrono::milliseconds{20});
+    back_left_module->update(std::chrono::milliseconds{20});
+    back_right_module->update(std::chrono::milliseconds{20});
 }
 
 // ==== Private: Internal Helpers ====
