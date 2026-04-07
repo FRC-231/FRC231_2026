@@ -1,4 +1,5 @@
 #include <ShooterSystem.h>
+#include <cmath>
 #include <iostream> 
 
 ShooterSystem::ShooterSystem(std::shared_ptr<RobotContext> context):

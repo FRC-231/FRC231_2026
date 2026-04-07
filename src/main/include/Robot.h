@@ -55,7 +55,8 @@ public:
         {"CenterDepot", Paths::CENTER_DEPOT_AUTON},
         {"DoubleTakeLeft", Paths::DOUBLE_TAKE_LEFT_AUTON},
         {"DoubleTakeRight", Paths::DOUBLE_TAKE_RIGHT_AUTON},
-        {"CenterBack", Paths::CENTER_BACK_AUTON}
+        {"CenterBack", Paths::CENTER_BACK_AUTON},
+        {"CurveTest", Paths::CURVE_TEST_AUTON}
 
     };
 

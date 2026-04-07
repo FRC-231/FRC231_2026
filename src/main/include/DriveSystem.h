@@ -5,6 +5,13 @@
 #include <frc/kinematics/SwerveDriveKinematics.h>
 #include <frc/kinematics/SwerveDriveOdometry.h>
 #include <frc/estimator/SwerveDrivePoseEstimator.h>
+#include <frc/trajectory/Trajectory.h>
+#include <frc/trajectory/TrajectoryGenerator.h>
+#include <frc/trajectory/TrajectoryConfig.h>
+#include <frc/controller/HolonomicDriveController.h>
+#include <frc/controller/PIDController.h>
+#include <frc/controller/ProfiledPIDController.h>
+#include <frc/Timer.h>
 
 #include "RobotConfig.h"
 #include "RobotContext.h"
@@ -29,7 +36,8 @@ public:
         ROTATE_TO,
         MANUAL_AA,
         MANUAL_FACE_BACK,
-        DRIVE_TO_SHOOT_LOCATION
+        DRIVE_TO_SHOOT_LOCATION,
+        FOLLOW_TRAJECTORY
     };
 
     enum ModuleName
@@ -79,6 +87,10 @@ public:
     void setMaxSpeedLua(double speed);
     void setMinPercentage(double percentage);
 
+    // ---- Trajectory Following ----
+    void followTrajectory(frc::Trajectory trajectory, frc::Rotation2d endRotation);
+    bool isTrajectoryDone();
+
     // ---- Navigation ----
     units::degree_t getAngleFromTarget();
     units::meter_t getDistanceFromTarget();
@@ -109,6 +121,14 @@ public:
     double getRobotAngleInDegreesLua();
     double getRotationErrorLua();
     void setOdometryLua(double x, double y, double angle);
+    void followTrajectoryLua(double maxAccel,
+                             double startX, double startY, double startAngle,
+                             std::vector<std::vector<double>> interiorPoints,
+                             double endX, double endY, double endAngle);
+    void followPathLua(double maxAccel,
+                       std::vector<std::vector<double>> points,
+                       double endAngle);
+    bool isTrajectoryDoneLua();
 
 private:
     // ---- Drive Mode Handlers ----
@@ -120,6 +140,7 @@ private:
     void doTurnFF();
     void doDriveTo();
     void doRotateTo();
+    void doFollowTrajectory();
 
     // ---- Internal Helpers ----
     frc::Pose2d updateOdometry();
@@ -150,6 +171,13 @@ private:
     units::degree_t angle_to_hub = 0.0_deg;
     units::meter_t distance_to_hub = 0.0_m;
     double min_auto_percentage = 0.0;
+
+    // ---- Trajectory Following State ----
+    frc::Trajectory current_trajectory;
+    frc::Rotation2d trajectory_end_rotation;
+    frc::Timer trajectory_timer;
+    bool trajectory_done{true};
+    std::unique_ptr<frc::HolonomicDriveController> holonomic_controller;
 
     // ---- Odometry ----
     std::shared_ptr<frc::SwerveDriveKinematics<4>> kinematics;

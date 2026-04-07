@@ -1,5 +1,6 @@
 #include "DriveSystem.h"
 #include <iostream>
+#include <numbers>
 
 DriveSystem::DriveSystem(std::shared_ptr<RobotContext> context):
     context(context)
@@ -65,6 +66,22 @@ DriveSystem::DriveSystem(std::shared_ptr<RobotContext> context):
     drive_to_proportional = drive_config.drive_to_proportional;
     auto_aim_offset = units::degree_t{drive_config.auto_aim_offset};
 
+    // Initialize the holonomic controller for trajectory following.
+    // X and Y PID controllers correct positional error (meters).
+    // The profiled PID controller corrects rotational error (radians).
+    frc::ProfiledPIDController<units::radians> theta_controller{
+        3.0, 0.0, 0.0,
+        frc::TrapezoidProfile<units::radians>::Constraints{
+            units::radians_per_second_t{3.14},
+            units::unit_t<units::compound_unit<units::radians, units::inverse<units::squared<units::second>>>>{3.14}
+        }
+    };
+    theta_controller.EnableContinuousInput(-units::radian_t{std::numbers::pi}, units::radian_t{std::numbers::pi});
+    holonomic_controller = std::make_unique<frc::HolonomicDriveController>(
+        frc::PIDController{1.0, 0.0, 0.0},  // X position PID
+        frc::PIDController{1.0, 0.0, 0.0},  // Y position PID
+        theta_controller
+    );
 
     nt_drive_mode.setOnUpdate([this](const std::string& mode_str)
     {
@@ -146,6 +163,11 @@ void DriveSystem::Periodic()
             doRotateTo();
         }break;
 
+        case FOLLOW_TRAJECTORY:
+        {
+            doFollowTrajectory();
+        }break;
+
         default:
         {
             doStop();
@@ -222,6 +244,23 @@ void DriveSystem::rotateTo(units::degree_t angle)
     drive_mode = ROTATE_TO;
     target_angle = angle;
     target_pose = frc::Pose2d(target_pose.Translation(), frc::Rotation2d{angle});
+}
+
+void DriveSystem::followTrajectory(frc::Trajectory trajectory, frc::Rotation2d endRotation)
+{
+    current_trajectory = trajectory;
+    trajectory_end_rotation = endRotation;
+    trajectory_done = false;
+    trajectory_timer.Reset();
+    trajectory_timer.Start();
+    drive_mode = FOLLOW_TRAJECTORY;
+    std::cout << "Following trajectory: " << trajectory.TotalTime().value() << "s, "
+              << trajectory.States().size() << " states" << std::endl;
+}
+
+bool DriveSystem::isTrajectoryDone()
+{
+    return trajectory_done;
 }
 
 void DriveSystem::setMaxSpeed(units::meters_per_second_t speed)
@@ -358,6 +397,9 @@ std::string DriveSystem::driveModeToString(DriveMode mode)
 
         case MANUAL_FACE_BACK:
             return "MANUAL_FACE_BACK";
+
+        case FOLLOW_TRAJECTORY:
+            return "FOLLOW_TRAJECTORY";
     }
     return "UNKNOWN";
 }
@@ -395,6 +437,10 @@ DriveSystem::DriveMode DriveSystem::stringToDriveMode(const std::string& mode_st
     else if(mode_str == "DRIVE_TO_SHOOT_LOCATION")
     {
         return DRIVE_TO_SHOOT_LOCATION;
+    }
+    else if(mode_str == "FOLLOW_TRAJECTORY")
+    {
+        return FOLLOW_TRAJECTORY;
     }
     return STOP;
 }
@@ -458,6 +504,9 @@ void DriveSystem::addToLuaState(Keeko::ThreadedScript& script)
             .addFunction("setMinPercentage", &DriveSystem::setMinPercentage)
             .addFunction("setAutoAA", &DriveSystem::setAutoAA)
             .addFunction("setManualFaceBack", &DriveSystem::setManualFaceBack)
+            .addFunction("followTrajectory", &DriveSystem::followTrajectoryLua)
+            .addFunction("followPath", &DriveSystem::followPathLua)
+            .addFunction("isTrajectoryDone", &DriveSystem::isTrajectoryDoneLua)
         .endClass();
     script.addInstance("drive_system", this);
 }
@@ -506,6 +555,114 @@ void DriveSystem::setOdometryLua(double x, double y, double angle)
             frc::Rotation2d{units::degree_t{angle}}
         }
     );
+}
+
+void DriveSystem::followTrajectoryLua(double maxAccel,
+                                       double startX, double startY, double startAngle,
+                                       std::vector<std::vector<double>> interiorPoints,
+                                       double endX, double endY, double endAngle)
+{
+    // Use the max speed already set via setMaxSpeed() on the swerve coordinator
+    frc::TrajectoryConfig config(
+        swerve_coordinator->getMaxSpeed(),
+        units::meters_per_second_squared_t{maxAccel}
+    );
+
+    // Build start pose
+    frc::Pose2d startPose{
+        units::meter_t{startX},
+        units::meter_t{startY},
+        frc::Rotation2d{units::degree_t{startAngle}}
+    };
+
+    // Build interior waypoints from the Lua table (each element is {x, y})
+    std::vector<frc::Translation2d> waypoints;
+    for(const auto& point : interiorPoints)
+    {
+        if(point.size() >= 2)
+        {
+            waypoints.emplace_back(units::meter_t{point[0]}, units::meter_t{point[1]});
+        }
+        else
+        {
+            std::cerr << "followTrajectoryLua: interior point needs at least 2 values (x, y), skipping" << std::endl;
+        }
+    }
+
+    // Build end pose
+    frc::Pose2d endPose{
+        units::meter_t{endX},
+        units::meter_t{endY},
+        frc::Rotation2d{units::degree_t{endAngle}}
+    };
+
+    // Generate the trajectory
+    auto trajectory = frc::TrajectoryGenerator::GenerateTrajectory(
+        startPose, waypoints, endPose, config
+    );
+
+    // Start following it. The end rotation controls which direction the robot faces
+    // while driving (independent of the path direction).
+    followTrajectory(trajectory, frc::Rotation2d{units::degree_t{endAngle}});
+}
+
+void DriveSystem::followPathLua(double maxAccel,
+                                 std::vector<std::vector<double>> points,
+                                 double endAngle)
+{
+    // Need at least one point (the end point)
+    if(points.empty())
+    {
+        std::cerr << "followPathLua: need at least one point (the end point)" << std::endl;
+        return;
+    }
+
+    // Use the current odometry pose as the start
+    frc::Pose2d startPose = current_pose;
+
+    // The last point in the table is the end pose (x, y)
+    auto& lastPoint = points.back();
+    if(lastPoint.size() < 2)
+    {
+        std::cerr << "followPathLua: end point needs at least 2 values (x, y)" << std::endl;
+        return;
+    }
+    frc::Pose2d endPose{
+        units::meter_t{lastPoint[0]},
+        units::meter_t{lastPoint[1]},
+        frc::Rotation2d{units::degree_t{endAngle}}
+    };
+
+    // All points except the last are interior waypoints
+    std::vector<frc::Translation2d> waypoints;
+    for(size_t i = 0; i < points.size() - 1; i++)
+    {
+        if(points[i].size() >= 2)
+        {
+            waypoints.emplace_back(units::meter_t{points[i][0]}, units::meter_t{points[i][1]});
+        }
+        else
+        {
+            std::cerr << "followPathLua: waypoint needs at least 2 values (x, y), skipping" << std::endl;
+        }
+    }
+
+    // Build config and generate trajectory using the current max speed
+    frc::TrajectoryConfig config(
+        swerve_coordinator->getMaxSpeed(),
+        units::meters_per_second_squared_t{maxAccel}
+    );
+
+    auto trajectory = frc::TrajectoryGenerator::GenerateTrajectory(
+        startPose, waypoints, endPose, config
+    );
+
+    followTrajectory(trajectory, frc::Rotation2d{units::degree_t{endAngle}});
+}
+
+bool DriveSystem::isTrajectoryDoneLua()
+{
+    return isTrajectoryDone();
 }
 
 // ==== Private: Drive Mode Handlers ====
@@ -710,6 +867,83 @@ void DriveSystem::doRotateTo()
     angle_error *= -1;
     double power = angle_error.value() * rotate_to_proportional;
     swerve_coordinator->setRotate(power);
+    swerve_coordinator->update();
+}
+
+void DriveSystem::doFollowTrajectory()
+{
+    auto elapsed = trajectory_timer.Get();
+
+    // Check if the trajectory is complete
+    if(elapsed > current_trajectory.TotalTime())
+    {
+        trajectory_done = true;
+        trajectory_timer.Stop();
+        swerve_coordinator->stopDrive();
+        swerve_coordinator->update();
+        drive_mode = STOP;
+        return;
+    }
+
+    // Sample the desired state at the current time
+    auto desired_state = current_trajectory.Sample(elapsed);
+
+    // Calculate the chassis speeds needed to follow the trajectory
+    auto target_speeds = holonomic_controller->Calculate(
+        current_pose,
+        desired_state,
+        trajectory_end_rotation
+    );
+
+    // Convert ChassisSpeeds (vx, vy, omega) into the coordinator's format:
+    //   angle (degrees), magnitude (0-1), turn (-1 to 1)
+    double vx = target_speeds.vx.value();  // m/s
+    double vy = target_speeds.vy.value();  // m/s
+    double omega = target_speeds.omega.value();  // rad/s
+
+    // Calculate the direction and speed magnitude
+    double speed_mps = std::sqrt(vx * vx + vy * vy);
+    double max_speed_mps = swerve_coordinator->getMaxSpeed().value();
+
+    if(speed_mps > 0.01)
+    {
+        // Direction of travel in degrees (field-relative).
+        // atan2(vy, vx) gives angle from +X axis. The coordinator expects angle
+        // from +Y axis (heading convention), so subtract 90.
+        double drive_angle = HighVoltage::get180Range(HighVoltage::toDegrees(std::atan2(vy, vx)) - 90.0);
+
+        // Magnitude as a fraction of max speed, clamped to [0, 1]
+        double magnitude = std::min(1.0, speed_mps / max_speed_mps);
+
+        // Turn as a fraction: omega mapped to [-1, 1] range.
+        // The coordinator maps turn=1.0 to a 45-degree turn offset,
+        // so we scale omega relative to a reasonable max angular velocity.
+        double max_omega = 3.14;  // ~180 deg/s, reasonable max for swerve
+        double turn = std::clamp(omega / max_omega, -1.0, 1.0);
+
+        // The coordinator applies field-oriented correction internally,
+        // but ChassisSpeeds from the holonomic controller are already
+        // field-relative. We need to add back the current robot angle
+        // since the coordinator will subtract it.
+        drive_angle = HighVoltage::get180Range(drive_angle + getRobotAngleInDegrees().value());
+
+        swerve_coordinator->setDrive(units::degree_t{drive_angle}, magnitude, turn);
+    }
+    else
+    {
+        // No translation, just rotation if needed
+        double max_omega = 3.14;
+        double turn = std::clamp(omega / max_omega, -1.0, 1.0);
+        if(std::abs(turn) > 0.01)
+        {
+            swerve_coordinator->setRotate(turn);
+        }
+        else
+        {
+            swerve_coordinator->stopDrive();
+        }
+    }
+
     swerve_coordinator->update();
 }
 
