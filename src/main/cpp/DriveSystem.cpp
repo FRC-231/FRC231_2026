@@ -890,10 +890,17 @@ void DriveSystem::doFollowTrajectory()
 
     // Calculate the chassis speeds needed to follow the trajectory.
     // The holonomic controller outputs field-relative ChassisSpeeds.
-    auto target_speeds = holonomic_controller->Calculate(
+    auto field_speeds = holonomic_controller->Calculate(
         current_pose,
         desired_state,
         trajectory_end_rotation
+    );
+
+    // Convert field-relative speeds to robot-relative speeds,
+    // since ToSwerveModuleStates() expects robot-relative input.
+    auto target_speeds = frc::ChassisSpeeds::FromFieldRelativeSpeeds(
+        field_speeds.vx, field_speeds.vy, field_speeds.omega,
+        current_pose.Rotation()
     );
 
     // Use WPILib kinematics to convert ChassisSpeeds directly into
