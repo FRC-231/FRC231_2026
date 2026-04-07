@@ -911,11 +911,16 @@ void DriveSystem::doFollowTrajectory()
         &module_states, swerve_coordinator->getMaxSpeed());
 
     // Helper: apply an optimized module state to a swerve module.
-    // The module's update() handles encoder offsets internally.
+    // The MK5N module convention is 180° offset from WPILib convention
+    // (module 0° = WPILib 180°). We must shift the WPILib angle into
+    // the module's frame before Optimize, otherwise Optimize always
+    // flips the speed direction, causing the robot to drive backward.
     auto applyModuleState = [](std::shared_ptr<HighVoltage::MK5NSwerveModule>& module,
                                const frc::SwerveModuleState& state)
     {
-        auto optimized = frc::SwerveModuleState::Optimize(state, module->getAngle());
+        // Shift angle by 180° to convert from WPILib convention to module convention
+        frc::SwerveModuleState adjusted_state{state.speed, state.angle + frc::Rotation2d{180_deg}};
+        auto optimized = frc::SwerveModuleState::Optimize(adjusted_state, module->getAngle());
         module->setTargetAngle(optimized.angle.Degrees());
         module->setSpeed(optimized.speed);
     };
