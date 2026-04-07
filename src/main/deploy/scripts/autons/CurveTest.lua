@@ -3,26 +3,27 @@ print("CurveTest autonomous script loading")
 function autonomous()
     print("CurveTest autonomous script running")
 
-    -- Orbit center: (2.25, 2.0), radius: 1.0m
-    -- Start at the bottom of the circle: (2.25, 1.0)
-    -- Travel counter-clockwise: bottom -> right -> top -> left -> bottom
+    -- Snake path from (2.25, 2.0) to (2.25, -2.0)
+    -- Snakes left and right with 1m amplitude as it travels in -Y
     --
-    --         (2.25, 3.0)  <- top
-    --        /            \
-    -- (1.25, 2.0)      (3.25, 2.0)
-    --        \            /
-    --         (2.25, 1.0)  <- start/end
+    --    (2.25, 2.0)   <- start
+    --   /
+    -- (1.25, 1.0)      <- curve left
+    --   \
+    --    (3.25, 0.0)   <- curve right
+    --   /
+    -- (1.25, -1.0)     <- curve left
+    --   \
+    --    (2.25, -2.0)  <- end
 
-    drive_system:setOdometry(2.25, 1.0, 0.0)
+    drive_system:setOdometry(2.25, 2.0, -90.0)
     drive_system:setMaxSpeed(2.0)
 
-    -- Single trajectory: start at bottom, pass through right/top/left, end at bottom
-    -- Start heading is 0° (facing +X, tangent to circle going right)
-    -- End heading is 0° to close the loop smoothly
-    drive_system:followTrajectory(2.5,
-        2.25, 1.0, 0.0,                          -- start: x, y, heading (tangent direction)
-        {{3.25, 2.0}, {2.25, 3.0}, {1.25, 2.0}}, -- interior waypoints: right, top, left
-        2.25, 1.0, 0.0                            -- end: back to start
+    -- Snake path: current position -> left -> right -> left -> end
+    -- End angle -90° (robot faces -Y direction)
+    drive_system:followPath(2.5,
+        {{1.25, 1.0}, {3.25, 0.0}, {1.25, -1.0}, {2.25, -2.0}},  -- waypoints + end point
+        -90.0                                                       -- end angle
     )
     control:waitUntilTrue(function()
         return drive_system:isTrajectoryDone()
