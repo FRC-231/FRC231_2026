@@ -896,6 +896,11 @@ void DriveSystem::doFollowTrajectory()
         trajectory_end_rotation
     );
 
+    // Negate omega: the robot's gyro convention (CW-positive) is opposite
+    // to WPILib's (CCW-positive), so the holonomic controller's rotation
+    // correction is inverted. Negating omega corrects this.
+    field_speeds.omega = -field_speeds.omega;
+
     // Convert field-relative speeds to robot-relative speeds,
     // since ToSwerveModuleStates() expects robot-relative input.
     auto target_speeds = frc::ChassisSpeeds::FromFieldRelativeSpeeds(
