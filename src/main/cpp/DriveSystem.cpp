@@ -925,7 +925,7 @@ void DriveSystem::doFollowTrajectory()
         // but ChassisSpeeds from the holonomic controller are already
         // field-relative. We need to add back the current robot angle
         // since the coordinator will subtract it.
-        drive_angle = HighVoltage::get180Range(drive_angle + getRobotAngleInDegrees().value());
+        drive_angle = HighVoltage::get180Range(drive_angle + 180.0 + getRobotAngleInDegrees().value());
 
         swerve_coordinator->setDrive(units::degree_t{drive_angle}, magnitude, turn);
     }

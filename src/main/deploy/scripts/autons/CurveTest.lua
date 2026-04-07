@@ -16,14 +16,14 @@ function autonomous()
     --   \
     --    (2.25, -2.0)  <- end
 
-    drive_system:setOdometry(2.25, 2.0, -90.0)
+    drive_system:setOdometry(2.25, 2.0, 0.0)
     drive_system:setMaxSpeed(2.0)
 
     -- Snake path: current position -> left -> right -> left -> end
-    -- End angle -90° (robot faces -Y direction)
+    -- End angle 0° (robot faces -Y direction)
     drive_system:followPath(2.5,
         {{1.25, 1.0}, {3.25, 0.0}, {1.25, -1.0}, {2.25, -2.0}},  -- waypoints + end point
-        -90.0                                                       -- end angle
+        0.0                                                       -- end angle
     )
     control:waitUntilTrue(function()
         return drive_system:isTrajectoryDone()
