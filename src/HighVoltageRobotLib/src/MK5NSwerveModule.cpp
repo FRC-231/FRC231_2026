@@ -8,12 +8,12 @@ namespace HighVoltage
 MK5NSwerveModule::MK5NSwerveModule(std::string name,
     MK5NSwerveModule::Mk5NConfig config) : SwerveModule{name}, config{config}
 {
-    drive_motor = std::make_shared<ctre::phoenix6::hardware::TalonFX>(config.drive_id, "Drivebase");
-    rotate_motor =  std::make_shared<ctre::phoenix6::hardware::TalonFX>(config.rotate_id, "Drivebase");
-    encoder = std::make_shared<ctre::phoenix6::hardware::CANcoder>(config.encoder_id, "Drivebase");
-    // drive_motor = std::make_shared<ctre::phoenix6::hardware::TalonFX>(config.drive_id, "rio");
-    // rotate_motor =  std::make_shared<ctre::phoenix6::hardware::TalonFX>(config.rotate_id, "rio");
-    // encoder = std::make_shared<ctre::phoenix6::hardware::CANcoder>(config.encoder_id, "rio");
+    // drive_motor = std::make_shared<ctre::phoenix6::hardware::TalonFX>(config.drive_id, "Drivebase");
+    // rotate_motor =  std::make_shared<ctre::phoenix6::hardware::TalonFX>(config.rotate_id, "Drivebase");
+    // encoder = std::make_shared<ctre::phoenix6::hardware::CANcoder>(config.encoder_id, "Drivebase");
+    drive_motor = std::make_shared<ctre::phoenix6::hardware::TalonFX>(config.drive_id, "rio");
+    rotate_motor =  std::make_shared<ctre::phoenix6::hardware::TalonFX>(config.rotate_id, "rio");
+    encoder = std::make_shared<ctre::phoenix6::hardware::CANcoder>(config.encoder_id, "rio");
     offset = config.encoder_offset;
 
     rotate_feedforward = std::make_unique<frc::SimpleMotorFeedforward<units::meters>>(
