@@ -933,17 +933,15 @@ void DriveSystem::doFollowTrajectory()
 
     // Helper: apply a module state to a swerve module.
     // The MK5N module convention is 180° offset from WPILib convention
-    // (module 0° = WPILib 180°). We shift the WPILib angle into the
-    // module's frame and let the module's own update() handle
-    // optimization (forward/backward flip). We must NOT call
-    // SwerveModuleState::Optimize here because the module's update()
-    // already performs its own optimization — doing both would
-    // double-flip the speed, causing the robot to drive backward.
+    // (module 0° = WPILib 180°), so wpilib_angle = module_angle + 180°,
+    // meaning module_angle = wpilib_angle - 180°. We subtract 180° to
+    // convert from WPILib to module convention, then let the module's
+    // own update() handle optimization (forward/backward flip).
     auto applyModuleState = [](std::shared_ptr<HighVoltage::MK5NSwerveModule>& module,
                                const frc::SwerveModuleState& state)
     {
-        // Shift angle by 180° to convert from WPILib convention to module convention
-        module->setTargetAngle(state.angle.Degrees() + 180_deg);
+        // Shift angle by -180° to convert from WPILib convention to module convention
+        module->setTargetAngle(state.angle.Degrees() - 180_deg);
         module->setSpeed(state.speed);
     };
 
