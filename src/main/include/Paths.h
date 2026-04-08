@@ -19,4 +19,5 @@ namespace Paths
     inline const std::filesystem::path DOUBLE_TAKE_RIGHT_AUTON = AUTON_DIRECTORY/"DoubleTakeRight.lua";
     inline const std::filesystem::path CENTER_BACK_AUTON = AUTON_DIRECTORY/"CenterBack.lua";
     inline const std::filesystem::path CURVE_TEST_AUTON = AUTON_DIRECTORY/"CurveTest.lua";
+    inline const std::filesystem::path CURVED_DOUBLE_TAKE_LEFT_AUTON = AUTON_DIRECTORY/"CurvedDoubleTakeLeft.lua";
 }

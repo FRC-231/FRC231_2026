@@ -1,5 +1,5 @@
 local math = require("math")
-print("QuickLoad autonomous script loading")
+print("DoubleTakeLeft autonomous script loading")
 
 function waitUntilRotationError(angle)
     control:waitUntilTrue( function ()
@@ -24,8 +24,8 @@ function autonomous()
     drive_system:setOdometry(4.4, 3.30, -180)--Starting position at trench
     drive_system:driveTo(6.40, 3.30, -180)--Drive thru trench
     waitUntilDistance(0.0762)
-    intake_system:feedIntake()
     intake_system:pivotDown()
+    intake_system:feedIntake()
     drive_system:driveTo(7.56, 3.36, 90)--Drive towards the fuel
     waitUntilDistance(0.0762)
     drive_system:setMaxSpeed(intake_speed)
