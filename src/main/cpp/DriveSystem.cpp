@@ -950,6 +950,13 @@ void DriveSystem::doFollowTrajectory()
 
     // Use WPILib kinematics to convert robot-relative ChassisSpeeds into
     // individual swerve module states.
+    // Negate omega: the MK5N module convention is 180° offset from WPILib.
+    // The -180° angle shift in applyModuleState causes the module optimization
+    // to reverse the drive direction for every module.  For translation this
+    // cancels out (getModulePosition negates distance), but for rotation the
+    // reversal inverts the rotation direction.  Negating omega here
+    // compensates so the robot rotates the correct way.
+    target_speeds.omega = -target_speeds.omega;
     auto module_states = kinematics->ToSwerveModuleStates(target_speeds);
     frc::SwerveDriveKinematics<4>::DesaturateWheelSpeeds(
         &module_states, swerve_coordinator->getMaxSpeed());
