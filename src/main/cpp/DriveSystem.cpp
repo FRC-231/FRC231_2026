@@ -676,6 +676,14 @@ void DriveSystem::followPathLua(double maxAccel,
         startPose, waypoints, endPose, config
     );
 
+    std::cout << "followPathLua: startPose=(" << startPose.X().value() << ", " << startPose.Y().value() 
+              << ", heading=" << startPose.Rotation().Degrees().value() << "°)" << std::endl;
+    std::cout << "followPathLua: endPose=(" << endPose.X().value() << ", " << endPose.Y().value()
+              << ", heading=" << endPose.Rotation().Degrees().value() << "°)" << std::endl;
+    std::cout << "followPathLua: current_pose rotation=" << current_pose.Rotation().Degrees().value() << "°" << std::endl;
+    std::cout << "followPathLua: endAngle (robot facing)=" << endAngle << "°" << std::endl;
+    std::cout << "followPathLua: trajectory totalTime=" << trajectory.TotalTime().value() << "s, states=" << trajectory.States().size() << std::endl;
+
     // endAngle is the robot's desired facing direction at the end,
     // independent of the path travel direction.
     followTrajectory(trajectory, frc::Rotation2d{units::degree_t{endAngle}});
@@ -909,19 +917,41 @@ void DriveSystem::doFollowTrajectory()
     // Sample the desired state at the current time
     auto desired_state = current_trajectory.Sample(elapsed);
 
+    // The robot's gyro convention is CW-positive, but WPILib's holonomic
+    // controller and FromFieldRelativeSpeeds expect CCW-positive. Negate the
+    // current pose rotation and the end rotation so the WPILib math works
+    // correctly.
+    frc::Pose2d wpilib_pose{current_pose.X(), current_pose.Y(),
+                            frc::Rotation2d{-current_pose.Rotation().Degrees()}};
+    frc::Rotation2d wpilib_end_rotation{-trajectory_end_rotation.Degrees()};
+
     // Calculate the chassis speeds needed to follow the trajectory.
     // The holonomic controller outputs field-relative ChassisSpeeds.
     auto field_speeds = holonomic_controller->Calculate(
-        current_pose,
+        wpilib_pose,
         desired_state,
-        trajectory_end_rotation
+        wpilib_end_rotation
     );
+
+    // Debug: print trajectory state every ~0.5s
+    static int traj_debug_counter = 0;
+    if(traj_debug_counter++ % 25 == 0)
+    {
+        std::cout << "[TRAJ t=" << elapsed.value() << "s] "
+                  << "cur=(" << current_pose.X().value() << "," << current_pose.Y().value() 
+                  << " rot=" << current_pose.Rotation().Degrees().value() << "°) "
+                  << "des=(" << desired_state.pose.X().value() << "," << desired_state.pose.Y().value()
+                  << " hdg=" << desired_state.pose.Rotation().Degrees().value() << "°) "
+                  << "field_v=(" << field_speeds.vx.value() << "," << field_speeds.vy.value() 
+                  << " omega=" << field_speeds.omega.value() << ")" << std::endl;
+    }
 
     // Convert field-relative speeds to robot-relative speeds,
     // since ToSwerveModuleStates() expects robot-relative input.
+    // Use the WPILib-convention (CCW-positive) rotation for the conversion.
     auto target_speeds = frc::ChassisSpeeds::FromFieldRelativeSpeeds(
         field_speeds.vx, field_speeds.vy, field_speeds.omega,
-        current_pose.Rotation()
+        wpilib_pose.Rotation()
     );
 
     // Use WPILib kinematics to convert ChassisSpeeds directly into
