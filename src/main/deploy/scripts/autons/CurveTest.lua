@@ -6,46 +6,38 @@ function waitUntilPathFinished()
     end)
 end
 
+function waitUntilRotationError(angle)
+    control:waitUntilTrue( function ()
+            return math.abs(drive_system:getRotationError()) < angle
+        end)
+end
+
+function waitUntilDistance(distance)
+    control:waitUntilTrue( function ()
+            return drive_system:getDistanceFromTarget() < distance
+        end)
+end
+
+bump_speed = 2.0
+rotate_speed = 3.5
+travel_speed = 3.5
+intake_speed = 2.0
+
 function autonomous()
     print("CurveTest autonomous script running")
 
-    -- Snake path from (2.25, 2.0) to (2.25, -2.0)
-    -- Snakes left and right with 1m amplitude as it travels in -Y
-    --
-    --    (2.25, 2.0)   <- start
-    --   /
-    -- (1.25, 1.0)      <- curve left
-    --   \
-    --    (3.25, 0.0)   <- curve right
-    --   /
-    -- (1.25, -1.0)     <- curve left
-    --   \
-    --    (2.25, -2.0)  <- end
-
-    drive_system:setOdometry(2.25, 2.0, 0.0)
-    drive_system:setMaxSpeed(3.0)
-
-    -- Snake path: current position -> left -> right -> left -> end
-    -- End angle 0° (robot faces -Y direction)
-    drive_system:followPath(4.0,
-        {{3.25, 1.0}, 
-        {1.25, 0.5}, 
-        {2.25, -1.5}, 
-        {2.25, -2.0}},  -- waypoints + end point
-        0.0             -- end angle
-    )
-    waitUntilPathFinished()
-    drive_system:setMaxSpeed(1.5)
-    drive_system:followPath(2.0,
-        {{3.36, 1.23},
-        {2.27, 3.23},
-        {2.42, 1.23},
-        {2.25, -2.0}},
-        0.0
-    )
+    drive_system:setOdometry(4.40, 3.30, 180.0)
+    drive_system:setMaxSpeed(travel_speed)
+    drive_system:driveTo(5.40, 3.370, 180.0)
+    waitUntilDistance(0.0762)
+    drive_system:followPath(1.0,
+    {{6.15, 3.20},
+    {7.30, 2.30},
+    {7.75, 0.80}},
+    90.0)
     waitUntilPathFinished()
     drive_system:stop()
     print("CurveTest autonomous script finished")
 end
 
-print("CurveTest autonomous script loaded")
+-- print("CurveTest autonomous script loaded")

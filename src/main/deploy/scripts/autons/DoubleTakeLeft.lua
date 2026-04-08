@@ -21,8 +21,8 @@ intake_speed = 3.0
 function autonomous()
     drive_system:setMaxSpeed(travel_speed)
     drive_system:setMinPercentage(0.5)
-    drive_system:setOdometry(4.4, 3.40, -180)--Starting position at trench
-    drive_system:driveTo(6.40, 3.40, -180)--Drive thru trench
+    drive_system:setOdometry(4.4, 3.30, -180)--Starting position at trench
+    drive_system:driveTo(6.40, 3.30, -180)--Drive thru trench
     waitUntilDistance(0.0762)
     intake_system:feedIntake()
     intake_system:pivotDown()
