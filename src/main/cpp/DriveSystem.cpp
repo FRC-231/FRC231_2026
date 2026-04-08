@@ -253,6 +253,13 @@ void DriveSystem::followTrajectory(frc::Trajectory trajectory, frc::Rotation2d e
     trajectory_done = false;
     trajectory_timer.Reset();
     trajectory_timer.Start();
+
+    // Reset the theta controller so it starts fresh from the current heading
+    // (the HolonomicDriveController only does this on its very first call via
+    // m_firstRun, which won't fire again on subsequent trajectories).
+    holonomic_controller->GetThetaController().Reset(
+        current_pose.Rotation().Radians());
+
     drive_mode = FOLLOW_TRAJECTORY;
     std::cout << "Following trajectory: " << trajectory.TotalTime().value() << "s, "
               << trajectory.States().size() << " states" << std::endl;
@@ -918,8 +925,11 @@ void DriveSystem::doFollowTrajectory()
     auto desired_state = current_trajectory.Sample(elapsed);
 
     // Calculate the chassis speeds needed to follow the trajectory.
-    // The holonomic controller outputs field-relative ChassisSpeeds.
-    auto field_speeds = holonomic_controller->Calculate(
+    // HolonomicDriveController::Calculate already calls
+    // ChassisSpeeds::FromFieldRelativeSpeeds internally, so its output is
+    // ROBOT-RELATIVE ChassisSpeeds — ready to feed directly into
+    // ToSwerveModuleStates (which also expects robot-relative input).
+    auto target_speeds = holonomic_controller->Calculate(
         current_pose,
         desired_state,
         trajectory_end_rotation
@@ -934,20 +944,12 @@ void DriveSystem::doFollowTrajectory()
                   << " rot=" << current_pose.Rotation().Degrees().value() << "°) "
                   << "des=(" << desired_state.pose.X().value() << "," << desired_state.pose.Y().value()
                   << " hdg=" << desired_state.pose.Rotation().Degrees().value() << "°) "
-                  << "field_v=(" << field_speeds.vx.value() << "," << field_speeds.vy.value() 
-                  << " omega=" << field_speeds.omega.value() << ")" << std::endl;
+                  << "robot_v=(" << target_speeds.vx.value() << "," << target_speeds.vy.value() 
+                  << " omega=" << target_speeds.omega.value() << ")" << std::endl;
     }
 
-    // Convert field-relative speeds to robot-relative speeds,
-    // since ToSwerveModuleStates() expects robot-relative input.
-    auto target_speeds = frc::ChassisSpeeds::FromFieldRelativeSpeeds(
-        field_speeds.vx, field_speeds.vy, field_speeds.omega,
-        current_pose.Rotation()
-    );
-
-    // Use WPILib kinematics to convert ChassisSpeeds directly into
-    // individual swerve module states. This avoids the angle convention
-    // issues with the coordinator's setDrive() API.
+    // Use WPILib kinematics to convert robot-relative ChassisSpeeds into
+    // individual swerve module states.
     auto module_states = kinematics->ToSwerveModuleStates(target_speeds);
     frc::SwerveDriveKinematics<4>::DesaturateWheelSpeeds(
         &module_states, swerve_coordinator->getMaxSpeed());
