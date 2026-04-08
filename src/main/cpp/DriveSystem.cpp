@@ -917,20 +917,12 @@ void DriveSystem::doFollowTrajectory()
     // Sample the desired state at the current time
     auto desired_state = current_trajectory.Sample(elapsed);
 
-    // The robot's gyro convention is CW-positive, but WPILib's holonomic
-    // controller and FromFieldRelativeSpeeds expect CCW-positive. Negate the
-    // current pose rotation and the end rotation so the WPILib math works
-    // correctly.
-    frc::Pose2d wpilib_pose{current_pose.X(), current_pose.Y(),
-                            frc::Rotation2d{-current_pose.Rotation().Degrees()}};
-    frc::Rotation2d wpilib_end_rotation{-trajectory_end_rotation.Degrees()};
-
     // Calculate the chassis speeds needed to follow the trajectory.
     // The holonomic controller outputs field-relative ChassisSpeeds.
     auto field_speeds = holonomic_controller->Calculate(
-        wpilib_pose,
+        current_pose,
         desired_state,
-        wpilib_end_rotation
+        trajectory_end_rotation
     );
 
     // Debug: print trajectory state every ~0.5s
@@ -948,10 +940,9 @@ void DriveSystem::doFollowTrajectory()
 
     // Convert field-relative speeds to robot-relative speeds,
     // since ToSwerveModuleStates() expects robot-relative input.
-    // Use the WPILib-convention (CCW-positive) rotation for the conversion.
     auto target_speeds = frc::ChassisSpeeds::FromFieldRelativeSpeeds(
         field_speeds.vx, field_speeds.vy, field_speeds.omega,
-        wpilib_pose.Rotation()
+        current_pose.Rotation()
     );
 
     // Use WPILib kinematics to convert ChassisSpeeds directly into
