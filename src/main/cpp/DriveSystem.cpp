@@ -617,9 +617,6 @@ void DriveSystem::followPathLua(double maxAccel,
         return;
     }
 
-    // Use the current odometry pose as the start
-    frc::Pose2d startPose = current_pose;
-
     // The last point in the table is the end pose (x, y)
     auto& lastPoint = points.back();
     if(lastPoint.size() < 2)
@@ -627,11 +624,6 @@ void DriveSystem::followPathLua(double maxAccel,
         std::cerr << "followPathLua: end point needs at least 2 values (x, y)" << std::endl;
         return;
     }
-    frc::Pose2d endPose{
-        units::meter_t{lastPoint[0]},
-        units::meter_t{lastPoint[1]},
-        frc::Rotation2d{units::degree_t{endAngle}}
-    };
 
     // All points except the last are interior waypoints
     std::vector<frc::Translation2d> waypoints;
@@ -647,6 +639,33 @@ void DriveSystem::followPathLua(double maxAccel,
         }
     }
 
+    // Compute the start pose travel heading: direction from current position
+    // toward the first point in the path. WPILib TrajectoryGenerator uses the
+    // pose heading as the direction of travel, NOT the robot's facing direction.
+    frc::Translation2d firstTarget = waypoints.empty()
+        ? frc::Translation2d{units::meter_t{lastPoint[0]}, units::meter_t{lastPoint[1]}}
+        : waypoints.front();
+    double dx = firstTarget.X().value() - current_pose.X().value();
+    double dy = firstTarget.Y().value() - current_pose.Y().value();
+    frc::Rotation2d startHeading{units::radian_t{std::atan2(dy, dx)}};
+
+    frc::Pose2d startPose{current_pose.X(), current_pose.Y(), startHeading};
+
+    // Compute the end pose travel heading: direction from the last waypoint
+    // (or current position if no waypoints) toward the end point.
+    frc::Translation2d lastWaypoint = waypoints.empty()
+        ? frc::Translation2d{current_pose.X(), current_pose.Y()}
+        : waypoints.back();
+    double edx = units::meter_t{lastPoint[0]}.value() - lastWaypoint.X().value();
+    double edy = units::meter_t{lastPoint[1]}.value() - lastWaypoint.Y().value();
+    frc::Rotation2d endHeading{units::radian_t{std::atan2(edy, edx)}};
+
+    frc::Pose2d endPose{
+        units::meter_t{lastPoint[0]},
+        units::meter_t{lastPoint[1]},
+        endHeading
+    };
+
     // Build config and generate trajectory using the current max speed
     frc::TrajectoryConfig config(
         swerve_coordinator->getMaxSpeed(),
@@ -657,6 +676,8 @@ void DriveSystem::followPathLua(double maxAccel,
         startPose, waypoints, endPose, config
     );
 
+    // endAngle is the robot's desired facing direction at the end,
+    // independent of the path travel direction.
     followTrajectory(trajectory, frc::Rotation2d{units::degree_t{endAngle}});
 }
 
@@ -895,11 +916,6 @@ void DriveSystem::doFollowTrajectory()
         desired_state,
         trajectory_end_rotation
     );
-
-    // Negate omega: the robot's gyro convention (CW-positive) is opposite
-    // to WPILib's (CCW-positive), so the holonomic controller's rotation
-    // correction is inverted. Negating omega corrects this.
-    field_speeds.omega = -field_speeds.omega;
 
     // Convert field-relative speeds to robot-relative speeds,
     // since ToSwerveModuleStates() expects robot-relative input.
