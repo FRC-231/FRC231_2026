@@ -931,19 +931,20 @@ void DriveSystem::doFollowTrajectory()
     frc::SwerveDriveKinematics<4>::DesaturateWheelSpeeds(
         &module_states, swerve_coordinator->getMaxSpeed());
 
-    // Helper: apply an optimized module state to a swerve module.
+    // Helper: apply a module state to a swerve module.
     // The MK5N module convention is 180° offset from WPILib convention
-    // (module 0° = WPILib 180°). We must shift the WPILib angle into
-    // the module's frame before Optimize, otherwise Optimize always
-    // flips the speed direction, causing the robot to drive backward.
+    // (module 0° = WPILib 180°). We shift the WPILib angle into the
+    // module's frame and let the module's own update() handle
+    // optimization (forward/backward flip). We must NOT call
+    // SwerveModuleState::Optimize here because the module's update()
+    // already performs its own optimization — doing both would
+    // double-flip the speed, causing the robot to drive backward.
     auto applyModuleState = [](std::shared_ptr<HighVoltage::MK5NSwerveModule>& module,
                                const frc::SwerveModuleState& state)
     {
         // Shift angle by 180° to convert from WPILib convention to module convention
-        frc::SwerveModuleState adjusted_state{state.speed, state.angle + frc::Rotation2d{180_deg}};
-        auto optimized = frc::SwerveModuleState::Optimize(adjusted_state, module->getAngle());
-        module->setTargetAngle(optimized.angle.Degrees());
-        module->setSpeed(optimized.speed);
+        module->setTargetAngle(state.angle.Degrees() + 180_deg);
+        module->setSpeed(state.speed);
     };
 
     applyModuleState(front_left_module, module_states[0]);
