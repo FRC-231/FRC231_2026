@@ -33,15 +33,15 @@ function autonomous()
     print("CurvedDoubleTakeLeft autonomous script running")
     drive_system:setOdometry(4.40, trench_y, 180.0) --Start under the trench
     drive_system:setMaxSpeed(travel_speed)
-    drive_system:driveTo(5.40, trench_y, 180.0) --Drive a bit forward past trench
+    drive_system:driveTo(6.20, trench_y, 180.0) --Drive a bit forward past trench
     waitUntilDistance(0.0762)
     intake_system:pivotDown()
     -- intake_system:feedIntake()
     drive_system:setMaxSpeed(intake_speed)
     drive_system:followPath(4.0,
-    {{6.15, 3.20},
-    {7.30, 2.30},
-    {7.75, 0.80}},
+    {{7.30, 3.20},
+    {7.70, 2.30},
+    {8.15, 0.80}},
     90.0)
     waitUntilPathFinished() --Curve towards the fuel in neutral zone
     drive_system:driveTo(7.75, bump_y, 90.0) --Align with bump
@@ -55,7 +55,8 @@ function autonomous()
     drive_system:driveTo(3.3, bump_y, -45.0) --Drive across bump
     waitUntilDistance(0.0762)
     drive_system:setMaxSpeed(travel_speed)
-    drive_system:driveTo(2.0, 1.6, -45.0)-- Drive to shooting position
+    drive_system:driveTo(2.5, 1.6, -45.0)-- Drive to shooting position
+    waitUntilDistance(0.0762)
     drive_system:setAutoAA()--Auto aim to hub
     control:sleep(0.75)--This is to make sure it gets the right angle
     control:waitUntilTrue( function ()
@@ -69,6 +70,7 @@ function autonomous()
     waitUntilDistance(0.0762)
     drive_system:rotateTo(150)
     waitUntilRotationError(2)
+    control:sleep(0.2)
     drive_system:setMaxSpeed(bump_speed)
     drive_system:driveTo(6.9, bump_y, 150.0) --Drive across of bump
     waitUntilDistance(0.0762)
