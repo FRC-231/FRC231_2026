@@ -57,7 +57,8 @@ public:
         {"DoubleTakeRight", Paths::DOUBLE_TAKE_RIGHT_AUTON},
         {"CenterBack", Paths::CENTER_BACK_AUTON},
         {"CurveTest", Paths::CURVE_TEST_AUTON},
-        {"CurvedDoubleTakeLeft", Paths::CURVED_DOUBLE_TAKE_LEFT_AUTON}
+        {"CurvedDoubleTakeLeft", Paths::CURVED_DOUBLE_TAKE_LEFT_AUTON},
+        {"CurvedDoubleTakeRight", Paths::CURVED_DOUBLE_TAKE_RIGHT_AUTON}
     };
 
 private:
