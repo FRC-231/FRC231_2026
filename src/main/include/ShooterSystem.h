@@ -92,6 +92,7 @@ private:
     ShooterMode shooter_mode{ShooterMode::STOP};
 
     std::unique_ptr<ctre::phoenix6::hardware::TalonFX> hopper_motor;
+    std::unique_ptr<ctre::phoenix6::hardware::TalonFX> hopper_motor2;
     std::unique_ptr<ctre::phoenix6::hardware::TalonFX> feed_motor;
     std::unique_ptr<ctre::phoenix6::hardware::TalonFX> left_shooter_motor;
     std::unique_ptr<ctre::phoenix6::hardware::TalonFX> right_shooter_motor;

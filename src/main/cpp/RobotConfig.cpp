@@ -39,6 +39,7 @@ void from_json(const nlohmann::json &j, IntakeConfig &intake)
 void from_json(const nlohmann::json &j, ShooterConfig &shooter)
 {
     j.at(ShooterConfig::HOPPER_MOTOR_ID).get_to(shooter.hopper_motor_id);
+    j.at(ShooterConfig::HOPPER_MOTOR2_ID).get_to(shooter.hopper_motor2_id);
     j.at(ShooterConfig::FEED_MOTOR_ID).get_to(shooter.feed_motor_id);
     j.at(ShooterConfig::LEFT_SHOOTER_MOTOR_ID).get_to(shooter.left_shooter_motor_id);
     j.at(ShooterConfig::RIGHT_SHOOTER_MOTOR_ID).get_to(shooter.right_shooter_motor_id);

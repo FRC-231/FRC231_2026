@@ -16,11 +16,23 @@ IntakeSystem::IntakeSystem(std::shared_ptr<RobotContext> context):
     pivot_config.CurrentLimits.SupplyCurrentLimit = 30_A;
     pivot_motor->GetConfigurator().Apply(pivot_config);
     feed_motor = std::make_unique<ctre::phoenix6::hardware::TalonFX>(intake_config.feed_motor_id, "secondary");
+    feed_motor2 = std::make_unique<ctre::phoenix6::hardware::TalonFX>(intake_config.feed_motor2_id, "secondary");
+
     // Apply current limits to the feed motor as well
     ctre::phoenix6::configs::TalonFXConfiguration feed_config{};
     feed_config.CurrentLimits.SupplyCurrentLimitEnable = true;
     feed_config.CurrentLimits.SupplyCurrentLimit = 30_A;
+    feed_config.MotorOutput.Inverted = ctre::phoenix6::signals::InvertedValue::CounterClockwise_Positive;
+    feed_config.MotorOutput.NeutralMode = ctre::phoenix6::signals::NeutralModeValue::Brake;
     feed_motor->GetConfigurator().Apply(feed_config);
+
+    ctre::phoenix6::configs::TalonFXConfiguration feed_config2{};
+    feed_config2.CurrentLimits.SupplyCurrentLimitEnable = true;
+    feed_config2.CurrentLimits.SupplyCurrentLimit = 30_A;
+    feed_config2.MotorOutput.Inverted = ctre::phoenix6::signals::InvertedValue::Clockwise_Positive;
+    feed_config2.MotorOutput.NeutralMode = ctre::phoenix6::signals::NeutralModeValue::Brake;
+    feed_motor2->GetConfigurator().Apply(feed_config2);
+
     pivot_encoder = std::make_unique<ctre::phoenix6::hardware::CANcoder>(intake_config.pivot_encoder_id, "secondary");
     ctre::phoenix6::configs::CANcoderConfiguration encoder_config{};
     encoder_config.MagnetSensor.AbsoluteSensorDiscontinuityPoint = 1.0_tr;

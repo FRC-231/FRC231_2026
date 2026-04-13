@@ -7,6 +7,7 @@ ShooterSystem::ShooterSystem(std::shared_ptr<RobotContext> context):
 {
     const auto& shooter_config = context->getConfig()->shooter_config;
     hopper_motor = std::make_unique<ctre::phoenix6::hardware::TalonFX>(shooter_config.hopper_motor_id, "secondary");
+    hopper_motor2 = std::make_unique<ctre::phoenix6::hardware::TalonFX>(shooter_config.hopper_motor2_id, "secondary");
     feed_motor = std::make_unique<ctre::phoenix6::hardware::TalonFX>(shooter_config.feed_motor_id, "rio");
     left_shooter_motor = std::make_unique<ctre::phoenix6::hardware::TalonFX>(shooter_config.left_shooter_motor_id, "rio");
     right_shooter_motor = std::make_unique<ctre::phoenix6::hardware::TalonFX>(shooter_config.right_shooter_motor_id, "rio");
@@ -15,7 +16,17 @@ ShooterSystem::ShooterSystem(std::shared_ptr<RobotContext> context):
     ctre::phoenix6::configs::TalonFXConfiguration hopper_config{};
     hopper_config.CurrentLimits.SupplyCurrentLimitEnable = true;
     hopper_config.CurrentLimits.SupplyCurrentLimit = 30_A;
+    hopper_config.MotorOutput.Inverted = ctre::phoenix6::signals::InvertedValue::CounterClockwise_Positive;
+    hopper_config.MotorOutput.NeutralMode = ctre::phoenix6::signals::NeutralModeValue::Brake;
     hopper_motor->GetConfigurator().Apply(hopper_config);
+
+
+    ctre::phoenix6::configs::TalonFXConfiguration hopper_config2{};
+    hopper_config2.CurrentLimits.SupplyCurrentLimitEnable = true;
+    hopper_config2.CurrentLimits.SupplyCurrentLimit = 30_A;
+    hopper_config2.MotorOutput.Inverted = ctre::phoenix6::signals::InvertedValue::Clockwise_Positive;
+    hopper_config2.MotorOutput.NeutralMode = ctre::phoenix6::signals::NeutralModeValue::Brake;
+    hopper_motor2->GetConfigurator().Apply(hopper_config2);
 
     ctre::phoenix6::configs::TalonFXConfiguration feed_motor_config{};
     feed_motor_config.CurrentLimits.SupplyCurrentLimitEnable = true;

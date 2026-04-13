@@ -91,6 +91,7 @@ private:
     // ---- Hardware ----
     std::unique_ptr<ctre::phoenix6::hardware::TalonFX> pivot_motor;
     std::unique_ptr<ctre::phoenix6::hardware::TalonFX> feed_motor;
+    std::unique_ptr<ctre::phoenix6::hardware::TalonFX> feed_motor2;
     std::unique_ptr<ctre::phoenix6::hardware::CANcoder> pivot_encoder;
 
     // ---- Feed Config ----
