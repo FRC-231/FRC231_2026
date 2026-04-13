@@ -1,4 +1,5 @@
 #include "NTSimulationData.h"
+#include <numbers>
 #include <iostream>
 
 namespace NTSimulationData
@@ -71,7 +72,7 @@ void SineWave::update()
 {
     auto now = std::chrono::steady_clock::now();
     double time_since_start = std::chrono::duration_cast<std::chrono::milliseconds>(now - start_time).count() / 1000.0;
-    double new_value = amplitude * std::sin(2 * M_PI * frequency * time_since_start);
+    double new_value = amplitude * std::sin(2 * std::numbers::pi * frequency * time_since_start);
     nt_value->setValue(new_value);
 }
 
