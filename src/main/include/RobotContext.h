@@ -52,8 +52,8 @@ private:
     frc::PS5Controller pilot_controller{0};
     frc::PS5Controller copilot_controller{1};
     frc::XboxController pilot_as_xbox_controller{3};
-    // ctre::phoenix6::hardware::Pigeon2 pigeon{30, "Drivebase"};
-    ctre::phoenix6::hardware::Pigeon2 pigeon{30, "rio"};
+    ctre::phoenix6::hardware::Pigeon2 pigeon{30, "Drivebase"};
+    //ctre::phoenix6::hardware::Pigeon2 pigeon{30, "rio"};
     units::angle::degree_t start_angle{0.0};
     Vision vision{CAMERA_NAMES};
 

@@ -28,7 +28,7 @@
             "drive_id":5,
             "rotate_id":6,
             "encoder_id":21,
-            "encoder_offset":122.1680,
+            "encoder_offset":174.9023,
             "drive_turns_per_meter":0.05952,
             "rotate_feed_forward":{
                 "k_s":0.24,
@@ -55,7 +55,7 @@
             "drive_id":8,
             "rotate_id":7,
             "encoder_id":20,
-            "encoder_offset":-69.5215,
+            "encoder_offset":139.1309,
             "drive_turns_per_meter":0.05952,
             "rotate_feed_forward":{
                 "k_s":0.24,
@@ -82,7 +82,7 @@
             "drive_id":3,
             "rotate_id":4,
             "encoder_id":22,
-            "encoder_offset":99.8438,
+            "encoder_offset":35.3320,
             "drive_turns_per_meter":0.05952,
             "rotate_feed_forward":{
                 "k_s":0.24,
@@ -109,7 +109,7 @@
             "drive_id":1,
             "rotate_id":2,
             "encoder_id":23,
-            "encoder_offset":-137.2852,
+            "encoder_offset":-140.3613,
             "drive_turns_per_meter":0.05952,
             "rotate_feed_forward":{
                 "k_s":0.24,
@@ -140,10 +140,10 @@
         "feed_motor_id":10,
         "feed_motor2_id":17,
         "pivot_encoder_id":24,
-        "feed_intake_voltage":-6.5,
-        "feed_outtake_voltage":6.5,
-        "pivot_max_voltage":6.5,
-        "pivot_min_voltage":-6.5,
+        "feed_intake_voltage":-6.0,
+        "feed_outtake_voltage":6.0,
+        "pivot_max_voltage":4.0,
+        "pivot_min_voltage":-4.0,
         "pivot_max_angle":175,
         "pivot_min_angle":18,
         "pivot_pid":{
@@ -151,12 +151,12 @@
             "k_i":0.0,
             "k_d":0.0
         },
-        "pivot_up_angle": 100,
+        "pivot_up_angle": 20,
         "pivot_down_angle": 130,
         "pivot_wiggle_up_angle": 40,
-        "pivot_wiggle_down_angle": 120,
+        "pivot_wiggle_down_angle": 80,
         "pivot_wiggle_period": 1.0,
-        "pivot_encoder_offset": 200
+        "pivot_encoder_offset": 55
     },
     "shooter":{
         "hopper_motor_id":11,
@@ -172,10 +172,10 @@
             "k_i":0.0012,
             "k_d":0.0000
         },
-        "hopper_voltage":4.5,
-        "hopper_wiggle_low_voltage":3.5,
+        "hopper_voltage":9.0,
+        "hopper_wiggle_low_voltage":1.0,
         "hopper_wiggle_period":0.5,
-        "feed_voltage":6.5,
+        "feed_voltage":9.0,
         "shooter_ff":{
             "k_s":0.185,
             "k_v":0.00142857142,
@@ -186,31 +186,31 @@
         "shooter_min_voltage": -1.0,
         "backspin_amount": 300,
         "at_speed_tolerance":90,
-        "idle_mode_velocity":2600,
-        "snow_blow_target_rpm":3000,
-        "snow_blow_pulse_width":1150,
+        "idle_mode_velocity":2500,
+        "snow_blow_target_rpm":6500,
+        "snow_blow_pulse_width":1800,
         "snow_blow_proportional":500.0,
         "manual_shooter_adjustment_multiplier":300.0,
         "distance_to_shooter_velocity":[
-            [1.6, 2555.0],
-            [2.0, 2660.0],
-            [3.0, 2925.0],
-            [4.0, 3600.0],
-            [5.0, 3900.0]
+            [2.0, 3500.0],
+            [3.0, 4175.0],
+            [3.4, 4525.0],
+            [4.0, 4850.0],
+            [5.0, 5200.0]
         ],
         "distance_to_backspin":[
-            [1.60, 800.0],
-            [2.0, 650.0],
-            [3.0, 600.0],
-            [4.0, 200.0],
+            [2.0, 500.0],
+            [3.0, 300.0],
+            [3.4, 230.0],
+            [4.0, 167.0],
             [5.0, 75.0]
         ],
         "distance_to_pulsewidth":[
-            [1.51, 1300.0],
-            [2.0, 1200.0],
-            [3.0, 1150.0],
-            [4.0, 1050.0],
-            [5.0, 1000.0]
+            [2.0, 1000.0],
+            [3.0, 1200.0],
+            [3.4, 1300.0],
+            [4.0, 1400.0],
+            [5.0, 1500.0]
         ]
     },
     "nt_throttle_interval": 4

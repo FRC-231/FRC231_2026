@@ -17,7 +17,7 @@ ShooterSystem::ShooterSystem(std::shared_ptr<RobotContext> context):
     ctre::phoenix6::configs::TalonFXConfiguration hopper_config{};
     hopper_config.CurrentLimits.SupplyCurrentLimitEnable = true;
     hopper_config.CurrentLimits.SupplyCurrentLimit = 30_A;
-    hopper_config.MotorOutput.Inverted = ctre::phoenix6::signals::InvertedValue::CounterClockwise_Positive;
+    hopper_config.MotorOutput.Inverted = ctre::phoenix6::signals::InvertedValue::Clockwise_Positive;
     hopper_config.MotorOutput.NeutralMode = ctre::phoenix6::signals::NeutralModeValue::Brake;
     hopper_motor->GetConfigurator().Apply(hopper_config);
 
@@ -25,13 +25,14 @@ ShooterSystem::ShooterSystem(std::shared_ptr<RobotContext> context):
     ctre::phoenix6::configs::TalonFXConfiguration hopper_config2{};
     hopper_config2.CurrentLimits.SupplyCurrentLimitEnable = true;
     hopper_config2.CurrentLimits.SupplyCurrentLimit = 30_A;
-    hopper_config2.MotorOutput.Inverted = ctre::phoenix6::signals::InvertedValue::Clockwise_Positive;
+    hopper_config2.MotorOutput.Inverted = ctre::phoenix6::signals::InvertedValue::CounterClockwise_Positive;
     hopper_config2.MotorOutput.NeutralMode = ctre::phoenix6::signals::NeutralModeValue::Brake;
     hopper_motor2->GetConfigurator().Apply(hopper_config2);
 
     ctre::phoenix6::configs::TalonFXConfiguration feed_motor_config{};
     feed_motor_config.CurrentLimits.SupplyCurrentLimitEnable = true;
     feed_motor_config.CurrentLimits.SupplyCurrentLimit = 30_A;
+    feed_motor_config.MotorOutput.Inverted = ctre::phoenix6::signals::InvertedValue::CounterClockwise_Positive;
     feed_motor->GetConfigurator().Apply(feed_motor_config);
 
     hopper_voltage = units::volt_t{shooter_config.hopper_voltage};
@@ -510,6 +511,10 @@ void ShooterSystem::doShooterAutoControl()
     auto new_servo_pulse_width = HighVoltage::cubicHermiteInterpolation<units::meter_t, double>(distance_to_pulsewidth, distance_to_target);
     //Set the servo pulse width directly from the interpolation with adjustment
     servo_pulse_width = static_cast<int>(new_servo_pulse_width + shooter_angle_adjustment);
+    if(servo_pulse_width > servo_max_pulse_width)
+    {
+        servo_pulse_width = servo_max_pulse_width;
+    }
     auto left_channel_id  = static_cast<rev::servohub::ServoChannel::ChannelId>(left_servo_id);
     auto right_channel_id = static_cast<rev::servohub::ServoChannel::ChannelId>(right_servo_id);
     servo_controller->GetServoChannel(left_channel_id).SetPulseWidth(servo_pulse_width);
@@ -548,6 +553,10 @@ void ShooterSystem::doShooterManualAutoControl()
     right_shooter_motor->SetControl(shooter_velocity_request.WithVelocity(units::turns_per_second_t{right_shooter_speed.value() / 60.0 * shooter_gear_ratio}));
     auto left_channel_id  = static_cast<rev::servohub::ServoChannel::ChannelId>(left_servo_id);
     auto right_channel_id = static_cast<rev::servohub::ServoChannel::ChannelId>(right_servo_id);
+    if(servo_pulse_width > servo_max_pulse_width)
+    {
+        servo_pulse_width = servo_max_pulse_width;
+    }
     servo_controller->GetServoChannel(left_channel_id).SetPulseWidth(servo_pulse_width);
     servo_controller->GetServoChannel(right_channel_id).SetPulseWidth(servo_pulse_width);
     left_shooter_target_velocity = left_shooter_speed + manual_shooter_adjustment;
@@ -573,9 +582,7 @@ void ShooterSystem::doShooterSnowBlowControl()
     }
 
     units::meter_t hub_x_position = RobotContext::HUB_POSITION.X();
-    auto snow_blow_velocity = snow_blow_target_rpm
-        + units::revolutions_per_minute_t{(distance_to_wall.value()) * snow_blow_proportional}
-        + manual_shooter_adjustment;
+    auto snow_blow_velocity = snow_blow_target_rpm + manual_shooter_adjustment;
     units::turns_per_second_t target_rps{snow_blow_velocity.value() / 60.0 * shooter_gear_ratio};
     left_shooter_motor->SetControl(shooter_velocity_request.WithVelocity(target_rps));
     right_shooter_motor->SetControl(shooter_velocity_request.WithVelocity(target_rps));

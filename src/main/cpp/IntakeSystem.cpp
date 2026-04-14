@@ -22,14 +22,14 @@ IntakeSystem::IntakeSystem(std::shared_ptr<RobotContext> context):
     ctre::phoenix6::configs::TalonFXConfiguration feed_config{};
     feed_config.CurrentLimits.SupplyCurrentLimitEnable = true;
     feed_config.CurrentLimits.SupplyCurrentLimit = 30_A;
-    feed_config.MotorOutput.Inverted = ctre::phoenix6::signals::InvertedValue::CounterClockwise_Positive;
+    feed_config.MotorOutput.Inverted = ctre::phoenix6::signals::InvertedValue::Clockwise_Positive;
     feed_config.MotorOutput.NeutralMode = ctre::phoenix6::signals::NeutralModeValue::Brake;
     feed_motor->GetConfigurator().Apply(feed_config);
 
     ctre::phoenix6::configs::TalonFXConfiguration feed_config2{};
     feed_config2.CurrentLimits.SupplyCurrentLimitEnable = true;
     feed_config2.CurrentLimits.SupplyCurrentLimit = 30_A;
-    feed_config2.MotorOutput.Inverted = ctre::phoenix6::signals::InvertedValue::Clockwise_Positive;
+    feed_config2.MotorOutput.Inverted = ctre::phoenix6::signals::InvertedValue::CounterClockwise_Positive;
     feed_config2.MotorOutput.NeutralMode = ctre::phoenix6::signals::NeutralModeValue::Brake;
     feed_motor2->GetConfigurator().Apply(feed_config2);
 
@@ -263,12 +263,12 @@ void IntakeSystem::doFeedStop()
 
 void IntakeSystem::doFeedIntake()
 {
-    //feed_motor->SetVoltage(feed_intake_voltage);
+    feed_motor->SetVoltage(feed_intake_voltage);
 }
 
 void IntakeSystem::doFeedOuttake()
 {
-    //feed_motor->SetVoltage(feed_outtake_voltage);
+    feed_motor->SetVoltage(feed_outtake_voltage);
 }
 
 void IntakeSystem::doPivotStop()
@@ -285,12 +285,12 @@ void IntakeSystem::doPivotWiggle()
     pivot_pid->SetSetpoint(setpoint.value());
     units::volt_t power = units::volt_t{pivot_pid->Calculate(getPivotAngle().value())};
     power = HighVoltage::clamp(pivot_min_voltage, pivot_max_voltage, power);
-    //pivot_motor->SetVoltage(power);
+    pivot_motor->SetVoltage(power);
 }
 
 void IntakeSystem::doHalfSpeed()
 {
-   // feed_motor->SetVoltage(feed_intake_voltage/2);
+   feed_motor->SetVoltage(feed_intake_voltage/2);
 }
 
 void IntakeSystem::doPivotMove()
@@ -321,7 +321,7 @@ void IntakeSystem::doPivotMove()
         power = std::max(power, 0_V);
     }
     
-    //pivot_motor->SetVoltage(power);
+    pivot_motor->SetVoltage(power);
 }
 
 // ==== Private: Internal Helpers ====
