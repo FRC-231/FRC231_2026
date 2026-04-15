@@ -41,7 +41,7 @@ function autonomous()
     drive_system:followPath(4.0,
     {{7.30, 3.20},
     {7.70, 2.30},
-    {8.15, 0.80}},
+    {8.15, 0.30}},
     90.0)
     waitUntilPathFinished() --Curve towards the fuel in neutral zone
     intake_system:feedStop()
