@@ -180,6 +180,7 @@
         "snow_blow_target_rpm": 1000,
         "snow_blow_pulse_width": 1250,
         "snow_blow_proportional": 0.0,
-        "manual_shooter_adjustment_multiplier": 1.0
+        "manual_shooter_adjustment_multiplier": 1.0,
+        "shooter_ramp_acceleration": 3000.0
     }
 }

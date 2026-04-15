@@ -62,6 +62,11 @@ void from_json(const nlohmann::json &j, ShooterConfig &shooter)
     j.at(ShooterConfig::SNOW_BLOW_PULSE_WIDTH).get_to(shooter.snow_blow_pulse_width);
     j.at(ShooterConfig::SNOW_BLOW_PROPORTIONAL).get_to(shooter.snow_blow_proportional);
     j.at(ShooterConfig::MANUAL_SHOOTER_ADJUSTMENT_MULTIPLIER).get_to(shooter.manual_shooter_adjustment_multiplier);
+    // Optional — defaults to 0 (no ramp) if absent
+    if (j.contains(ShooterConfig::SHOOTER_RAMP_ACCELERATION))
+    {
+        j.at(ShooterConfig::SHOOTER_RAMP_ACCELERATION).get_to(shooter.shooter_ramp_acceleration);
+    }
     //Load the distance to shooter velocity map. Will be an array of arrays, where the inner arrays have 2 elements: distance and velocity
     std::vector<std::vector<double>> distance_to_velocity_vec;
     j.at(ShooterConfig::DISTANCE_TO_SHOOTER_VELOCITY).get_to(distance_to_velocity_vec);

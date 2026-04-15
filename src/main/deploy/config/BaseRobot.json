@@ -191,6 +191,7 @@
         "snow_blow_pulse_width":1800,
         "snow_blow_proportional":500.0,
         "manual_shooter_adjustment_multiplier":300.0,
+        "shooter_ramp_acceleration": 3000.0,
         "distance_to_shooter_velocity":[
             [2.0, 3500.0],
             [3.0, 4175.0],

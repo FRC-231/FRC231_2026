@@ -143,6 +143,14 @@ ShooterSystem::ShooterSystem(std::shared_ptr<RobotContext> context):
     feed_motor->GetConfigurator().Apply(shooter_feed_config);
     backspin_amount = units::revolutions_per_minute_t{shooter_config.backspin_amount};
 
+    // Ramp: convert RPM/s acceleration to motor-shaft turns/s per 20 ms loop.
+    // shooter_ramp_acceleration of 0 means no ramp (instant).
+    if (shooter_config.shooter_ramp_acceleration > 0.0)
+    {
+        double ramp_rpm_per_loop = shooter_config.shooter_ramp_acceleration / 50.0; // 50 Hz loop
+        shooter_ramp_rate_tps_per_loop = ramp_rpm_per_loop / 60.0 * shooter_gear_ratio;
+    }
+
     //Load distance to velocity map
     for(const auto& pair : shooter_config.distance_to_shooter_velocity)
     {
@@ -434,11 +442,45 @@ void ShooterSystem::doShooterVoltageControl()
 }
 
 
+void ShooterSystem::setShooterVelocityControl(units::turns_per_second_t left_rps,
+                                               units::turns_per_second_t right_rps)
+{
+    if (shooter_ramp_rate_tps_per_loop > 0.0)
+    {
+        // Ramp left
+        double left_error = left_rps.value() - left_ramped_rps.value();
+        if (std::abs(left_error) <= shooter_ramp_rate_tps_per_loop)
+            left_ramped_rps = left_rps;
+        else
+            left_ramped_rps = units::turns_per_second_t{left_ramped_rps.value() + std::copysign(shooter_ramp_rate_tps_per_loop, left_error)};
+
+        // Ramp right
+        double right_error = right_rps.value() - right_ramped_rps.value();
+        if (std::abs(right_error) <= shooter_ramp_rate_tps_per_loop)
+            right_ramped_rps = right_rps;
+        else
+            right_ramped_rps = units::turns_per_second_t{right_ramped_rps.value() + std::copysign(shooter_ramp_rate_tps_per_loop, right_error)};
+    }
+    else
+    {
+        left_ramped_rps  = left_rps;
+        right_ramped_rps = right_rps;
+    }
+
+    left_shooter_motor->SetControl(shooter_velocity_request.WithVelocity(left_ramped_rps));
+    right_shooter_motor->SetControl(shooter_velocity_request.WithVelocity(right_ramped_rps));
+}
+
 void ShooterSystem::doShooterStop()
 {
     left_shooter_motor->SetVoltage(0_V);
     right_shooter_motor->SetVoltage(0_V);
     feed_motor->SetVoltage(0_V);
+    // Reset ramp state and targets so the next enable starts from rest
+    left_ramped_rps  = units::turns_per_second_t{0};
+    right_ramped_rps = units::turns_per_second_t{0};
+    left_shooter_target_velocity  = 0_rpm;
+    right_shooter_target_velocity = 0_rpm;
 }
 
 units::revolutions_per_minute_t ShooterSystem::getLeftShooterVelocity()
@@ -492,8 +534,7 @@ void ShooterSystem::doShooterSpeedControl()
     units::turns_per_second_t left_rps  = units::turns_per_second_t{left_shooter_target_velocity.value()  / 60.0 * shooter_gear_ratio};
     units::turns_per_second_t right_rps = units::turns_per_second_t{right_shooter_target_velocity.value() / 60.0 * shooter_gear_ratio};
 
-    left_shooter_motor->SetControl(shooter_velocity_request.WithVelocity(left_rps));
-    right_shooter_motor->SetControl(shooter_velocity_request.WithVelocity(right_rps));
+    setShooterVelocityControl(left_rps, right_rps);
 }
 
 void ShooterSystem::doShooterAutoControl()
@@ -529,8 +570,9 @@ void ShooterSystem::doShooterAutoControl()
         right_shooter_speed -= backspin_velocity/2;
         left_shooter_speed += backspin_velocity/2;
     }
-    left_shooter_motor->SetControl(shooter_velocity_request.WithVelocity(units::turns_per_second_t{left_shooter_speed.value() / 60.0 * shooter_gear_ratio}));
-    right_shooter_motor->SetControl(shooter_velocity_request.WithVelocity(units::turns_per_second_t{right_shooter_speed.value() / 60.0 * shooter_gear_ratio}));
+    setShooterVelocityControl(
+        units::turns_per_second_t{left_shooter_speed.value()  / 60.0 * shooter_gear_ratio},
+        units::turns_per_second_t{right_shooter_speed.value() / 60.0 * shooter_gear_ratio});
     left_shooter_target_velocity = left_shooter_speed + manual_shooter_adjustment;
     right_shooter_target_velocity = right_shooter_speed + manual_shooter_adjustment;
 }
@@ -549,8 +591,9 @@ void ShooterSystem::doShooterManualAutoControl()
         right_shooter_speed -= (backspin_amount + backspin_adjustment)/2;
         left_shooter_speed += (backspin_amount + backspin_adjustment)/2;
     }
-    left_shooter_motor->SetControl(shooter_velocity_request.WithVelocity(units::turns_per_second_t{left_shooter_speed.value() / 60.0 * shooter_gear_ratio}));
-    right_shooter_motor->SetControl(shooter_velocity_request.WithVelocity(units::turns_per_second_t{right_shooter_speed.value() / 60.0 * shooter_gear_ratio}));
+    setShooterVelocityControl(
+        units::turns_per_second_t{left_shooter_speed.value()  / 60.0 * shooter_gear_ratio},
+        units::turns_per_second_t{right_shooter_speed.value() / 60.0 * shooter_gear_ratio});
     auto left_channel_id  = static_cast<rev::servohub::ServoChannel::ChannelId>(left_servo_id);
     auto right_channel_id = static_cast<rev::servohub::ServoChannel::ChannelId>(right_servo_id);
     if(servo_pulse_width > servo_max_pulse_width)
@@ -570,8 +613,10 @@ void ShooterSystem::doShooterIdleControl()
     auto right_channel_id = static_cast<rev::servohub::ServoChannel::ChannelId>(right_servo_id);
     servo_controller->GetServoChannel(left_channel_id).SetPulseWidth(servo_center_pulse_width);
     servo_controller->GetServoChannel(right_channel_id).SetPulseWidth(servo_center_pulse_width);
-    left_shooter_motor->SetControl(shooter_velocity_request.WithVelocity(units::turns_per_second_t{idle_mode_velocity.value() / 60.0 * shooter_gear_ratio}));
-    right_shooter_motor->SetControl(shooter_velocity_request.WithVelocity(units::turns_per_second_t{idle_mode_velocity.value() / 60.0 * shooter_gear_ratio}));
+    units::turns_per_second_t idle_rps{idle_mode_velocity.value() / 60.0 * shooter_gear_ratio};
+    setShooterVelocityControl(idle_rps, idle_rps);
+    left_shooter_target_velocity  = idle_mode_velocity;
+    right_shooter_target_velocity = idle_mode_velocity;
 }
 
 void ShooterSystem::doShooterSnowBlowControl()
@@ -584,8 +629,7 @@ void ShooterSystem::doShooterSnowBlowControl()
     units::meter_t hub_x_position = RobotContext::HUB_POSITION.X();
     auto snow_blow_velocity = snow_blow_target_rpm + manual_shooter_adjustment;
     units::turns_per_second_t target_rps{snow_blow_velocity.value() / 60.0 * shooter_gear_ratio};
-    left_shooter_motor->SetControl(shooter_velocity_request.WithVelocity(target_rps));
-    right_shooter_motor->SetControl(shooter_velocity_request.WithVelocity(target_rps));
+    setShooterVelocityControl(target_rps, target_rps);
     left_shooter_target_velocity = snow_blow_velocity;
     right_shooter_target_velocity = snow_blow_velocity;
     auto left_channel_id  = static_cast<rev::servohub::ServoChannel::ChannelId>(left_servo_id);

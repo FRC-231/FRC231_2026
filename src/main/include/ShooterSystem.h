@@ -83,6 +83,12 @@ private:
     void doShooterIdleControl();
     void doShooterSnowBlowControl();
 
+    /// Applies velocity to both shooter motors through the ramp limiter.
+    /// @param left_rps  Desired left motor shaft speed (turns/s).
+    /// @param right_rps Desired right motor shaft speed (turns/s).
+    void setShooterVelocityControl(units::turns_per_second_t left_rps,
+                                   units::turns_per_second_t right_rps);
+
     void doLoaderStop();
     void doLoaderLoad();
     void doLoaderUnload();
@@ -134,6 +140,12 @@ private:
     double snow_blow_proportional{0.0};
     units::revolutions_per_minute_t manual_shooter_adjustment_multiplier{0.0};
     units::revolutions_per_minute_t manual_shooter_adjustment{0.0};
+
+    // Ramp state — current ramped output sent to the motors (motor-shaft turns/s)
+    units::turns_per_second_t left_ramped_rps{0};
+    units::turns_per_second_t right_ramped_rps{0};
+    // Max acceleration in motor-shaft turns/s per loop (computed from config at init)
+    double shooter_ramp_rate_tps_per_loop{0.0};
 
     HighVoltage::NetworkTableValue<double> nt_hopper_voltage{SHOOTER_TABLE_NAME + "/" + "hopper_voltage", 0.0};
     HighVoltage::NetworkTableValue<double> nt_feed_voltage{SHOOTER_TABLE_NAME + "/" + "feed_voltage", 0.0};

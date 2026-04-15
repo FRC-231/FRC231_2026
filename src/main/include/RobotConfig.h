@@ -101,6 +101,7 @@ struct ShooterConfig
     static inline const std::string SNOW_BLOW_PULSE_WIDTH = "snow_blow_pulse_width";
     static inline const std::string SNOW_BLOW_PROPORTIONAL = "snow_blow_proportional";
     static inline const std::string MANUAL_SHOOTER_ADJUSTMENT_MULTIPLIER = "manual_shooter_adjustment_multiplier";
+    static inline const std::string SHOOTER_RAMP_ACCELERATION = "shooter_ramp_acceleration";
 
 
     uint8_t hopper_motor_id;
@@ -127,6 +128,7 @@ struct ShooterConfig
     int snow_blow_pulse_width;
     double snow_blow_proportional;
     double manual_shooter_adjustment_multiplier;
+    double shooter_ramp_acceleration; // RPM per second; 0 = no ramp (instant)
     std::map<double, double> distance_to_shooter_velocity;
     std::map<double, double> distance_to_backspin;
     std::map<double, double> distance_to_pulsewidth;
