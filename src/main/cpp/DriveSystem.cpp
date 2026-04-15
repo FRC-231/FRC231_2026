@@ -352,6 +352,10 @@ bool DriveSystem::isLockedOn()
 void DriveSystem::setOdometry(frc::Pose2d pose)
 {
     context->setStartAngle(context->getPigeon().GetYaw().GetValue() - pose.Rotation().Degrees());
+    // Immediately update the cached angle so that any getRobotAngleInDegrees()
+    // call made before the next Periodic() loop (e.g. the driveTo that follows
+    // setOdometry in a Lua script) uses the correct heading.
+    cached_robot_angle_ = pose.Rotation().Degrees();
     odometry->ResetPosition(frc::Rotation2d(getRobotAngleInDegrees()),
     std::array<frc::SwerveModulePosition,4>{
             front_left_module->getModulePosition(),
