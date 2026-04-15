@@ -114,7 +114,7 @@ private:
     units::volt_t min_shooter_voltage;
     int servo_pulse_width = 1000;
     int servo_center_pulse_width = 1000;
-    int servo_max_pulse_width = 1875;
+    int servo_max_pulse_width = 1900;
     units::meter_t distance_to_target{0_m};
     units::meter_t distance_to_wall{0_m};
     std::function<units::meter_t()> distance_update_callback;

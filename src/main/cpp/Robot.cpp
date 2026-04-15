@@ -252,7 +252,7 @@ void Robot::TeleopPeriodic()
         }
         else
         {
-            shooter_system->setShooterMode(ShooterSystem::ShooterMode::AUTO);
+            shooter_system->setShooterMode(ShooterSystem::ShooterMode::MANUAL_AUTO);
         }
     }
     else
@@ -264,7 +264,7 @@ void Robot::TeleopPeriodic()
     if(load_shooter)
     {
         shooter_system->setLoaderMode(ShooterSystem::LoaderMode::LOAD);
-        // intake_system->feedIntake();
+        intake_system->feedIntake();
     }
     else
     {
