@@ -23,11 +23,11 @@ end
 bump_speed = 2.5
 rotate_speed = 3.5
 travel_speed = 3.5
-intake_speed = 2.75
+intake_speed = 2.5
 
 --Coordinates
 trench_y = -3.30
-bump_y = -1.55
+bump_y = -1.60
 
 function autonomous()
     print("CurvedDoubleTakeRight autonomous script running")
@@ -36,14 +36,16 @@ function autonomous()
     drive_system:driveTo(6.20, trench_y, -180.0) --Drive a bit forward past trench
     waitUntilDistance(0.0762)
     intake_system:pivotDown()
-    -- intake_system:feedIntake()
+    intake_system:feedIntake()
     drive_system:setMaxSpeed(intake_speed)
     drive_system:followPath(4.0,
     {{7.30, -3.20},
     {7.70, -2.30},
-    {8.15, -0.80}},
+    {8.15, 0.10}},
     -90.0)
     waitUntilPathFinished() --Curve towards the fuel in neutral zone
+    intake_system:feedStop()
+    intake_system:pivotUp()
     drive_system:driveTo(7.75, bump_y, -90.0) --Align with bump
     waitUntilDistance(0.0762)
     drive_system:rotateTo(45)
@@ -63,23 +65,27 @@ function autonomous()
         return shooter_system:isAtSpeed()--Waiting until shooter is at right speed
     end)
     shooter_system:loaderLoad()--Activate hopper
+    intake_system:feedIntake()
     control:sleep(3.0) --This is how long we're shooting
     shooter_system:loaderStop()
+    intake_system:feedStop()
     shooter_system:stopShooter()
     drive_system:driveTo(3.3, bump_y, 45.0) --Drive in front bump
     waitUntilDistance(0.0762)
     drive_system:rotateTo(-150)
     waitUntilRotationError(2)
-    control:sleep(0.2)
+    control:sleep(0.5)
     drive_system:setMaxSpeed(bump_speed)
-    drive_system:driveTo(6.9, bump_y, -150.0) --Drive across of bump
+    drive_system:driveTo(6.5, bump_y, -150.0) --Drive across of bump
     waitUntilDistance(0.0762)
     drive_system:setMaxSpeed(travel_speed)
-    drive_system:driveTo(6.0, bump_y, -150.0) --Drive across of bump
+    drive_system:driveTo(6.9, bump_y, -150.0) --Drive in front of bump
     waitUntilDistance(0.0762)
+    intake_system:pivotDown()
+    intake_system:feedIntake()
     drive_system:setMaxSpeed(intake_speed)
     drive_system:followPath(4.0,
-    {{6.4, -0.4},
+    {{6.9, -0.4},
     {7.0, 0.45},
     {7.2, 0.8},
     {7.7, 0.6}},
