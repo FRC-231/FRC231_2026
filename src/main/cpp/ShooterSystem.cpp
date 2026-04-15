@@ -424,6 +424,12 @@ void ShooterSystem::stopShooter()
     setShooterMode(ShooterMode::STOP);
 }
 
+void ShooterSystem::shooterIdle()
+{
+    setShooterMode(ShooterMode::IDLE);
+}
+
+
 void ShooterSystem::autoShoot()
 {
     setShooterMode(ShooterMode::AUTO);
@@ -718,7 +724,7 @@ void ShooterSystem::addToLuaState(Keeko::ThreadedScript& script)
         .beginClass<ShooterSystem> ("ShooterSystem")
             .addFunction("setShooterVoltages", &ShooterSystem::setShooterVoltagesLua)
             .addFunction("setShooterTargetVelocities", &ShooterSystem::setShooterTargetVelocitiesLua)
-            .addFunction("stopShooter", &ShooterSystem::stopShooter)
+            .addFunction("stopShooter", &ShooterSystem::shooterIdle)
             .addFunction("autoShoot", &ShooterSystem::autoShoot)
             .addFunction("snowBlow", &ShooterSystem::snowBlow)
             .addFunction("loaderLoad", &ShooterSystem::loaderLoad)

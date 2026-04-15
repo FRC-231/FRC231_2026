@@ -23,7 +23,7 @@ end
 bump_speed = 2.5
 rotate_speed = 3.5
 travel_speed = 3.5
-intake_speed = 2.75
+intake_speed = 2.5
 
 --Coordinates
 trench_y = 3.30
@@ -41,7 +41,7 @@ function autonomous()
     drive_system:followPath(4.0,
     {{7.30, 3.20},
     {7.70, 2.30},
-    {8.15, 0.30}},
+    {8.15, -0.10}},
     90.0)
     waitUntilPathFinished() --Curve towards the fuel in neutral zone
     intake_system:feedStop()
@@ -65,8 +65,10 @@ function autonomous()
         return shooter_system:isAtSpeed()--Waiting until shooter is at right speed
     end)
     shooter_system:loaderLoad()--Activate hopper
+    intake_system:feedIntake()
     control:sleep(3.0) --This is how long we're shooting
     shooter_system:loaderStop()
+    intake_system:feedStop()
     shooter_system:stopShooter()
     drive_system:driveTo(3.3, bump_y, -45.0) --Drive in front bump
     waitUntilDistance(0.0762)

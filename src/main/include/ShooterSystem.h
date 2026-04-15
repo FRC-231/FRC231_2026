@@ -46,6 +46,7 @@ public:
     void stopShooter();
     void autoShoot();
     void snowBlow();
+    void shooterIdle();
     void setShooterVoltages(units::volt_t left_voltage, units::volt_t right_voltage);
     void setShooterVoltagesLua(double left_voltage, double right_voltage);
     void setShooterTargetVelocities(units::revolutions_per_minute_t left_velocity, units::revolutions_per_minute_t right_velocity);
