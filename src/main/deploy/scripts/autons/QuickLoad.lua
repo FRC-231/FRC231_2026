@@ -24,8 +24,9 @@ function autonomous()
     drive_system:setOdometry(4.4, 3.40, 180)--Starting position at trench
     drive_system:driveTo(6.39, 3.36, 180)--Drive thru trench
     waitUntilDistance(0.0762)
-    intake_system:feedIntake()
     intake_system:pivotDown()
+    control:sleep(0.5)
+    intake_system:feedIntake()
     drive_system:driveTo(7.56, 3.36, 90)--Drive towards the fuel
     waitUntilDistance(0.0762)
     drive_system:setMaxSpeed(intake_speed)

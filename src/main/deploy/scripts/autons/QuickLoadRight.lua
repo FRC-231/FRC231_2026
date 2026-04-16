@@ -60,6 +60,7 @@ function autonomous()
     control:sleep(1.5)
     shooter_system:loaderStop()
     intake_system:pivotDown()
+    control:sleep(0.5)
     --END OF COMMON
     drive_system:setMaxSpeed(intake_speed)
     drive_system:driveTo(1.5, -2.75, 45.0)--drive towards the lever to pick up fuel

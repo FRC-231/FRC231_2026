@@ -36,6 +36,7 @@ function autonomous()
     drive_system:driveTo(6.20, trench_y, -180.0) --Drive a bit forward past trench
     waitUntilDistance(0.0762)
     intake_system:pivotDown()
+    control:sleep(0.5)
     intake_system:feedIntake()
     drive_system:setMaxSpeed(intake_speed)
     drive_system:followPath(4.0,
@@ -82,6 +83,7 @@ function autonomous()
     drive_system:driveTo(6.9, bump_y, -150.0) --Drive in front of bump
     waitUntilDistance(0.0762)
     intake_system:pivotDown()
+    control:sleep(0.5)
     intake_system:feedIntake()
     drive_system:setMaxSpeed(intake_speed)
     drive_system:followPath(4.0,

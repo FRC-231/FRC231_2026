@@ -31,7 +31,7 @@ function autonomous()
         return shooter_system:isAtSpeed()--Waiting until shooter is at right speed
     end)
     shooter_system:loaderLoad()--Activate hopper
-    intake_system:feedIntake()
+    -- intake_system:feedIntake()
     control:sleep(5.0)
     drive_system:stop()
 end

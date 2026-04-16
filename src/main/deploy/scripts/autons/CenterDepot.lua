@@ -19,7 +19,7 @@ travel_speed = 3.0
 intake_speed = 2.0
 
 function autonomous()
-    drive_system:setMaxSpeed(travel_speed)
+    drive_system:setMaxSpeed(2.5)
     drive_system:setMinPercentage(0.5)
     drive_system:setOdometry(3.52, 0, 0)--Starting position at trench
     drive_system:driveTo(3.3, 1.93, 0.0)--Drive back
@@ -27,6 +27,7 @@ function autonomous()
     drive_system:driveTo(1.14, 1.93, 0.0)--Drive in front of fuel depot
     waitUntilDistance(0.0762)
     intake_system:pivotDown()
+    control:sleep(0.5)
     intake_system:feedIntake()
     drive_system:setMaxSpeed(intake_speed)
     drive_system:driveTo(0.85, 1.93, -0.0)--Drive into depot
