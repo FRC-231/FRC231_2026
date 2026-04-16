@@ -173,7 +173,7 @@
             "k_d":0.0000
         },
         "hopper_voltage":9.0,
-        "hopper_wiggle_low_voltage":1.0,
+        "hopper_wiggle_low_voltage":9.0,
         "hopper_wiggle_period":0.5,
         "feed_voltage":9.0,
         "shooter_ff":{

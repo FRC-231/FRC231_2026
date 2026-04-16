@@ -703,8 +703,8 @@ void ShooterSystem::doLoaderStop()
 void ShooterSystem::doLoaderLoad()
 {
     double current_time = frc::Timer::GetFPGATimestamp().value();
-    // Sine wave oscillates between hopper_wiggle_low_voltage and hopper_voltage.
-    // sin() ranges from -1 to 1, so we map it to [0, 1] and lerp between the two voltages.
+            // Sine wave oscillates between hopper_wiggle_low_voltage and hopper_voltage.
+            // sin() ranges from -1 to 1, so we map it to [0, 1] and lerp between the two voltages.
     double phase = (2.0 * std::numbers::pi / hopper_wiggle_period) * current_time;
     double t = (std::sin(phase) + 1.0) / 2.0; // [0, 1]
     units::volt_t current_hopper_voltage = hopper_wiggle_low_voltage + t * (hopper_voltage - hopper_wiggle_low_voltage);
