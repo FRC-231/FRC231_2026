@@ -15,11 +15,11 @@ end
 
 bump_speed = 2.5
 rotate_speed = 3.5
-travel_speed = 4.0
+travel_speed = 3.0
 intake_speed = 1.0
 
 function autonomous()
-    drive_system:setMaxSpeed(travel_speed)
+    drive_system:setMaxSpeed(bump_speed)
     drive_system:setMinPercentage(0.5)
     drive_system:setOdometry(3.52, 0.0, 0.0)--Starting position at hub
     shooter_system:autoShoot()--Start shooter wheels
@@ -31,7 +31,7 @@ function autonomous()
         return shooter_system:isAtSpeed()--Waiting until shooter is at right speed
     end)
     shooter_system:loaderLoad()--Activate hopper
-    -- intake_system:pivotWiggle()
+    intake_system:feedIntake()
     control:sleep(5.0)
     drive_system:stop()
 end

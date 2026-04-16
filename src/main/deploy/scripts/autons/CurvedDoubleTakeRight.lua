@@ -27,7 +27,7 @@ intake_speed = 2.5
 
 --Coordinates
 trench_y = -3.30
-bump_y = -1.60
+bump_y = -1.55
 
 function autonomous()
     print("CurvedDoubleTakeRight autonomous script running")

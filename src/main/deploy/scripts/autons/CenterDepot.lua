@@ -15,7 +15,7 @@ end
 
 bump_speed = 2.5
 rotate_speed = 3.5
-travel_speed = 4.0
+travel_speed = 3.0
 intake_speed = 2.0
 
 function autonomous()
@@ -43,7 +43,7 @@ function autonomous()
     intake_system:feedHalfSpeed()
     intake_system:pivotUp()
     drive_system:setMaxSpeed(travel_speed)
-    drive_system:driveTo(2.49, 1.09, -45.0)
+    drive_system:driveTo(2.49, 1.50, -45.0)
     waitUntilDistance(0.0762)
     shooter_system:autoShoot()
     drive_system:setAutoAA()--Auto aim to hub
@@ -52,10 +52,12 @@ function autonomous()
         return shooter_system:isAtSpeed()--Waiting until shooter is at right speed
     end)
     shooter_system:loaderLoad()
+    intake_system:feedIntake()
     control:sleep(1.5)
     intake_system:pivotUp()
     control:sleep(1.5)
     shooter_system:stopShooter()
     shooter_system:loaderStop()
+    intake_system:feedStop()
     drive_system:stop()
 end
