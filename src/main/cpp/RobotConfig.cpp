@@ -19,6 +19,7 @@ void from_json(const nlohmann::json &j, IntakeConfig &intake)
 {
     j.at(IntakeConfig::PIVOT_MOTOR_ID).get_to(intake.pivot_motor_id);
     j.at(IntakeConfig::FEED_MOTOR_ID).get_to(intake.feed_motor_id);
+    j.at(IntakeConfig::FEED_MOTOR2_ID).get_to(intake.feed_motor2_id);
     j.at(IntakeConfig::PIVOT_ENCODER_ID).get_to(intake.pivot_encoder_id);
     j.at(IntakeConfig::FEED_INTAKE_VOLTAGE).get_to(intake.feed_intake_voltage);
     j.at(IntakeConfig::FEED_OUTTAKE_VOLTAGE).get_to(intake.feed_outtake_voltage);
