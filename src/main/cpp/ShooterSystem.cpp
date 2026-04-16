@@ -697,6 +697,7 @@ void ShooterSystem::setManualShooterAdjustmentValue(double adjustment)
 void ShooterSystem::doLoaderStop()
 {
     hopper_motor->SetVoltage(0_V);
+    hopper_motor2->SetVoltage(0_V);
     feed_motor->SetVoltage(0_V);
 }
 
@@ -709,12 +710,14 @@ void ShooterSystem::doLoaderLoad()
     double t = (std::sin(phase) + 1.0) / 2.0; // [0, 1]
     units::volt_t current_hopper_voltage = hopper_wiggle_low_voltage + t * (hopper_voltage - hopper_wiggle_low_voltage);
     hopper_motor->SetVoltage(-current_hopper_voltage);
+    hopper_motor2->SetVoltage(-current_hopper_voltage);
     feed_motor->SetVoltage(feed_voltage);
 }
 
 void ShooterSystem::doLoaderUnload()
 {
     hopper_motor->SetVoltage(hopper_voltage);
+    hopper_motor2->SetVoltage(hopper_voltage);
     feed_motor->SetVoltage(-feed_voltage);
 }
 

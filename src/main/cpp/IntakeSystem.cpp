@@ -259,16 +259,19 @@ std::string IntakeSystem::pivotModeToString(PivotMode mode)
 void IntakeSystem::doFeedStop()
 {
     feed_motor->SetVoltage(0_V);
+    feed_motor2->SetVoltage(0_V);
 }
 
 void IntakeSystem::doFeedIntake()
 {
     feed_motor->SetVoltage(feed_intake_voltage);
+    feed_motor2->SetVoltage(feed_intake_voltage);
 }
 
 void IntakeSystem::doFeedOuttake()
 {
     feed_motor->SetVoltage(feed_outtake_voltage);
+    feed_motor2->SetVoltage(feed_outtake_voltage);
 }
 
 void IntakeSystem::doPivotStop()
@@ -291,6 +294,7 @@ void IntakeSystem::doPivotWiggle()
 void IntakeSystem::doHalfSpeed()
 {
    feed_motor->SetVoltage(feed_intake_voltage/2);
+   feed_motor2->SetVoltage(feed_intake_voltage/2);
 }
 
 void IntakeSystem::doPivotMove()
