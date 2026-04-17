@@ -21,4 +21,6 @@ namespace Paths
     inline const std::filesystem::path CURVE_TEST_AUTON = AUTON_DIRECTORY/"CurveTest.lua";
     inline const std::filesystem::path CURVED_DOUBLE_TAKE_LEFT_AUTON = AUTON_DIRECTORY/"CurvedDoubleTakeLeft.lua";
     inline const std::filesystem::path CURVED_DOUBLE_TAKE_RIGHT_AUTON = AUTON_DIRECTORY/"CurvedDoubleTakeRight.lua";
+    inline const std::filesystem::path CURVED_BUMP_LEFT_AUTON = AUTON_DIRECTORY/"CurvedBumpLeft.Lua";
+    inline const std::filesystem::path CURVED_BUMP_RIGHT_AUTON = AUTON_DIRECTORY/"CurvedBumpRight.lua";
 }
