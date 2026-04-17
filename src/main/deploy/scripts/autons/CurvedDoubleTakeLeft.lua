@@ -7,6 +7,15 @@ function waitUntilPathFinished()
     end)
 end
 
+function waitUntilPathFinishedTimeout(timeout)
+    local elapsed = 0.0
+    local dt = 0.02
+    while not drive_system:isTrajectoryDone() and elapsed < timeout do
+        control:sleep(dt)
+        elapsed = elapsed + dt
+    end
+end
+
 function waitUntilRotationError(angle)
     control:waitUntilTrue( function ()
             return math.abs(drive_system:getRotationError()) < angle
@@ -44,7 +53,7 @@ function autonomous()
     {7.70, 2.30},
     {8.15, -0.10}},
     90.0)
-    waitUntilPathFinished() --Curve towards the fuel in neutral zone
+    waitUntilPathFinishedTimeout(5.0) --Curve towards the fuel in neutral zone
     intake_system:feedStop()
     intake_system:pivotUp()
     drive_system:driveTo(7.75, bump_y, 90.0) --Align with bump
@@ -92,14 +101,14 @@ function autonomous()
     {7.2, -0.8},
     {7.7, -0.6}},
     -175.0)
-    waitUntilPathFinished()
+    waitUntilPathFinishedTimeout(5.0)
     drive_system:followPath(4.0,
     {{8.25, -0.85},
     {8.95, 0.35},
     {8.9, 1.4},
     {8.6, 1.75}},
     -70.0)
-    waitUntilPathFinished()
+    waitUntilPathFinishedTimeout(5.0)
 
     drive_system:stop()
 end
