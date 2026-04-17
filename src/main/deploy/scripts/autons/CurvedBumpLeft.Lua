@@ -31,18 +31,20 @@ bump_y = 1.47
 
 function autonomous()
     print("CurvedDoubleTakeLeft autonomous script running")
-    drive_system:setOdometry(3.36, bump_y, 180.0) --Start under the trench
-    drive_system:setMaxSpeed(travel_speed)
-    drive_system:driveTo(6.20, trench_y, 180.0) --Drive a bit forward past trench
+    drive_system:setOdometry(3.36, bump_y, -45.0) --Start at the bump, angled -45.0
+    drive_system:setMaxSpeed(bump_speed)
+    drive_system:driveTo(6.20, bump_y, -45.0) --Drive over bump
     waitUntilDistance(0.0762)
+    drive_system:rotateTo(180.0) -- Rotate so shooter faces driverstation
+    waitUntilRotationError(2)
     intake_system:pivotDown()
     control:sleep(0.5)
     intake_system:feedIntake()
     drive_system:setMaxSpeed(intake_speed)
     drive_system:followPath(4.0,
-    {{7.30, 3.20},
-    {7.70, 2.30},
-    {8.15, -0.10}},
+    {{7.15, 1.20},
+    {7.65, 0.60},
+    {7.80, -0.20}},
     90.0)
     waitUntilPathFinished() --Curve towards the fuel in neutral zone
     intake_system:feedStop()
@@ -55,7 +57,7 @@ function autonomous()
     waitUntilDistance(0.0762)
     drive_system:setMaxSpeed(bump_speed)
     shooter_system:autoShoot()--Start shooter wheels before going over bump
-    drive_system:driveTo(3.3, bump_y, -45.0) --Drive across bump
+    drive_system:driveTo(3.2, bump_y, -45.0) --Drive across bump
     waitUntilDistance(0.0762)
     drive_system:setMaxSpeed(travel_speed)
     drive_system:driveTo(2.5, 1.6, -45.0)-- Drive to shooting position
@@ -71,13 +73,13 @@ function autonomous()
     shooter_system:loaderStop()
     intake_system:feedStop()
     shooter_system:stopShooter()
-    drive_system:driveTo(3.3, bump_y, -45.0) --Drive in front bump
+    drive_system:driveTo(3.2, 1.52, -45.0) --Drive in front bump
     waitUntilDistance(0.0762)
     drive_system:rotateTo(150)
     waitUntilRotationError(2)
     control:sleep(0.5)
     drive_system:setMaxSpeed(bump_speed)
-    drive_system:driveTo(6.5, bump_y, 150.0) --Drive across of bump
+    drive_system:driveTo(6.5, 1.52, 150.0) --Drive across of bump
     waitUntilDistance(0.0762)
     drive_system:setMaxSpeed(travel_speed)
     drive_system:driveTo(6.9, bump_y, 150.0) --Drive in front of bump

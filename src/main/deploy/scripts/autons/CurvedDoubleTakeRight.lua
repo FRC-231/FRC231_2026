@@ -71,13 +71,13 @@ function autonomous()
     shooter_system:loaderStop()
     intake_system:feedStop()
     shooter_system:stopShooter()
-    drive_system:driveTo(3.3, bump_y, 45.0) --Drive in front bump
+    drive_system:driveTo(3.3, -1.52, 45.0) --Drive in front bump
     waitUntilDistance(0.0762)
     drive_system:rotateTo(-150)
     waitUntilRotationError(2)
     control:sleep(0.5)
     drive_system:setMaxSpeed(bump_speed)
-    drive_system:driveTo(6.5, bump_y, -150.0) --Drive across of bump
+    drive_system:driveTo(6.5, -1.52, -150.0) --Drive across of bump
     waitUntilDistance(0.0762)
     drive_system:setMaxSpeed(travel_speed)
     drive_system:driveTo(6.9, bump_y, -150.0) --Drive in front of bump
