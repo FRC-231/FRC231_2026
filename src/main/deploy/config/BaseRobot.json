@@ -156,7 +156,7 @@
         "pivot_wiggle_up_angle": 92,
         "pivot_wiggle_down_angle": 92,
         "pivot_wiggle_period": 1.0,
-        "pivot_encoder_offset": 108, 
+        "pivot_encoder_offset": 184, 
         "danger_height": 92
     },
     "shooter":{
@@ -191,21 +191,21 @@
         "snow_blow_target_rpm":6500,
         "snow_blow_pulse_width":1800,
         "snow_blow_proportional":500.0,
-        "manual_shooter_adjustment_multiplier":800.0,
+        "manual_shooter_adjustment_multiplier":300.0,
         "shooter_ramp_acceleration": 3000.0,
         "distance_to_shooter_velocity":[
-            [2.0, 3700.0],
-            [3.0, 4375.0],
-            [3.4, 4725.0],
-            [4.0, 5155.0],
-            [5.0, 5550.0]
+            [2.0, 3500.0],
+            [3.0, 4175.0],
+            [3.4, 4525.0],
+            [4.0, 4955.0],
+            [5.0, 5350.0]
         ],
         "distance_to_backspin":[
             [2.0, 500.0],
-            [3.0, 450.0],
-            [3.4, 430.0],
-            [4.0, 427.0],
-            [5.0, 415.0]
+            [3.0, 350.0],
+            [3.4, 230.0],
+            [4.0, 167.0],
+            [5.0, 75.0]
         ],
         "distance_to_pulsewidth":[
             [2.0, 1100.0],

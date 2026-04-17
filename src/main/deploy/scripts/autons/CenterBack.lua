@@ -20,7 +20,7 @@ intake_speed = 1.0
 
 function autonomous()
     drive_system:setMaxSpeed(bump_speed)
-    drive_system:setMinPercentage(0.5)
+    drive_system:setMinPercentage(0.0)
     drive_system:setOdometry(3.52, 0.0, 0.0)--Starting position at hub
     shooter_system:autoShoot()--Start shooter wheels
     drive_system:driveTo(2.5, 0.0, 0.0)--Drive back
