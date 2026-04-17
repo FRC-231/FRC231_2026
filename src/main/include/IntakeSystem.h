@@ -78,6 +78,7 @@ private:
     void doPivotMove();
     void doPivotWiggle();
     void doHalfSpeed();
+    void setFeedVoltage(units::volt_t voltage);
 
     // ---- Internal Helpers ----
     void updateNetworkTable();
@@ -109,6 +110,7 @@ private:
     units::degree_t pivot_wiggle_down_angle;
     double pivot_wiggle_period;
     units::degree_t pivot_encoder_offset;
+    units::degree_t danger_height;
     std::unique_ptr<frc::PIDController> pivot_pid;
 
     // ---- Network Tables ----

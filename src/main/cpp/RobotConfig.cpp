@@ -34,6 +34,7 @@ void from_json(const nlohmann::json &j, IntakeConfig &intake)
     j.at(IntakeConfig::PIVOT_WIGGLE_DOWN_ANGLE).get_to(intake.pivot_wiggle_down_angle);
     j.at(IntakeConfig::PIVOT_WIGGLE_PERIOD).get_to(intake.pivot_wiggle_period);
     j.at(IntakeConfig::PIVOT_ENCODER_OFFSET).get_to(intake.pivot_encoder_offset);
+    j.at(IntakeConfig::DANGER_HEIGHT).get_to(intake.danger_height);
 
 }
 

@@ -156,7 +156,8 @@
         "pivot_wiggle_up_angle": 80,
         "pivot_wiggle_down_angle": 80,
         "pivot_wiggle_period": 1.0,
-        "pivot_encoder_offset": 113
+        "pivot_encoder_offset": 113,
+        "danger_height": 100
     },
     "shooter":{
         "hopper_motor_id":11,

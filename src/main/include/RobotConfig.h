@@ -48,6 +48,7 @@ struct IntakeConfig
     static inline const std::string PIVOT_WIGGLE_DOWN_ANGLE = "pivot_wiggle_down_angle";
     static inline const std::string PIVOT_WIGGLE_PERIOD = "pivot_wiggle_period";
     static inline const std::string PIVOT_ENCODER_OFFSET = "pivot_encoder_offset";
+    static inline const std::string DANGER_HEIGHT = "danger_height";
 
 
 
@@ -68,6 +69,7 @@ struct IntakeConfig
     double pivot_wiggle_down_angle;
     double pivot_wiggle_period;
     double pivot_encoder_offset;
+    double danger_height;
 
     friend void from_json(const nlohmann::json &j, IntakeConfig &intake);
 };

@@ -55,6 +55,7 @@ IntakeSystem::IntakeSystem(std::shared_ptr<RobotContext> context):
         intake_config.pivot_pid.k_d
     );
     pivot_encoder_offset = units::degree_t{intake_config.pivot_encoder_offset};
+    danger_height = units::degree_t{intake_config.danger_height};
 
 
     nt_feed_intake_voltage.setOnUpdate([this](const double& value)
@@ -262,16 +263,25 @@ void IntakeSystem::doFeedStop()
     feed_motor2->SetVoltage(0_V);
 }
 
+void IntakeSystem::setFeedVoltage(units::volt_t voltage)
+{
+    if(getPivotAngle() < danger_height)
+    {
+        doFeedStop();
+        return;
+    }
+    feed_motor->SetVoltage(voltage);
+    feed_motor2->SetVoltage(voltage);
+}
+
 void IntakeSystem::doFeedIntake()
 {
-    feed_motor->SetVoltage(feed_intake_voltage);
-    feed_motor2->SetVoltage(feed_intake_voltage);
+    setFeedVoltage(feed_intake_voltage);
 }
 
 void IntakeSystem::doFeedOuttake()
 {
-    feed_motor->SetVoltage(feed_outtake_voltage);
-    feed_motor2->SetVoltage(feed_outtake_voltage);
+    setFeedVoltage(feed_outtake_voltage);
 }
 
 void IntakeSystem::doPivotStop()
@@ -293,8 +303,7 @@ void IntakeSystem::doPivotWiggle()
 
 void IntakeSystem::doHalfSpeed()
 {
-   feed_motor->SetVoltage(feed_intake_voltage/2);
-   feed_motor2->SetVoltage(feed_intake_voltage/2);
+   setFeedVoltage(feed_intake_voltage / 2);
 }
 
 void IntakeSystem::doPivotMove()
