@@ -63,6 +63,14 @@ public:
         {"CurvedBumpRight", Paths::CURVED_BUMP_RIGHT_AUTON}
     };
 
+    static constexpr units::meter_t SWEET_STOP_DISTANCE{2.25_m}; //Distance is from Hub
+    static constexpr units::meter_t SWEET_SPOT_ON_THRESHOLD{0.1_m};
+    static constexpr units::meter_t SWEET_SPOT_NEAR_THRESHOLD{1.0_m};
+    static constexpr double SWEET_SPOT_MAX_NEAR_RUMBLE = 0.6;
+    static constexpr frc::GenericHID::RumbleType SHOOTER_AT_SPEED_RUMBLE_TYPE = frc::GenericHID::RumbleType::kLeftRumble;
+    static constexpr frc::GenericHID::RumbleType SWEET_SPOT_RUMBLE_TYPE = frc::GenericHID::RumbleType::kRightRumble;
+
+
 private:
 
     std::shared_ptr<RobotContext> context;

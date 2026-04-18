@@ -7,6 +7,7 @@
 #include <frc/smartdashboard/SmartDashboard.h>
 #include <iostream>
 #include <frc/RobotController.h>
+#include <units/math.h>
 
 
 Robot::Robot()
@@ -204,6 +205,21 @@ void Robot::TeleopPeriodic()
         //drive_system->setOdometryFromVision();
     }
 
+    double sweet_spot_rumble = 0.0;
+    auto distance_from_hub = drive_system->getDistanceFromTargetPosition(RobotContext::HUB_POSITION);
+    auto distance_from_sweet_spot = units::math::abs(distance_from_hub - SWEET_STOP_DISTANCE);
+    if(drive_system->getRobotPose().X() < RobotContext::HUB_POSITION.X())
+    {
+        if(distance_from_sweet_spot < SWEET_SPOT_ON_THRESHOLD)
+        {
+            sweet_spot_rumble = 1.0;
+        }
+        else if(distance_from_sweet_spot < SWEET_SPOT_NEAR_THRESHOLD)
+        {
+            sweet_spot_rumble = (1.0 - distance_from_sweet_spot.value() / SWEET_SPOT_NEAR_THRESHOLD.value()) * SWEET_SPOT_MAX_NEAR_RUMBLE;
+        }
+    }
+    pilotXbox.SetRumble(SWEET_SPOT_RUMBLE_TYPE, sweet_spot_rumble);
 
     if(half_speed)
     {
@@ -239,11 +255,11 @@ void Robot::TeleopPeriodic()
     {
         if(is_shooter_at_speed)
         {
-            pilotXbox.SetRumble(frc::GenericHID::RumbleType::kBothRumble, 1.0);
+            pilotXbox.SetRumble(Robot::SHOOTER_AT_SPEED_RUMBLE_TYPE, 1.0);
         }
         else
         {
-            pilotXbox.SetRumble(frc::GenericHID::RumbleType::kBothRumble, 0.0);
+            pilotXbox.SetRumble(Robot::SHOOTER_AT_SPEED_RUMBLE_TYPE, 0.0);
         }
         
         if(use_snow_blower)
@@ -257,7 +273,7 @@ void Robot::TeleopPeriodic()
     }
     else
     {
-        pilotXbox.SetRumble(frc::GenericHID::RumbleType::kBothRumble, 0.0);
+        pilotXbox.SetRumble(Robot::SHOOTER_AT_SPEED_RUMBLE_TYPE, 0.0);
         shooter_system->setShooterMode(ShooterSystem::ShooterMode::IDLE);
     }
 

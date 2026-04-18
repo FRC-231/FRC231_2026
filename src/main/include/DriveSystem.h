@@ -99,6 +99,7 @@ public:
     units::degree_t getAngleFromTargetPosition(frc::Pose2d target_point);
     units::meter_t getDistanceFromTargetPosition(frc::Pose2d target_point);
     bool isLockedOn();
+    frc::Pose2d getRobotPose() const { return current_pose; }
 
     // ---- Odometry ----
     void setOdometry(frc::Pose2d pose);
