@@ -151,8 +151,8 @@
             "k_i":0.0,
             "k_d":0.0
         },
-        "pivot_up_angle": 105,
-        "pivot_down_angle": 125,
+        "pivot_up_angle": 121,
+        "pivot_down_angle": 131,
         "pivot_wiggle_up_angle": 92,
         "pivot_wiggle_down_angle": 92,
         "pivot_wiggle_period": 1.0,

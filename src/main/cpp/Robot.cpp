@@ -244,7 +244,7 @@ void Robot::TeleopPeriodic()
     }
     
     //Shooting
-    static bool do_shooter_auto_control = false;
+    static bool do_shooter_auto_control = true;
     if(do_shooter_voltage_control_toggle)
     {
         do_shooter_auto_control = !do_shooter_auto_control;
@@ -268,7 +268,7 @@ void Robot::TeleopPeriodic()
         }
         else
         {
-            shooter_system->setShooterMode(ShooterSystem::ShooterMode::AUTO);
+            shooter_system->setShooterMode(ShooterSystem::ShooterMode::AUTO);//Make sure its AUTO before we queue up 
         }
     }
     else
