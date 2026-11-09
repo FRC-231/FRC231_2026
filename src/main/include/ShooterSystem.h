@@ -98,7 +98,10 @@ private:
 
     std::unique_ptr<ctre::phoenix6::hardware::TalonFX> hopper_motor;
     std::unique_ptr<ctre::phoenix6::hardware::TalonFX> hopper_motor2;
+    // Two shooter feed motors. Both get the same config and the same command,
+    // so they spin the same direction.
     std::unique_ptr<ctre::phoenix6::hardware::TalonFX> feed_motor;
+    std::unique_ptr<ctre::phoenix6::hardware::TalonFX> feed_motor2;
     // Four shooter motors, two per side. Every one is commanded directly with the
     // same request. The right side spins opposite to the left through each motor's
     // invert config. Backspin is mechanical, so there is no left/right split.

@@ -79,6 +79,7 @@ struct ShooterConfig
     static inline const std::string HOPPER_MOTOR_ID = "hopper_motor_id";
     static inline const std::string HOPPER_MOTOR2_ID = "hopper_motor2_id";
     static inline const std::string FEED_MOTOR_ID = "feed_motor_id";
+    static inline const std::string FEED_MOTOR2_ID = "feed_motor2_id";
     static inline const std::string LEFT_SHOOTER_MOTOR_ID = "left_shooter_motor_id";
     static inline const std::string RIGHT_SHOOTER_MOTOR_ID = "right_shooter_motor_id";
     static inline const std::string LEFT_SHOOTER_MOTOR2_ID = "left_shooter_motor2_id";
@@ -109,6 +110,7 @@ struct ShooterConfig
     uint8_t hopper_motor_id;
     uint8_t hopper_motor2_id;
     uint8_t feed_motor_id;
+    uint8_t feed_motor2_id;
     uint8_t left_shooter_motor_id;
     uint8_t right_shooter_motor_id;
     uint8_t left_shooter_motor2_id;

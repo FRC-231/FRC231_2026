@@ -10,6 +10,7 @@ ShooterSystem::ShooterSystem(std::shared_ptr<RobotContext> context):
     hopper_motor = std::make_unique<ctre::phoenix6::hardware::TalonFX>(shooter_config.hopper_motor_id, "secondary");
     hopper_motor2 = std::make_unique<ctre::phoenix6::hardware::TalonFX>(shooter_config.hopper_motor2_id, "secondary");
     feed_motor = std::make_unique<ctre::phoenix6::hardware::TalonFX>(shooter_config.feed_motor_id, "Shooter");
+    feed_motor2 = std::make_unique<ctre::phoenix6::hardware::TalonFX>(shooter_config.feed_motor2_id, "Shooter");
     left_shooter_motor = std::make_unique<ctre::phoenix6::hardware::TalonFX>(shooter_config.left_shooter_motor_id, "Shooter");
     right_shooter_motor = std::make_unique<ctre::phoenix6::hardware::TalonFX>(shooter_config.right_shooter_motor_id, "Shooter");
     left_shooter_motor2 = std::make_unique<ctre::phoenix6::hardware::TalonFX>(shooter_config.left_shooter_motor2_id, "Shooter");
@@ -42,6 +43,7 @@ ShooterSystem::ShooterSystem(std::shared_ptr<RobotContext> context):
     feed_motor_config.CurrentLimits.SupplyCurrentLimit = 30_A;
     feed_motor_config.MotorOutput.Inverted = ctre::phoenix6::signals::InvertedValue::CounterClockwise_Positive;
     feed_motor->GetConfigurator().Apply(feed_motor_config);
+    feed_motor2->GetConfigurator().Apply(feed_motor_config);
 
     hopper_voltage = units::volt_t{shooter_config.hopper_voltage};
     hopper_wiggle_low_voltage = units::volt_t{shooter_config.hopper_wiggle_low_voltage};
@@ -157,6 +159,7 @@ ShooterSystem::ShooterSystem(std::shared_ptr<RobotContext> context):
     shooter_feed_config.MotorOutput.Inverted = ctre::phoenix6::signals::InvertedValue::Clockwise_Positive;
     shooter_feed_config.MotorOutput.NeutralMode = ctre::phoenix6::signals::NeutralModeValue::Brake;
     feed_motor->GetConfigurator().Apply(shooter_feed_config);
+    feed_motor2->GetConfigurator().Apply(shooter_feed_config);
 
     // Ramp: convert RPM/s acceleration to motor-shaft turns/s per 20 ms loop.
     // shooter_ramp_acceleration of 0 means no ramp (instant).
@@ -422,6 +425,7 @@ void ShooterSystem::doShooterVoltageControl()
     right_shooter_motor->SetVoltage(shooter_voltage);
     right_shooter_motor2->SetVoltage(shooter_voltage);
     feed_motor->SetVoltage(feed_voltage);
+    feed_motor2->SetVoltage(feed_voltage);
 }
 
 
@@ -457,6 +461,7 @@ void ShooterSystem::doShooterStop()
     right_shooter_motor->SetVoltage(0_V);
     right_shooter_motor2->SetVoltage(0_V);
     feed_motor->SetVoltage(0_V);
+    feed_motor2->SetVoltage(0_V);
     // Reset ramp state and target so the next enable starts from rest
     ramped_rps = units::turns_per_second_t{0};
     shooter_target_velocity = 0_rpm;
@@ -636,6 +641,7 @@ void ShooterSystem::doLoaderStop()
     hopper_motor->SetVoltage(0_V);
     hopper_motor2->SetVoltage(0_V);
     feed_motor->SetVoltage(0_V);
+    feed_motor2->SetVoltage(0_V);
 }
 
 void ShooterSystem::doLoaderLoad()
@@ -649,6 +655,7 @@ void ShooterSystem::doLoaderLoad()
     hopper_motor->SetVoltage(-current_hopper_voltage);
     hopper_motor2->SetVoltage(-current_hopper_voltage);
     feed_motor->SetVoltage(feed_voltage);
+    feed_motor2->SetVoltage(feed_voltage);
 }
 
 void ShooterSystem::doLoaderUnload()
@@ -656,6 +663,7 @@ void ShooterSystem::doLoaderUnload()
     hopper_motor->SetVoltage(hopper_voltage);
     hopper_motor2->SetVoltage(hopper_voltage);
     feed_motor->SetVoltage(-feed_voltage);
+    feed_motor2->SetVoltage(-feed_voltage);
 }
 
 void ShooterSystem::addToLuaState(Keeko::ThreadedScript& script)

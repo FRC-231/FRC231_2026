@@ -163,6 +163,7 @@
         "hopper_motor_id":11,
         "hopper_motor2_id":16,
         "feed_motor_id":12,
+        "feed_motor2_id":25,
         "left_shooter_motor_id":13,
         "right_shooter_motor_id":14,
         "left_shooter_motor2_id":18,
