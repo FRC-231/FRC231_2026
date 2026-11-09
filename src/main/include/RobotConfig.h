@@ -81,6 +81,8 @@ struct ShooterConfig
     static inline const std::string FEED_MOTOR_ID = "feed_motor_id";
     static inline const std::string LEFT_SHOOTER_MOTOR_ID = "left_shooter_motor_id";
     static inline const std::string RIGHT_SHOOTER_MOTOR_ID = "right_shooter_motor_id";
+    static inline const std::string LEFT_SHOOTER_MOTOR2_ID = "left_shooter_motor2_id";
+    static inline const std::string RIGHT_SHOOTER_MOTOR2_ID = "right_shooter_motor2_id";
     static inline const std::string SERVO_CONTROLLER_ID = "servo_controller_id";
     static inline const std::string LEFT_SERVO_ID = "left_servo_id";
     static inline const std::string RIGHT_SERVO_ID = "right_servo_id";
@@ -93,9 +95,7 @@ struct ShooterConfig
     static inline const std::string SHOOTER_GEAR_RATIO = "shooter_gear_ratio";
     static inline const std::string SHOOTER_MAX_VOLTAGE = "shooter_max_voltage";
     static inline const std::string SHOOTER_MIN_VOLTAGE = "shooter_min_voltage";
-    static inline const std::string BACKSPIN_AMOUNT = "backspin_amount";
     static inline const std::string DISTANCE_TO_SHOOTER_VELOCITY = "distance_to_shooter_velocity";
-    static inline const std::string DISTANCE_TO_BACKSPIN = "distance_to_backspin";
     static inline const std::string DISTANCE_TO_PULSEWIDTH = "distance_to_pulsewidth";
     static inline const std::string AT_SPEED_TOLERANCE = "at_speed_tolerance";
     static inline const std::string IDLE_MODE_VELOCITY = "idle_mode_velocity";
@@ -111,6 +111,8 @@ struct ShooterConfig
     uint8_t feed_motor_id;
     uint8_t left_shooter_motor_id;
     uint8_t right_shooter_motor_id;
+    uint8_t left_shooter_motor2_id;
+    uint8_t right_shooter_motor2_id;
     uint8_t servo_controller_id;
     uint8_t left_servo_id;
     uint8_t right_servo_id;
@@ -123,7 +125,6 @@ struct ShooterConfig
     double shooter_gear_ratio;
     double shooter_max_voltage;
     double shooter_min_voltage;
-    double backspin_amount;
     double at_speed_tolerance;
     double idle_mode_velocity;
     double snow_blow_target_rpm;
@@ -132,7 +133,6 @@ struct ShooterConfig
     double manual_shooter_adjustment_multiplier;
     double shooter_ramp_acceleration; // RPM per second; 0 = no ramp (instant)
     std::map<double, double> distance_to_shooter_velocity;
-    std::map<double, double> distance_to_backspin;
     std::map<double, double> distance_to_pulsewidth;
 
     friend void from_json(const nlohmann::json &j, ShooterConfig &shooter);

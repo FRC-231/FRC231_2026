@@ -45,6 +45,8 @@ void from_json(const nlohmann::json &j, ShooterConfig &shooter)
     j.at(ShooterConfig::FEED_MOTOR_ID).get_to(shooter.feed_motor_id);
     j.at(ShooterConfig::LEFT_SHOOTER_MOTOR_ID).get_to(shooter.left_shooter_motor_id);
     j.at(ShooterConfig::RIGHT_SHOOTER_MOTOR_ID).get_to(shooter.right_shooter_motor_id);
+    j.at(ShooterConfig::LEFT_SHOOTER_MOTOR2_ID).get_to(shooter.left_shooter_motor2_id);
+    j.at(ShooterConfig::RIGHT_SHOOTER_MOTOR2_ID).get_to(shooter.right_shooter_motor2_id);
     j.at(ShooterConfig::SERVO_CONTROLLER_ID).get_to(shooter.servo_controller_id);
     j.at(ShooterConfig::LEFT_SERVO_ID).get_to(shooter.left_servo_id);
     j.at(ShooterConfig::RIGHT_SERVO_ID).get_to(shooter.right_servo_id);
@@ -57,7 +59,6 @@ void from_json(const nlohmann::json &j, ShooterConfig &shooter)
     j.at(ShooterConfig::SHOOTER_GEAR_RATIO).get_to(shooter.shooter_gear_ratio);
     j.at(ShooterConfig::SHOOTER_MAX_VOLTAGE).get_to(shooter.shooter_max_voltage);
     j.at(ShooterConfig::SHOOTER_MIN_VOLTAGE).get_to(shooter.shooter_min_voltage);
-    j.at(ShooterConfig::BACKSPIN_AMOUNT).get_to(shooter.backspin_amount);
     j.at(ShooterConfig::AT_SPEED_TOLERANCE).get_to(shooter.at_speed_tolerance);
     j.at(ShooterConfig::IDLE_MODE_VELOCITY).get_to(shooter.idle_mode_velocity);
     j.at(ShooterConfig::SNOW_BLOW_TARGET_RPM).get_to(shooter.snow_blow_target_rpm);
@@ -79,17 +80,6 @@ void from_json(const nlohmann::json &j, ShooterConfig &shooter)
             throw std::runtime_error("Invalid distance to shooter velocity pair in config");
         }
         shooter.distance_to_shooter_velocity[pair[0]] = pair[1];
-    }
-    //Load the distance to backspin map
-    std::vector<std::vector<double>> distance_to_backspin_vec;
-    j.at(ShooterConfig::DISTANCE_TO_BACKSPIN).get_to(distance_to_backspin_vec);
-    for(const auto& pair : distance_to_backspin_vec)
-    {
-        if(pair.size() != 2)
-        {
-            throw std::runtime_error("Invalid distance to backspin pair in config");
-        }
-        shooter.distance_to_backspin[pair[0]] = pair[1];
     }
     //Load the distance to pulse width map
     std::vector<std::vector<double>> distance_to_pulsewidth_vec;

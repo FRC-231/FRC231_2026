@@ -165,6 +165,8 @@
         "feed_motor_id":12,
         "left_shooter_motor_id":13,
         "right_shooter_motor_id":14,
+        "left_shooter_motor2_id":18,
+        "right_shooter_motor2_id":19,
         "servo_controller_id": 15,
         "left_servo_id":2,
         "right_servo_id":3,
@@ -185,7 +187,6 @@
         "shooter_gear_ratio":0.75,
         "shooter_max_voltage": 0.0,
         "shooter_min_voltage": 0.0,
-        "backspin_amount": 0,
         "at_speed_tolerance":90,
         "idle_mode_velocity":0,
         "snow_blow_target_rpm":6500,
@@ -194,12 +195,6 @@
         "manual_shooter_adjustment_multiplier":300.0,
         "shooter_ramp_acceleration": 3000.0,
         "distance_to_shooter_velocity":[
-            [2.2, 0.0],
-            [3.0, 0.0],
-            [3.4, 0.0]
-            
-        ],
-        "distance_to_backspin":[
             [2.2, 0.0],
             [3.0, 0.0],
             [3.4, 0.0]

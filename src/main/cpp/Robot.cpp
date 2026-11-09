@@ -401,7 +401,7 @@ void Robot::TestInit()
 
 void Robot::TestPeriodic()
 {
-    shooter_system->setShooterVoltages(ff_voltage, ff_voltage);
+    shooter_system->setShooterVoltage(ff_voltage);
 }
 
 void Robot::SimulationInit()

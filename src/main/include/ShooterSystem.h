@@ -47,10 +47,10 @@ public:
     void autoShoot();
     void snowBlow();
     void shooterIdle();
-    void setShooterVoltages(units::volt_t left_voltage, units::volt_t right_voltage);
-    void setShooterVoltagesLua(double left_voltage, double right_voltage);
-    void setShooterTargetVelocities(units::revolutions_per_minute_t left_velocity, units::revolutions_per_minute_t right_velocity);
-    void setShooterTargetVelocitiesLua(double left_velocity, double right_velocity);
+    void setShooterVoltage(units::volt_t voltage);
+    void setShooterVoltageLua(double voltage);
+    void setShooterTargetVelocity(units::revolutions_per_minute_t velocity);
+    void setShooterTargetVelocityLua(double velocity);
     void setLoaderMode(LoaderMode mode);
     void loaderStop();
     void loaderLoad();
@@ -84,11 +84,9 @@ private:
     void doShooterIdleControl();
     void doShooterSnowBlowControl();
 
-    /// Applies velocity to both shooter motors through the ramp limiter.
-    /// @param left_rps  Desired left motor shaft speed (turns/s).
-    /// @param right_rps Desired right motor shaft speed (turns/s).
-    void setShooterVelocityControl(units::turns_per_second_t left_rps,
-                                   units::turns_per_second_t right_rps);
+    /// Applies velocity to all four shooter motors through the ramp limiter.
+    /// @param target_rps Desired motor shaft speed (turns/s).
+    void setShooterVelocityControl(units::turns_per_second_t target_rps);
 
     void doLoaderStop();
     void doLoaderLoad();
@@ -101,8 +99,13 @@ private:
     std::unique_ptr<ctre::phoenix6::hardware::TalonFX> hopper_motor;
     std::unique_ptr<ctre::phoenix6::hardware::TalonFX> hopper_motor2;
     std::unique_ptr<ctre::phoenix6::hardware::TalonFX> feed_motor;
+    // Four shooter motors, two per side. Every one is commanded directly with the
+    // same request. The right side spins opposite to the left through each motor's
+    // invert config. Backspin is mechanical, so there is no left/right split.
     std::unique_ptr<ctre::phoenix6::hardware::TalonFX> left_shooter_motor;
     std::unique_ptr<ctre::phoenix6::hardware::TalonFX> right_shooter_motor;
+    std::unique_ptr<ctre::phoenix6::hardware::TalonFX> left_shooter_motor2;
+    std::unique_ptr<ctre::phoenix6::hardware::TalonFX> right_shooter_motor2;
     std::unique_ptr<rev::servohub::ServoHub> servo_controller;
     uint8_t left_servo_id;
     uint8_t right_servo_id;
@@ -112,10 +115,8 @@ private:
     units::volt_t hopper_wiggle_low_voltage;
     double hopper_wiggle_period;
     units::volt_t feed_voltage;
-    units::volt_t left_shooter_voltage{0_V};
-    units::volt_t right_shooter_voltage{0_V};
-    units::revolutions_per_minute_t left_shooter_target_velocity{0_rpm};
-    units::revolutions_per_minute_t right_shooter_target_velocity{0_rpm};
+    units::volt_t shooter_voltage{0_V};
+    units::revolutions_per_minute_t shooter_target_velocity{0_rpm};
     double shooter_gear_ratio;
     units::volt_t max_shooter_voltage;
     units::volt_t min_shooter_voltage;
@@ -127,12 +128,9 @@ private:
     std::function<units::meter_t()> distance_update_callback;
     std::function<units::meter_t()> distance_to_wall_update_callback;
     units::revolutions_per_minute_t shooter_auto_adjustment{0_rpm};
-    units::revolutions_per_minute_t backspin_amount{0_rpm};
-    units::revolutions_per_minute_t backspin_adjustment{0_rpm};
     double shooter_angle_adjustment{0.0};
     std::map<units::meter_t, units::revolutions_per_minute_t> distance_to_shooter_velocity;
     std::map<units::meter_t, double> distance_to_pulsewidth;
-    std::map<units::meter_t, units::revolutions_per_minute_t> distance_to_backspin;
     units::revolutions_per_minute_t shooter_manual_auto_speed{0_rpm};
     units::revolutions_per_minute_t at_speed_tolerance{0_rpm};
     units::revolutions_per_minute_t idle_mode_velocity{0_rpm};
@@ -143,8 +141,7 @@ private:
     units::revolutions_per_minute_t manual_shooter_adjustment{0.0};
 
     // Ramp state — current ramped output sent to the motors (motor-shaft turns/s)
-    units::turns_per_second_t left_ramped_rps{0};
-    units::turns_per_second_t right_ramped_rps{0};
+    units::turns_per_second_t ramped_rps{0};
     // Max acceleration in motor-shaft turns/s per loop (computed from config at init)
     double shooter_ramp_rate_tps_per_loop{0.0};
 
@@ -156,14 +153,10 @@ private:
     HighVoltage::NetworkTableValue<double> nt_shooter_gear_ratio{SHOOTER_TABLE_NAME + "/" + "shooter_gear_ratio", 0.0};
     HighVoltage::NetworkTableValue<double> nt_left_shooter_velocity{SHOOTER_TABLE_NAME + "/" + "left_shooter_velocity", 0.0};
     HighVoltage::NetworkTableValue<double> nt_right_shooter_velocity{SHOOTER_TABLE_NAME + "/" + "right_shooter_velocity", 0.0};
-    HighVoltage::NetworkTableValue<double> nt_left_shooter_voltage{SHOOTER_TABLE_NAME + "/" + "left_shooter_voltage", 0.0};
-    HighVoltage::NetworkTableValue<double> nt_right_shooter_voltage{SHOOTER_TABLE_NAME + "/" + "right_shooter_voltage", 0.0};
-    HighVoltage::NetworkTableValue<double> nt_left_shooter_target_velocity{SHOOTER_TABLE_NAME + "/" + "left_shooter_target_velocity", 0.0};
-    HighVoltage::NetworkTableValue<double> nt_right_shooter_target_velocity{SHOOTER_TABLE_NAME + "/" + "right_shooter_target_velocity", 0.0};
+    HighVoltage::NetworkTableValue<double> nt_shooter_voltage{SHOOTER_TABLE_NAME + "/" + "shooter_voltage", 0.0};
+    HighVoltage::NetworkTableValue<double> nt_shooter_target_velocity{SHOOTER_TABLE_NAME + "/" + "shooter_target_velocity", 0.0};
     HighVoltage::NetworkTableValue<int> nt_servo_pulse_width{SHOOTER_TABLE_NAME + "/" + "servo_pulse_width", 0};
     HighVoltage::NetworkTableValue<double> nt_shooter_auto_adjustment{SHOOTER_TABLE_NAME + "/" + "shooter_auto_adjustment", 0.0};
-    HighVoltage::NetworkTableValue<double> nt_backspin_amount{SHOOTER_TABLE_NAME + "/" + "backspin_amount", 0.0};
-    HighVoltage::NetworkTableValue<double> nt_backspin_adjustment{SHOOTER_TABLE_NAME + "/" + "backspin_adjustment", 0.0};
     HighVoltage::NetworkTableValue<double> nt_manual_shooter_adjustment{SHOOTER_TABLE_NAME + "/" + "manual_shooter_adjustment", 0.0};
     HighVoltage::NetworkTableValue<double> nt_shooter_angle_adjustment{SHOOTER_TABLE_NAME + "/" + "shooter_angle_adjustment", 0.0};
     HighVoltage::NetworkTableValue<double> nt_shooter_manual_auto_speed{SHOOTER_TABLE_NAME + "/" + "shooter_manual_auto_speed", 0.0};
@@ -177,7 +170,7 @@ private:
     HighVoltage::NetworkTableValue<double> nt_shooter_kD{SHOOTER_TABLE_NAME + "/" + "shooter_kD", 0.0};
 
     //Network table values for recording data during testing
-    HighVoltage::NetworkTableValue<std::vector<double>> nt_shooter_velocities{SHOOTER_TABLE_NAME + "/" + "shooter_velocities", std::vector<double>{0,0,0,0}};
+    HighVoltage::NetworkTableValue<std::vector<double>> nt_shooter_velocities{SHOOTER_TABLE_NAME + "/" + "shooter_velocities", std::vector<double>{0,0,0}};
 
     int servo_diag_counter_{0};
     int shooter_nt_counter_{0};

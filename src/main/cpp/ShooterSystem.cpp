@@ -12,6 +12,8 @@ ShooterSystem::ShooterSystem(std::shared_ptr<RobotContext> context):
     feed_motor = std::make_unique<ctre::phoenix6::hardware::TalonFX>(shooter_config.feed_motor_id, "Shooter");
     left_shooter_motor = std::make_unique<ctre::phoenix6::hardware::TalonFX>(shooter_config.left_shooter_motor_id, "Shooter");
     right_shooter_motor = std::make_unique<ctre::phoenix6::hardware::TalonFX>(shooter_config.right_shooter_motor_id, "Shooter");
+    left_shooter_motor2 = std::make_unique<ctre::phoenix6::hardware::TalonFX>(shooter_config.left_shooter_motor2_id, "Shooter");
+    right_shooter_motor2 = std::make_unique<ctre::phoenix6::hardware::TalonFX>(shooter_config.right_shooter_motor2_id, "Shooter");
     // hopper_motor = std::make_unique<ctre::phoenix6::hardware::TalonFX>(shooter_config.hopper_motor_id, "rio");
     // hopper_motor2 = std::make_unique<ctre::phoenix6::hardware::TalonFX>(shooter_config.hopper_motor2_id, "rio");
     // feed_motor = std::make_unique<ctre::phoenix6::hardware::TalonFX>(shooter_config.feed_motor_id, "rio");
@@ -79,13 +81,16 @@ ShooterSystem::ShooterSystem(std::shared_ptr<RobotContext> context):
 
 
 
+    // The left side of the shooter spins opposite to the right side. This is done
+    // with the invert setting, so every shooter motor can be sent the same command.
     ctre::phoenix6::configs::TalonFXConfiguration shooter_left_config{};
-    shooter_left_config.MotorOutput.Inverted = ctre::phoenix6::signals::InvertedValue::Clockwise_Positive;
+    shooter_left_config.MotorOutput.Inverted = ctre::phoenix6::signals::InvertedValue::CounterClockwise_Positive;
     shooter_left_config.MotorOutput.NeutralMode = ctre::phoenix6::signals::NeutralModeValue::Coast;
     // Limit supply current to prevent brownouts
     shooter_left_config.CurrentLimits.SupplyCurrentLimitEnable = true;
     shooter_left_config.CurrentLimits.SupplyCurrentLimit = 40_A;
     left_shooter_motor->GetConfigurator().Apply(shooter_left_config);
+    left_shooter_motor2->GetConfigurator().Apply(shooter_left_config);
 
     ctre::phoenix6::configs::TalonFXConfiguration shooter_right_config{};
     shooter_right_config.MotorOutput.Inverted = ctre::phoenix6::signals::InvertedValue::Clockwise_Positive;
@@ -94,9 +99,13 @@ ShooterSystem::ShooterSystem(std::shared_ptr<RobotContext> context):
     shooter_right_config.CurrentLimits.SupplyCurrentLimitEnable = true;
     shooter_right_config.CurrentLimits.SupplyCurrentLimit = 40_A;
     right_shooter_motor->GetConfigurator().Apply(shooter_right_config);
+    right_shooter_motor2->GetConfigurator().Apply(shooter_right_config);
 
-    HighVoltage::applyMotionConfigToTalonFXFromRPM(shooter_config.shooter_pid, shooter_config.shooter_ff, *left_shooter_motor,  shooter_gear_ratio);
+    // Every shooter motor runs its own velocity closed-loop, so each needs the gains.
+    HighVoltage::applyMotionConfigToTalonFXFromRPM(shooter_config.shooter_pid, shooter_config.shooter_ff, *left_shooter_motor, shooter_gear_ratio);
+    HighVoltage::applyMotionConfigToTalonFXFromRPM(shooter_config.shooter_pid, shooter_config.shooter_ff, *left_shooter_motor2, shooter_gear_ratio);
     HighVoltage::applyMotionConfigToTalonFXFromRPM(shooter_config.shooter_pid, shooter_config.shooter_ff, *right_shooter_motor, shooter_gear_ratio);
+    HighVoltage::applyMotionConfigToTalonFXFromRPM(shooter_config.shooter_pid, shooter_config.shooter_ff, *right_shooter_motor2, shooter_gear_ratio);
 
     // Seed the NT values with the config values so they display correctly on boot.
     nt_shooter_kP.setValue(shooter_config.shooter_pid.k_p);
@@ -104,50 +113,50 @@ ShooterSystem::ShooterSystem(std::shared_ptr<RobotContext> context):
     nt_shooter_kD.setValue(shooter_config.shooter_pid.k_d);
 
     // Bind NT updates: writing kP/kI/kD from a dashboard will immediately
-    // re-apply the scaled gains to both shooter motors.
-    // NOTE: We bind manually instead of calling bindPIDNetworkTableToTalonFXFromRPM
-    // twice, because setOnUpdate replaces the callback — a second call would
-    // overwrite the first, leaving one motor with stale gains.
+    // re-apply the scaled gains to all four shooter motors.
     auto* p_kP = &nt_shooter_kP;
     auto* p_kI = &nt_shooter_kI;
     auto* p_kD = &nt_shooter_kD;
-    auto* p_left  = left_shooter_motor.get();
+    auto* p_left = left_shooter_motor.get();
+    auto* p_left2 = left_shooter_motor2.get();
     auto* p_right = right_shooter_motor.get();
+    auto* p_right2 = right_shooter_motor2.get();
     auto ff = shooter_config.shooter_ff;
     double gr = shooter_gear_ratio;
 
-    auto reapplyBoth = [p_kP, p_kI, p_kD, ff, p_left, p_right, gr]()
+    auto reapplyGains = [p_kP, p_kI, p_kD, ff, p_left, p_left2, p_right, p_right2, gr]()
     {
         HighVoltage::PIDConfig pid{
             p_kP->getValue(0.0),
             p_kI->getValue(0.0),
             p_kD->getValue(0.0)
         };
-        HighVoltage::applyMotionConfigToTalonFXFromRPM(pid, ff, *p_left,  gr);
+        HighVoltage::applyMotionConfigToTalonFXFromRPM(pid, ff, *p_left, gr);
+        HighVoltage::applyMotionConfigToTalonFXFromRPM(pid, ff, *p_left2, gr);
         HighVoltage::applyMotionConfigToTalonFXFromRPM(pid, ff, *p_right, gr);
+        HighVoltage::applyMotionConfigToTalonFXFromRPM(pid, ff, *p_right2, gr);
     };
 
-    nt_shooter_kP.setOnUpdate([reapplyBoth, key = nt_shooter_kP.getKey()](const double& value)
+    nt_shooter_kP.setOnUpdate([reapplyGains, key = nt_shooter_kP.getKey()](const double& value)
     {
         std::cout << key << " set to " << value << std::endl;
-        reapplyBoth();
+        reapplyGains();
     });
-    nt_shooter_kI.setOnUpdate([reapplyBoth, key = nt_shooter_kI.getKey()](const double& value)
+    nt_shooter_kI.setOnUpdate([reapplyGains, key = nt_shooter_kI.getKey()](const double& value)
     {
         std::cout << key << " set to " << value << std::endl;
-        reapplyBoth();
+        reapplyGains();
     });
-    nt_shooter_kD.setOnUpdate([reapplyBoth, key = nt_shooter_kD.getKey()](const double& value)
+    nt_shooter_kD.setOnUpdate([reapplyGains, key = nt_shooter_kD.getKey()](const double& value)
     {
         std::cout << key << " set to " << value << std::endl;
-        reapplyBoth();
+        reapplyGains();
     });
 
     ctre::phoenix6::configs::TalonFXConfiguration shooter_feed_config{};
     shooter_feed_config.MotorOutput.Inverted = ctre::phoenix6::signals::InvertedValue::Clockwise_Positive;
     shooter_feed_config.MotorOutput.NeutralMode = ctre::phoenix6::signals::NeutralModeValue::Brake;
     feed_motor->GetConfigurator().Apply(shooter_feed_config);
-    backspin_amount = units::revolutions_per_minute_t{shooter_config.backspin_amount};
 
     // Ramp: convert RPM/s acceleration to motor-shaft turns/s per 20 ms loop.
     // shooter_ramp_acceleration of 0 means no ramp (instant).
@@ -166,11 +175,6 @@ ShooterSystem::ShooterSystem(std::shared_ptr<RobotContext> context):
     for(const auto& pair : shooter_config.distance_to_pulsewidth)
     {
         distance_to_pulsewidth[units::meter_t{pair.first}] = pair.second;
-    }
-    //Load distance to backspin map
-    for(const auto& pair : shooter_config.distance_to_backspin)
-    {
-        distance_to_backspin[units::meter_t{pair.first}] = units::revolutions_per_minute_t{pair.second};
     }
 
     nt_hopper_voltage.setOnUpdate([this](const double& value)
@@ -191,39 +195,21 @@ ShooterSystem::ShooterSystem(std::shared_ptr<RobotContext> context):
         }
     });
 
-    nt_left_shooter_voltage.setOnUpdate([this](const double& value)
+    nt_shooter_voltage.setOnUpdate([this](const double& value)
     {
-        if(value != left_shooter_voltage.value())
+        if(value != shooter_voltage.value())
         {
-            std::cout << "Set left_shooter_voltage to " << value << std::endl;
-            left_shooter_voltage = units::volt_t{value};
+            std::cout << "Set shooter_voltage to " << value << std::endl;
+            shooter_voltage = units::volt_t{value};
         }
     });
 
-    nt_right_shooter_voltage.setOnUpdate([this](const double& value)
+    nt_shooter_target_velocity.setOnUpdate([this](const double& value)
     {
-        if(value != right_shooter_voltage.value())
+        if(value != shooter_target_velocity.value())
         {
-            std::cout << "Set right_shooter_voltage to " << value << std::endl;
-            right_shooter_voltage = units::volt_t{value};
-        }
-    });
-
-    nt_left_shooter_target_velocity.setOnUpdate([this](const double& value)
-    {
-        if(value != left_shooter_target_velocity.value())
-        {
-            std::cout << "Set left_shooter_target_velocity to " << value << std::endl;
-            left_shooter_target_velocity = units::revolutions_per_minute_t{value};
-        }
-    });
-
-    nt_right_shooter_target_velocity.setOnUpdate([this](const double& value)
-    {
-        if(value != right_shooter_target_velocity.value())
-        {
-            std::cout << "Set right_shooter_target_velocity to " << value << std::endl;
-            right_shooter_target_velocity = units::revolutions_per_minute_t{value};
+            std::cout << "Set shooter_target_velocity to " << value << std::endl;
+            shooter_target_velocity = units::revolutions_per_minute_t{value};
         }
     });
 
@@ -245,15 +231,6 @@ ShooterSystem::ShooterSystem(std::shared_ptr<RobotContext> context):
         }
     });
 
-    nt_backspin_adjustment.setOnUpdate([this](const double& value)
-    {
-        if(value != backspin_adjustment.value())
-        {
-            std::cout << "Set backspin_adjustment to " << value << std::endl;
-            backspin_adjustment = units::revolutions_per_minute_t{value};
-        }
-    });
-
     nt_shooter_angle_adjustment.setOnUpdate([this](const double& value)
     {
         if(value != shooter_angle_adjustment)
@@ -269,15 +246,6 @@ ShooterSystem::ShooterSystem(std::shared_ptr<RobotContext> context):
         {
             std::cout << "Set shooter_manual_auto_speed to " << value << std::endl;
             shooter_manual_auto_speed = units::revolutions_per_minute_t{value};
-        }
-    });
-
-    nt_backspin_amount.setOnUpdate([this](const double& value)
-    {
-        if(value != backspin_amount.value())
-        {
-            std::cout << "Set backspin_amount to " << value << std::endl;
-            backspin_amount = units::revolutions_per_minute_t{value};
         }
     });
 
@@ -368,10 +336,9 @@ void ShooterSystem::updateNetworkTable()
     nt_shooter_gear_ratio.setValue(shooter_gear_ratio);
     nt_left_shooter_velocity.setValue(getLeftShooterVelocity().value());
     nt_right_shooter_velocity.setValue(getRightShooterVelocity().value());
-    nt_left_shooter_voltage.setValue(left_shooter_voltage.value());
-    nt_right_shooter_voltage.setValue(right_shooter_voltage.value());
-    nt_shooter_velocities.setValue({left_shooter_voltage.value(),right_shooter_voltage.value(),getLeftShooterVelocity().value(), getRightShooterVelocity().value()});
-    nt_backspin_amount.setValue(backspin_amount.value());
+    nt_shooter_voltage.setValue(shooter_voltage.value());
+    nt_shooter_target_velocity.setValue(shooter_target_velocity.value());
+    nt_shooter_velocities.setValue({shooter_voltage.value(), getLeftShooterVelocity().value(), getRightShooterVelocity().value()});
     nt_is_shooter_at_speed.setValue(isAtSpeed());
     nt_snow_blow_target_rpm.setValue(snow_blow_target_rpm.value());
     nt_snow_blow_pulse_width.setValue(snow_blow_pulse_width);
@@ -450,51 +417,49 @@ void ShooterSystem::snowBlow()
 
 void ShooterSystem::doShooterVoltageControl()
 {
-    left_shooter_motor->SetVoltage(left_shooter_voltage);
-    right_shooter_motor->SetVoltage(right_shooter_voltage);
+    left_shooter_motor->SetVoltage(shooter_voltage);
+    left_shooter_motor2->SetVoltage(shooter_voltage);
+    right_shooter_motor->SetVoltage(shooter_voltage);
+    right_shooter_motor2->SetVoltage(shooter_voltage);
     feed_motor->SetVoltage(feed_voltage);
 }
 
 
-void ShooterSystem::setShooterVelocityControl(units::turns_per_second_t left_rps,
-                                               units::turns_per_second_t right_rps)
+void ShooterSystem::setShooterVelocityControl(units::turns_per_second_t target_rps)
 {
-    if (shooter_ramp_rate_tps_per_loop > 0.0)
+    if(shooter_ramp_rate_tps_per_loop > 0.0)
     {
-        // Ramp left
-        double left_error = left_rps.value() - left_ramped_rps.value();
-        if (std::abs(left_error) <= shooter_ramp_rate_tps_per_loop)
-            left_ramped_rps = left_rps;
+        double error = target_rps.value() - ramped_rps.value();
+        if(std::abs(error) <= shooter_ramp_rate_tps_per_loop)
+        {
+            ramped_rps = target_rps;
+        }
         else
-            left_ramped_rps = units::turns_per_second_t{left_ramped_rps.value() + std::copysign(shooter_ramp_rate_tps_per_loop, left_error)};
-
-        // Ramp right
-        double right_error = right_rps.value() - right_ramped_rps.value();
-        if (std::abs(right_error) <= shooter_ramp_rate_tps_per_loop)
-            right_ramped_rps = right_rps;
-        else
-            right_ramped_rps = units::turns_per_second_t{right_ramped_rps.value() + std::copysign(shooter_ramp_rate_tps_per_loop, right_error)};
+        {
+            ramped_rps = units::turns_per_second_t{ramped_rps.value() + std::copysign(shooter_ramp_rate_tps_per_loop, error)};
+        }
     }
     else
     {
-        left_ramped_rps  = left_rps;
-        right_ramped_rps = right_rps;
+        ramped_rps = target_rps;
     }
 
-    left_shooter_motor->SetControl(shooter_velocity_request.WithVelocity(left_ramped_rps));
-    right_shooter_motor->SetControl(shooter_velocity_request.WithVelocity(right_ramped_rps));
+    left_shooter_motor->SetControl(shooter_velocity_request.WithVelocity(ramped_rps));
+    left_shooter_motor2->SetControl(shooter_velocity_request.WithVelocity(ramped_rps));
+    right_shooter_motor->SetControl(shooter_velocity_request.WithVelocity(ramped_rps));
+    right_shooter_motor2->SetControl(shooter_velocity_request.WithVelocity(ramped_rps));
 }
 
 void ShooterSystem::doShooterStop()
 {
     left_shooter_motor->SetVoltage(0_V);
+    left_shooter_motor2->SetVoltage(0_V);
     right_shooter_motor->SetVoltage(0_V);
+    right_shooter_motor2->SetVoltage(0_V);
     feed_motor->SetVoltage(0_V);
-    // Reset ramp state and targets so the next enable starts from rest
-    left_ramped_rps  = units::turns_per_second_t{0};
-    right_ramped_rps = units::turns_per_second_t{0};
-    left_shooter_target_velocity  = 0_rpm;
-    right_shooter_target_velocity = 0_rpm;
+    // Reset ramp state and target so the next enable starts from rest
+    ramped_rps = units::turns_per_second_t{0};
+    shooter_target_velocity = 0_rpm;
 }
 
 units::revolutions_per_minute_t ShooterSystem::getLeftShooterVelocity()
@@ -517,38 +482,33 @@ void ShooterSystem::setDistanceToWallUpdateCallback(std::function<units::meter_t
     distance_to_wall_update_callback = callback;
 }
 
-void ShooterSystem::setShooterVoltages(units::volt_t left_voltage, units::volt_t right_voltage)
+void ShooterSystem::setShooterVoltage(units::volt_t voltage)
 {
-    left_shooter_voltage = left_voltage;
-    right_shooter_voltage = right_voltage;
+    shooter_voltage = voltage;
     shooter_mode = ShooterMode::VOLTAGE;
 }
 
-void ShooterSystem::setShooterVoltagesLua(double left_voltage, double right_voltage)
+void ShooterSystem::setShooterVoltageLua(double voltage)
 {
-    setShooterVoltages(units::volt_t{left_voltage}, units::volt_t{right_voltage});
+    setShooterVoltage(units::volt_t{voltage});
 }
 
-void ShooterSystem::setShooterTargetVelocities(units::revolutions_per_minute_t left_velocity, units::revolutions_per_minute_t right_velocity)
+void ShooterSystem::setShooterTargetVelocity(units::revolutions_per_minute_t velocity)
 {
-    right_shooter_target_velocity = left_velocity;
-    left_shooter_target_velocity = right_velocity;
+    shooter_target_velocity = velocity;
     shooter_mode = ShooterMode::SPEED;
 }
 
-void ShooterSystem::setShooterTargetVelocitiesLua(double left_velocity, double right_velocity)
+void ShooterSystem::setShooterTargetVelocityLua(double velocity)
 {
-    setShooterTargetVelocities(units::revolutions_per_minute_t{left_velocity}, units::revolutions_per_minute_t{right_velocity});
+    setShooterTargetVelocity(units::revolutions_per_minute_t{velocity});
 }
 
 void ShooterSystem::doShooterSpeedControl()
 {
     // Convert output RPM to motor-shaft rot/s for the TalonFX closed-loop.
     // The motor's kP/kI/kD/kS/kV/kA were already scaled for this unit in the constructor.
-    units::turns_per_second_t left_rps  = units::turns_per_second_t{left_shooter_target_velocity.value()  / 60.0 * shooter_gear_ratio};
-    units::turns_per_second_t right_rps = units::turns_per_second_t{right_shooter_target_velocity.value() / 60.0 * shooter_gear_ratio};
-
-    setShooterVelocityControl(left_rps, right_rps);
+    setShooterVelocityControl(units::turns_per_second_t{shooter_target_velocity.value() / 60.0 * shooter_gear_ratio});
 }
 
 void ShooterSystem::doShooterAutoControl()
@@ -560,9 +520,7 @@ void ShooterSystem::doShooterAutoControl()
     }
     distance_to_target = distance_update_callback();
     auto shooter_velocity = HighVoltage::cubicHermiteInterpolation<units::meter_t, units::revolutions_per_minute_t>(distance_to_shooter_velocity, distance_to_target);
-    auto left_shooter_speed = shooter_velocity + shooter_auto_adjustment + manual_shooter_adjustment;
-    auto right_shooter_speed = shooter_velocity + shooter_auto_adjustment + manual_shooter_adjustment;
-    auto backspin_velocity = HighVoltage::cubicHermiteInterpolation<units::meter_t, units::revolutions_per_minute_t>(distance_to_backspin, distance_to_target);
+    auto shooter_speed = shooter_velocity + shooter_auto_adjustment + manual_shooter_adjustment;
     auto new_servo_pulse_width = HighVoltage::cubicHermiteInterpolation<units::meter_t, double>(distance_to_pulsewidth, distance_to_target);
     //Set the servo pulse width directly from the interpolation with adjustment
     servo_pulse_width = static_cast<int>(new_servo_pulse_width + shooter_angle_adjustment);
@@ -574,40 +532,14 @@ void ShooterSystem::doShooterAutoControl()
     auto right_channel_id = static_cast<rev::servohub::ServoChannel::ChannelId>(right_servo_id);
     servo_controller->GetServoChannel(left_channel_id).SetPulseWidth(servo_pulse_width);
     servo_controller->GetServoChannel(right_channel_id).SetPulseWidth(servo_pulse_width);
-    if(servo_pulse_width >= servo_center_pulse_width)
-    {
-        left_shooter_speed -= backspin_velocity/2;
-        right_shooter_speed += backspin_velocity/2;
-    }
-    else
-    {
-        right_shooter_speed -= backspin_velocity/2;
-        left_shooter_speed += backspin_velocity/2;
-    }
-    setShooterVelocityControl(
-        units::turns_per_second_t{left_shooter_speed.value()  / 60.0 * shooter_gear_ratio},
-        units::turns_per_second_t{right_shooter_speed.value() / 60.0 * shooter_gear_ratio});
-    left_shooter_target_velocity = left_shooter_speed + manual_shooter_adjustment;
-    right_shooter_target_velocity = right_shooter_speed + manual_shooter_adjustment;
+    setShooterVelocityControl(units::turns_per_second_t{shooter_speed.value() / 60.0 * shooter_gear_ratio});
+    shooter_target_velocity = shooter_speed + manual_shooter_adjustment;
 }
 
 void ShooterSystem::doShooterManualAutoControl()
 {
-    auto left_shooter_speed = shooter_manual_auto_speed + shooter_auto_adjustment;
-    auto right_shooter_speed = shooter_manual_auto_speed + shooter_auto_adjustment;
-    if(servo_pulse_width >= servo_center_pulse_width)
-    {
-        left_shooter_speed -= (backspin_amount + backspin_adjustment)/2;
-        right_shooter_speed += (backspin_amount + backspin_adjustment)/2;
-    }
-    else
-    {
-        right_shooter_speed -= (backspin_amount + backspin_adjustment)/2;
-        left_shooter_speed += (backspin_amount + backspin_adjustment)/2;
-    }
-    setShooterVelocityControl(
-        units::turns_per_second_t{left_shooter_speed.value()  / 60.0 * shooter_gear_ratio},
-        units::turns_per_second_t{right_shooter_speed.value() / 60.0 * shooter_gear_ratio});
+    auto shooter_speed = shooter_manual_auto_speed + shooter_auto_adjustment;
+    setShooterVelocityControl(units::turns_per_second_t{shooter_speed.value() / 60.0 * shooter_gear_ratio});
     auto left_channel_id  = static_cast<rev::servohub::ServoChannel::ChannelId>(left_servo_id);
     auto right_channel_id = static_cast<rev::servohub::ServoChannel::ChannelId>(right_servo_id);
     if(servo_pulse_width > servo_max_pulse_width)
@@ -616,8 +548,7 @@ void ShooterSystem::doShooterManualAutoControl()
     }
     servo_controller->GetServoChannel(left_channel_id).SetPulseWidth(servo_pulse_width);
     servo_controller->GetServoChannel(right_channel_id).SetPulseWidth(servo_pulse_width);
-    left_shooter_target_velocity = left_shooter_speed + manual_shooter_adjustment;
-    right_shooter_target_velocity = right_shooter_speed + manual_shooter_adjustment;
+    shooter_target_velocity = shooter_speed + manual_shooter_adjustment;
 }
 
 void ShooterSystem::doShooterIdleControl()
@@ -628,9 +559,8 @@ void ShooterSystem::doShooterIdleControl()
     servo_controller->GetServoChannel(left_channel_id).SetPulseWidth(servo_center_pulse_width);
     servo_controller->GetServoChannel(right_channel_id).SetPulseWidth(servo_center_pulse_width);
     units::turns_per_second_t idle_rps{idle_mode_velocity.value() / 60.0 * shooter_gear_ratio};
-    setShooterVelocityControl(idle_rps, idle_rps);
-    left_shooter_target_velocity  = idle_mode_velocity;
-    right_shooter_target_velocity = idle_mode_velocity;
+    setShooterVelocityControl(idle_rps);
+    shooter_target_velocity = idle_mode_velocity;
 }
 
 void ShooterSystem::doShooterSnowBlowControl()
@@ -643,9 +573,8 @@ void ShooterSystem::doShooterSnowBlowControl()
     units::meter_t hub_x_position = RobotContext::HUB_POSITION.X();
     auto snow_blow_velocity = snow_blow_target_rpm + manual_shooter_adjustment;
     units::turns_per_second_t target_rps{snow_blow_velocity.value() / 60.0 * shooter_gear_ratio};
-    setShooterVelocityControl(target_rps, target_rps);
-    left_shooter_target_velocity = snow_blow_velocity;
-    right_shooter_target_velocity = snow_blow_velocity;
+    setShooterVelocityControl(target_rps);
+    shooter_target_velocity = snow_blow_velocity;
     auto left_channel_id  = static_cast<rev::servohub::ServoChannel::ChannelId>(left_servo_id);
     auto right_channel_id = static_cast<rev::servohub::ServoChannel::ChannelId>(right_servo_id);
     servo_controller->GetServoChannel(left_channel_id).SetPulseWidth(snow_blow_pulse_width);
@@ -676,12 +605,12 @@ bool ShooterSystem::isAtSpeed()
 {
     auto current_left = getLeftShooterVelocity();
     auto current_right = getRightShooterVelocity();
-    auto left_difference = current_left - left_shooter_target_velocity;
+    auto left_difference = current_left - shooter_target_velocity;
     if(left_difference < 0_rpm)
     {
         left_difference *= -1;
     }
-    auto right_difference = current_right - right_shooter_target_velocity;
+    auto right_difference = current_right - shooter_target_velocity;
     if(right_difference < 0_rpm)
     {
         right_difference *= -1;
@@ -733,8 +662,8 @@ void ShooterSystem::addToLuaState(Keeko::ThreadedScript& script)
 {
     luabridge::getGlobalNamespace(script)
         .beginClass<ShooterSystem> ("ShooterSystem")
-            .addFunction("setShooterVoltages", &ShooterSystem::setShooterVoltagesLua)
-            .addFunction("setShooterTargetVelocities", &ShooterSystem::setShooterTargetVelocitiesLua)
+            .addFunction("setShooterVoltage", &ShooterSystem::setShooterVoltageLua)
+            .addFunction("setShooterTargetVelocity", &ShooterSystem::setShooterTargetVelocityLua)
             .addFunction("stopShooter", &ShooterSystem::shooterIdle)
             .addFunction("autoShoot", &ShooterSystem::autoShoot)
             .addFunction("snowBlow", &ShooterSystem::snowBlow)
@@ -751,12 +680,6 @@ void ShooterSystem::addToLuaState(Keeko::ThreadedScript& script)
 //             [2.2, 4150.0],
 //             [3.0, 4850.0],
 //             [3.4, 5200.0]
-            
-//         ],
-//         "distance_to_backspin":[
-//             [2.2, -350.0],
-//             [3.0, -450.0],
-//             [3.4, -500.0]
             
 //         ],
 //         "distance_to_pulsewidth":[
