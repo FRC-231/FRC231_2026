@@ -164,9 +164,9 @@ void Robot::TeleopPeriodic()
     bool half_speed = pilot.GetTriangleButton();
 
     bool load_shooter = pilot.GetL2Axis() > 0.5;
-    bool do_shooter_voltage_control_toggle = pilot.GetCrossButtonPressed();
+    // bool do_shooter_voltage_control_toggle = pilot.GetCrossButtonPressed();
 
-    static bool intake_pivot_up = false;
+    static bool intake_pivot_up = true;
     bool toggle_intake_pivot = pilot.GetR1ButtonPressed();
     bool copilot_intake_up = copilot.GetPOV() == 0;
     bool copilot_intake_down = copilot.GetPOV() == 180;
@@ -183,18 +183,18 @@ void Robot::TeleopPeriodic()
     {
         intake_pivot_up = false;
     }
-    bool pivot_wiggle = copilot.GetL1Button();
+    //bool pivot_wiggle = copilot.GetL1Button();
     bool run_intake = pilot.GetR2Axis() > 0.5;
     bool reverse_intake = pilot.GetSquareButton() || copilot.GetSquareButton();
     static bool use_snow_blower = false;
-    if(pilot.GetCircleButtonPressed() || copilot.GetCrossButtonPressed())
-    {
-        use_snow_blower = !use_snow_blower;
-    }
+    // if(pilot.GetCircleButtonPressed() || copilot.GetCrossButtonPressed())
+    // {
+    //     use_snow_blower = !use_snow_blower;
+    // }
     nt_use_snow_blower.setValue(use_snow_blower);
     bool is_shooter_at_speed = shooter_system->isAtSpeed();
 
-    double shooter_adjustment = copilot.GetL2Axis() - copilot.GetR2Axis();
+    // double shooter_adjustment = copilot.GetL2Axis() - copilot.GetR2Axis();
     double climb_control = copilot.GetRightY();
     
     
@@ -245,11 +245,11 @@ void Robot::TeleopPeriodic()
     
     //Shooting
     static bool do_shooter_auto_control = true;
-    if(do_shooter_voltage_control_toggle)
-    {
-        do_shooter_auto_control = !do_shooter_auto_control;
-        std::cout << "Toggled shooter auto control to " << (do_shooter_auto_control ? "ON" : "OFF") << std::endl;
-    }
+    // if(do_shooter_voltage_control_toggle)
+    // {
+    //     do_shooter_auto_control = !do_shooter_auto_control;
+    //     std::cout << "Toggled shooter auto control to " << (do_shooter_auto_control ? "ON" : "OFF") << std::endl;
+    // }
     nt_shooter_on.setValue(do_shooter_auto_control);
     if(do_shooter_auto_control)
     {
@@ -286,7 +286,7 @@ void Robot::TeleopPeriodic()
     {
         shooter_system->setLoaderMode(ShooterSystem::LoaderMode::STOP);
     }
-    shooter_system->setManualShooterAdjustmentValue(shooter_adjustment);
+    // shooter_system->setManualShooterAdjustmentValue(shooter_adjustment);
 
     //Intake
     if(!load_shooter)
@@ -312,19 +312,19 @@ void Robot::TeleopPeriodic()
             intake_system->feedStop();
         }
     }
-    if(pivot_wiggle)
-    {
-        intake_system->pivotWiggle();
-    }
-    else if(intake_pivot_up)
-    {
-        intake_system->pivotUp();
-    }
-    else
-    {
-        intake_system->pivotDown();
-    }
-
+    // if(pivot_wiggle)
+    // {
+    //     intake_system->pivotWiggle();
+    // }
+    // else if(intake_pivot_up)
+    // {
+    //     intake_system->pivotUp();
+    // }
+    // else
+    // {
+    //     intake_system->pivotDown();
+    // }
+    // intake_system->pivotDown();
 }
     
 

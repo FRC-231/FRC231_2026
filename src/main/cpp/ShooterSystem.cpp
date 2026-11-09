@@ -303,6 +303,8 @@ ShooterSystem::ShooterSystem(std::shared_ptr<RobotContext> context):
 
 void ShooterSystem::Periodic()
 {
+    //TO-DO: REMOVE
+    return;
     switch(shooter_mode)
     {
         case ShooterMode::VOLTAGE:
@@ -745,3 +747,21 @@ void ShooterSystem::addToLuaState(Keeko::ThreadedScript& script)
 
 }
 
+// "distance_to_shooter_velocity":[
+//             [2.2, 4150.0],
+//             [3.0, 4850.0],
+//             [3.4, 5200.0]
+            
+//         ],
+//         "distance_to_backspin":[
+//             [2.2, -350.0],
+//             [3.0, -450.0],
+//             [3.4, -500.0]
+            
+//         ],
+//         "distance_to_pulsewidth":[
+//             [2.2, 1100.0],
+//             [3.0, 1300.0],
+//             [3.4, 1400.0]
+            
+//         ]

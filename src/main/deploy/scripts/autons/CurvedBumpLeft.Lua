@@ -31,7 +31,7 @@ bump_y = 1.47
 
 function autonomous()
     print("CurvedDoubleTakeLeft autonomous script running")
-    drive_system:setOdometry(3.36, bump_y, -45.0) --Start at the bump, angled -45.0
+    drive_system:setOdometry(3.36, bump_y, -45.0) --Start at the bump, angled -45.0 (diagonal, shooter facing hub)
     drive_system:setMaxSpeed(bump_speed)
     drive_system:driveTo(6.20, bump_y, -45.0) --Drive over bump
     waitUntilDistance(0.0762)
@@ -48,7 +48,7 @@ function autonomous()
     90.0)
     waitUntilPathFinished() --Curve towards the fuel in neutral zone
     intake_system:feedStop()
-    intake_system:pivotUp()
+    -- intake_system:pivotUp()
     drive_system:driveTo(7.75, bump_y, 90.0) --Align with bump
     waitUntilDistance(0.0762)
     drive_system:rotateTo(-45)
