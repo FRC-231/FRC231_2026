@@ -268,7 +268,7 @@ void Robot::TeleopPeriodic()
         }
         else
         {
-            shooter_system->setShooterMode(ShooterSystem::ShooterMode::AUTO);//Make sure its AUTO before we queue up 
+            shooter_system->setShooterMode(ShooterSystem::ShooterMode::MANUAL_AUTO);//Make sure its AUTO before we queue up 
         }
     }
     else
