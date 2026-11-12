@@ -164,7 +164,7 @@ void Robot::TeleopPeriodic()
     bool half_speed = pilot.GetTriangleButton();
 
     bool load_shooter = pilot.GetL2Axis() > 0.5;
-    // bool do_shooter_voltage_control_toggle = pilot.GetCrossButtonPressed();
+    bool do_shooter_voltage_control_toggle = pilot.GetCrossButtonPressed();
 
     static bool intake_pivot_up = true;
     bool toggle_intake_pivot = pilot.GetR1ButtonPressed();
@@ -244,12 +244,12 @@ void Robot::TeleopPeriodic()
     }
     
     //Shooting
-    static bool do_shooter_auto_control = true;
-    // if(do_shooter_voltage_control_toggle)
-    // {
-    //     do_shooter_auto_control = !do_shooter_auto_control;
-    //     std::cout << "Toggled shooter auto control to " << (do_shooter_auto_control ? "ON" : "OFF") << std::endl;
-    // }
+    static bool do_shooter_auto_control = false;
+    if(do_shooter_voltage_control_toggle)
+    {
+        do_shooter_auto_control = !do_shooter_auto_control;
+        std::cout << "Toggled shooter auto control to " << (do_shooter_auto_control ? "ON" : "OFF") << std::endl;
+    }
     nt_shooter_on.setValue(do_shooter_auto_control);
     if(do_shooter_auto_control)
     {

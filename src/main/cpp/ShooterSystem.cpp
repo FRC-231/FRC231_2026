@@ -9,20 +9,12 @@ ShooterSystem::ShooterSystem(std::shared_ptr<RobotContext> context):
     const auto& shooter_config = context->getConfig()->shooter_config;
     hopper_motor = std::make_unique<ctre::phoenix6::hardware::TalonFX>(shooter_config.hopper_motor_id, "secondary");
     hopper_motor2 = std::make_unique<ctre::phoenix6::hardware::TalonFX>(shooter_config.hopper_motor2_id, "secondary");
-    // feed_motor = std::make_unique<ctre::phoenix6::hardware::TalonFX>(shooter_config.feed_motor_id, "Shooter");
-    // feed_motor2 = std::make_unique<ctre::phoenix6::hardware::TalonFX>(shooter_config.feed_motor2_id, "Shooter");
-    // left_shooter_motor = std::make_unique<ctre::phoenix6::hardware::TalonFX>(shooter_config.left_shooter_motor_id, "Shooter");
-    // right_shooter_motor = std::make_unique<ctre::phoenix6::hardware::TalonFX>(shooter_config.right_shooter_motor_id, "Shooter");
-    // left_shooter_motor2 = std::make_unique<ctre::phoenix6::hardware::TalonFX>(shooter_config.left_shooter_motor2_id, "Shooter");
-    // right_shooter_motor2 = std::make_unique<ctre::phoenix6::hardware::TalonFX>(shooter_config.right_shooter_motor2_id, "Shooter");
-    // hopper_motor = std::make_unique<ctre::phoenix6::hardware::TalonFX>(shooter_config.hopper_motor_id, "rio");
-    // hopper_motor2 = std::make_unique<ctre::phoenix6::hardware::TalonFX>(shooter_config.hopper_motor2_id, "rio");
     feed_motor = std::make_unique<ctre::phoenix6::hardware::TalonFX>(shooter_config.feed_motor_id, "rio");
-    feed_motor2 = std::make_unique<ctre::phoenix6::hardware::TalonFX>(shooter_config.feed_motor2_id, "Shooter");
+    feed_motor2 = std::make_unique<ctre::phoenix6::hardware::TalonFX>(shooter_config.feed_motor2_id, "rio");
     left_shooter_motor = std::make_unique<ctre::phoenix6::hardware::TalonFX>(shooter_config.left_shooter_motor_id, "rio");
     right_shooter_motor = std::make_unique<ctre::phoenix6::hardware::TalonFX>(shooter_config.right_shooter_motor_id, "rio");
-    left_shooter_motor2 = std::make_unique<ctre::phoenix6::hardware::TalonFX>(shooter_config.left_shooter_motor2_id, "Shooter");
-    right_shooter_motor2 = std::make_unique<ctre::phoenix6::hardware::TalonFX>(shooter_config.right_shooter_motor2_id, "Shooter");
+    left_shooter_motor2 = std::make_unique<ctre::phoenix6::hardware::TalonFX>(shooter_config.left_shooter_motor2_id, "rio");
+    right_shooter_motor2 = std::make_unique<ctre::phoenix6::hardware::TalonFX>(shooter_config.right_shooter_motor2_id, "rio");
     
 
     // Apply current limits to hopper and feed motors to prevent brownouts
@@ -89,7 +81,7 @@ ShooterSystem::ShooterSystem(std::shared_ptr<RobotContext> context):
     // The left side of the shooter spins opposite to the right side. This is done
     // with the invert setting, so every shooter motor can be sent the same command.
     ctre::phoenix6::configs::TalonFXConfiguration shooter_left_config{};
-    shooter_left_config.MotorOutput.Inverted = ctre::phoenix6::signals::InvertedValue::CounterClockwise_Positive;
+    shooter_left_config.MotorOutput.Inverted = ctre::phoenix6::signals::InvertedValue::Clockwise_Positive;
     shooter_left_config.MotorOutput.NeutralMode = ctre::phoenix6::signals::NeutralModeValue::Coast;
     // Limit supply current to prevent brownouts
     shooter_left_config.CurrentLimits.SupplyCurrentLimitEnable = true;
@@ -98,7 +90,7 @@ ShooterSystem::ShooterSystem(std::shared_ptr<RobotContext> context):
     left_shooter_motor2->GetConfigurator().Apply(shooter_left_config);
 
     ctre::phoenix6::configs::TalonFXConfiguration shooter_right_config{};
-    shooter_right_config.MotorOutput.Inverted = ctre::phoenix6::signals::InvertedValue::Clockwise_Positive;
+    shooter_right_config.MotorOutput.Inverted = ctre::phoenix6::signals::InvertedValue::CounterClockwise_Positive;
     shooter_right_config.MotorOutput.NeutralMode = ctre::phoenix6::signals::NeutralModeValue::Coast;
     // Limit supply current to prevent brownouts
     shooter_right_config.CurrentLimits.SupplyCurrentLimitEnable = true;
@@ -448,7 +440,7 @@ void ShooterSystem::setShooterVelocityControl(units::turns_per_second_t target_r
     {
         ramped_rps = target_rps;
     }
-
+    ///HEREHEREHEREHEREHEREHEREHEREHERHERHEHR
     left_shooter_motor->SetControl(shooter_velocity_request.WithVelocity(ramped_rps));
     left_shooter_motor2->SetControl(shooter_velocity_request.WithVelocity(ramped_rps));
     right_shooter_motor->SetControl(shooter_velocity_request.WithVelocity(ramped_rps));
@@ -684,16 +676,16 @@ void ShooterSystem::addToLuaState(Keeko::ThreadedScript& script)
     script.addInstance("shooter_system", this);
 
 }
-
-// "distance_to_shooter_velocity":[
-//             [2.2, 4150.0],
-//             [3.0, 4850.0],
-//             [3.4, 5200.0]
+//WHAT IF WE SET ALL VALUES TO 1 AND GET RID OF METERS IDK NVM NO CAMERAS 
+// distance_to_shooter_velocity:[ 
+//              [2.2, 4150.0],
+//              [3.0, 4850.0],
+//              [3.4, 5200.0]
             
-//         ],
-//         "distance_to_pulsewidth":[
-//             [2.2, 1100.0],
-//             [3.0, 1300.0],
-//             [3.4, 1400.0]
+//          ]
+// "distance_to_pulsewidth":[
+//              [2.2, 1100.0],
+//              [3.0, 1300.0],
+//              [3.4, 1400.0]
             
-//         ]
+//          ]

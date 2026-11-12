@@ -117,8 +117,6 @@ IntakeSystem::IntakeSystem(std::shared_ptr<RobotContext> context):
 
 void IntakeSystem::Periodic()
 {
-    //TO-DO: REMOVE
-    return;
     updateNetworkTable();
     switch(feed_mode)
     {
